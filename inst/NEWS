@@ -1,0 +1,13 @@
+0.1.0
+
+FEATURES:
+	-netCDF support for large data sets.
+	-support all the related methods for flowSet
+	 
+KNOWN ISSUES:
+	
+	write meta data - ncdfFlow allows user to save the entire ncdfFlowSet object in ncdf file.
+	Currently the meta data is first serialized in R and stored as raw vector in cdf. It can fail 
+	when the meta data size exceeds the limit of serialization function.  
+	 
+	
