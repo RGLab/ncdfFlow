@@ -1,2 +1,201 @@
-To build this package, you must have the netcdf library (>=4.0.1) installed as well as hdf5. The configure script will check for nc-config and test to ensure the local library supports nc4, and correspondingly, hdf5. If a configure script cannot be found, you can specify it's location via --with-nc-config. In the absence of nc-config, the configure script will search standard locations for netcdf.h and for nc_open and nc_create within the library. The configure script was adapted from the ncdf package (1.6) on CRAN.
+To build this package, you must have the netcdf library (>=4.1.3) installed as well as hdf5. 
+The configure script will check for nc-config and test to ensure the local library supports nc4,
+and correspondingly, hdf5. If a configure script cannot be found, you can specify its location
+via --with-nc-config. In the absence of nc-config, the configure script will search standard
+locations for netcdf.h and for nc_open and nc_create within the library. The configure script
+was adapted from the ncdf package (1.6) on CRAN.
  
+This package requires that netcdf be linked against hdf5 and that hdf5 be linked against zlib.
+
+These packages are not configured this way by default, so you need to do a custom build from 
+source. Though binary packages are available for Mac, you cannot use them and you must follow
+the procedures below.
+
+
+Obtain the source tarballs. There may be newer versions available by the time you read this.
+
+For both Mac and Linux:
+
+mkdir -p ~/Downloads
+cd ~/Downloads
+curl -O http://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-4.1.3.tar.gz
+curl -O ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4/hdf5-1.8.7.tar.gz
+curl -O ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4/zlib-1.2.5.tar.gz
+
+
+For Linux
+=========
+
+Build zlib:
+
+tar zxf zlib-1.2.5.tar.gz
+cd zlib-1.2.5
+./configure
+sudo make install
+
+Build hdf5:
+
+cd ~/Downloads
+tar zxf hdf5-1.8.7.tar.gz
+cd hdf5-1.8.7
+./configure --with-zlib=/usr/local --enable-shared --prefix=/usr/local
+sudo make install
+
+
+Create a file called:
+/etc/ld.so.conf.d/hdf5.conf
+
+which should only contain the following line (plus a newline):
+/usr/local/lib
+
+Now run this command:
+sudo /sbin/ldconfig
+
+Build netcdf:
+
+cd ~/Downloads
+tar zxf netcdf-4.1.3.tar.gz
+cd netcdf-4.1.3
+./configure --disable-dap --enable-shared --enable-netcdf4
+sudo make install
+
+Check your installation:
+nc-config --has-nc4
+
+and
+
+nc-config --has-hdf5
+
+should both return "yes".
+
+cd /usr/local/lib64
+sudo ln -s /usr/local/lib/libnetcdf* .
+
+
+For Mac
+=======
+
+If you only want to build and run the package for a single architecture, the procedure
+is pretty straightforward and similar to the one for Linux, except you don't need to do the
+ldconfig stuff.
+
+These instructions document the procedure for creating multi-arch libraries, which
+is more complex. It's worth doing when you consider that different versions of Mac OS
+have different notions of what is the default architecture for R, and sometimes
+the GUI version and the command line version use different architectures.
+
+With many libraries, you can do a multi-arch install by simply pre-pending
+CFLAGS="-arch i386 -arch x86_64 ppc"
+to your configure command. That's how zlib is built below.
+Unfortunately, there are other cases where that doesn't work. 
+In these cases, we must build the three architectures separately
+and merge them with the 'lipo' tool, as documented below for
+hdf5 and netcdf.
+
+Assuming you have downloaded the sources as above:
+
+Build zlib:
+
+tar zxf zlib-1.2.5.tar.gz 
+cd zlib-1.2.5
+CFLAGS="-arch i386 -arch x86_64 -arch ppc" ./configure 
+sudo make install
+
+Build hdf5:
+
+cd ~/Downloads
+tar zxf hdf5-1.8.7.tar.gz 
+cd hdf5-1.8.7
+mkdir universal
+tar zxf ../hdf5-1.8.7.tar.gz 
+mv hdf5-1.8.7/ i386
+tar zxf ../hdf5-1.8.7.tar.gz 
+mv hdf5-1.8.7/ x86_64
+tar zxf ../hdf5-1.8.7.tar.gz 
+mv hdf5-1.8.7/ ppc
+cd i386
+CXXFLAGS="-arch i386" FCFLAGS="-arch i386" LDFLAGS="-arch i386" FFLAGS="-arch i386" \
+CFLAGS="-arch i386" ./configure --with-zlib=/usr/local --enable-shared \
+--host=i386-apple-darwin
+make
+
+cd ../x86_64
+CXXFLAGS="-arch x86_64" FCFLAGS="-arch x86_64" LDFLAGS="-arch x86_64" FFLAGS="-arch x86_64" \
+CFLAGS="-arch x86_64" ./configure --with-zlib=/usr/local --enable-shared \
+--host=x86_64-apple-darwin
+make
+
+cd ../ppc
+CXXFLAGS="-arch ppc" FCFLAGS="-arch ppc" LDFLAGS="-arch ppc" FFLAGS="-arch ppc" \
+CFLAGS="-arch ppc" ./configure --with-zlib=/usr/local --enable-shared \
+--host=ppc-apple-darwin
+make
+
+cd ../universal
+lipo -create -output libhdf5.7.dylib ../i386/src/.libs/libhdf5.7.dylib \
+ ../x86_64/src/.libs/libhdf5.7.dylib ../ppc/src/.libs/libhdf5.7.dylib
+lipo -create -output libhdf5.a ../i386/src/.libs/libhdf5.a ../x86_64/src/.libs/libhdf5.a \
+ ../ppc/src/.libs/libhdf5.a
+lipo -create -output libhdf5_hl.7.dylib ../i386/hl/src/.libs/libhdf5_hl.7.dylib \
+ ../x86_64/hl/src/.libs/libhdf5_hl.7.dylib ../ppc/hl/src/.libs/libhdf5_hl.7.dylib
+lipo -create -output libhdf5_hl.a ../i386/hl/src/.libs/libhdf5_hl.a ../x86_64/hl/src/.libs/libhdf5_hl.a ../ppc/hl/src/.libs/libhdf5_hl.a
+
+file libhdf5* # to verify that libs are multi-arch
+sudo cp libhdf5* /usr/local/lib
+
+
+Build netcdf:
+
+cd ~/Downloads
+tar zxf netcdf-4.1.3.tar.gz
+cd netcdf-4.1.3
+mkdir universal
+tar zxf ../netcdf-4.1.3.tar.gz
+mv netcdf-4.1.3 i386
+tar zxf ../netcdf-4.1.3.tar.gz
+mv netcdf-4.1.3 x86_64
+tar zxf ../netcdf-4.1.3.tar.gz
+mv netcdf-4.1.3 ppc
+
+cd i386
+CXXFLAGS="-arch i386" FCFLAGS="-arch i386" LDFLAGS="-arch i386" FFLAGS="-arch i386" \
+CFLAGS="-arch i386" ./configure --host=i386-apple-darwin --disable-dap \
+--enable-shared --enable-netcdf4
+make
+
+cd ../x86_64
+CXXFLAGS="-arch x86_64" FCFLAGS="-arch x86_64" LDFLAGS="-arch x86_64" FFLAGS="-arch x86_64" \
+CFLAGS="-arch x86_64" ./configure --host=x86_64-apple-darwin --disable-dap \
+--enable-shared --enable-netcdf4
+make
+
+cd ../ppc
+CXXFLAGS="-arch ppc" FCFLAGS="-arch ppc" LDFLAGS="-arch ppc" FFLAGS="-arch ppc" \
+CFLAGS="-arch ppc" ./configure --host=ppc-apple-darwin --disable-dap \
+--enable-shared --enable-netcdf4
+make
+
+cd ../universal
+lipo -create -output libnetcdf.7.dylib ../i386/liblib/.libs/libnetcdf.7.dylib \
+ ../x86_64/liblib/.libs/libnetcdf.7.dylib ../ppc/liblib/.libs/libnetcdf.7.dylib
+lipo -create -output libnetcdf.a ../i386/liblib/.libs/libnetcdf.a \
+../x86_64/liblib/.libs/libnetcdf.a ../ppc/liblib/.libs/libnetcdf.a
+lipo -create -output libnetcdf.dylib ../i386/liblib/.libs/libnetcdf.dylib \
+ ../x86_64/liblib/.libs/libnetcdf.dylib ../ppc/liblib/.libs/libnetcdf.dylib
+lipo -create -output libnetcdf_c++.4.dylib ../i386/cxx/.libs/libnetcdf_c++.4.dylib \
+ ../x86_64/cxx/.libs/libnetcdf_c++.4.dylib ../ppc/cxx/.libs/libnetcdf_c++.4.dylib
+lipo -create -output libnetcdf_c++.a ../i386/cxx/.libs/libnetcdf_c++.a \
+ ../x86_64/cxx/.libs/libnetcdf_c++.a ../ppc/cxx/.libs/libnetcdf_c++.a
+lipo -create -output libnetcdf_c++.dylib ../i386/cxx/.libs/libnetcdf_c++.dylib \
+ ../x86_64/cxx/.libs/libnetcdf_c++.dylib ../ppc/cxx/.libs/libnetcdf_c++.dylib
+lipo -create -output libnetcdff.5.dylib ../i386/fortran/.libs/libnetcdff.5.dylib \
+ ../x86_64/fortran/.libs/libnetcdff.5.dylib ../ppc/fortran/.libs/libnetcdff.5.dylib
+lipo -create -output libnetcdff.a ../i386/fortran/.libs/libnetcdff.a \
+ ../x86_64/fortran/.libs/libnetcdff.a ../ppc/fortran/.libs/libnetcdff.a
+lipo -create -output libnetcdff.dylib ../i386/fortran/.libs/libnetcdff.dylib \
+ ../x86_64/fortran/.libs/libnetcdff.dylib ../ppc/fortran/.libs/libnetcdff.dylib
+file libnetcdf* # to verify that all libraries are multi-arch
+sudo cp libnetcdf* /usr/local/lib
+
+Now verify that you can build, check and install the ncdfFlow package.
+
