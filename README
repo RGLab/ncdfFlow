@@ -1,4 +1,5 @@
-To build this package, you must have the netcdf library (>=4.1.3) installed as well as hdf5. 
+To build this package, you must have the netcdf library (>=4.1.3) installed as well as hdf5
+and zlib. 
 The configure script will check for nc-config and test to ensure the local library supports nc4,
 and correspondingly, hdf5. If a configure script cannot be found, you can specify its location
 via --with-nc-config. In the absence of nc-config, the configure script will search standard
@@ -10,7 +11,6 @@ This package requires that netcdf be linked against hdf5 and that hdf5 be linked
 These packages are not configured this way by default, so you need to do a custom build from 
 source. Though binary packages are available for Mac, you cannot use them and you must follow
 the procedures below.
-
 
 Obtain the source tarballs. There may be newer versions available by the time you read this.
 
@@ -71,6 +71,7 @@ should both return "yes".
 cd /usr/local/lib64
 sudo ln -s /usr/local/lib/libnetcdf* .
 
+Check that you can build, check, and install the ncdfFlow package.
 
 For Mac
 =======
@@ -82,7 +83,8 @@ ldconfig stuff.
 These instructions document the procedure for creating multi-arch libraries, which
 is more complex. It's worth doing when you consider that different versions of Mac OS
 have different notions of what is the default architecture for R, and sometimes
-the GUI version and the command line version use different architectures.
+the GUI version and the command line version of R use different architectures
+by default.
 
 With many libraries, you can do a multi-arch install by simply pre-pending
 CFLAGS="-arch i386 -arch x86_64 ppc"
@@ -103,6 +105,10 @@ sudo make install
 
 Build hdf5:
 
+For some reason, omitting --prefix from the configure command
+and expecting it to install to /usr/local, does not always work.
+Hence we specify --prefix explicitly here.
+
 cd ~/Downloads
 tar zxf hdf5-1.8.7.tar.gz 
 cd hdf5-1.8.7
@@ -115,19 +121,20 @@ tar zxf ../hdf5-1.8.7.tar.gz
 mv hdf5-1.8.7/ ppc
 cd i386
 CXXFLAGS="-arch i386" FCFLAGS="-arch i386" LDFLAGS="-arch i386" FFLAGS="-arch i386" \
-CFLAGS="-arch i386" ./configure --with-zlib=/usr/local --enable-shared \
+CFLAGS="-arch i386" ./configure --prefix=/usr/local --with-zlib=/usr/local --enable-shared \
 --host=i386-apple-darwin
 make
 
 cd ../x86_64
 CXXFLAGS="-arch x86_64" FCFLAGS="-arch x86_64" LDFLAGS="-arch x86_64" FFLAGS="-arch x86_64" \
-CFLAGS="-arch x86_64" ./configure --with-zlib=/usr/local --enable-shared \
+CFLAGS="-arch x86_64" ./configure --prefix=/usr/local --with-zlib=/usr/local --enable-shared \
 --host=x86_64-apple-darwin
 make
+sudo make install # for headers; you will overwrite libs later
 
 cd ../ppc
 CXXFLAGS="-arch ppc" FCFLAGS="-arch ppc" LDFLAGS="-arch ppc" FFLAGS="-arch ppc" \
-CFLAGS="-arch ppc" ./configure --with-zlib=/usr/local --enable-shared \
+CFLAGS="-arch ppc" ./configure --prefix=/usr/local --with-zlib=/usr/local --enable-shared \
 --host=ppc-apple-darwin
 make
 
@@ -168,6 +175,7 @@ CXXFLAGS="-arch x86_64" FCFLAGS="-arch x86_64" LDFLAGS="-arch x86_64" FFLAGS="-a
 CFLAGS="-arch x86_64" ./configure --host=x86_64-apple-darwin --disable-dap \
 --enable-shared --enable-netcdf4
 make
+sudo make install # for headers; you will overwrite libs later
 
 cd ../ppc
 CXXFLAGS="-arch ppc" FCFLAGS="-arch ppc" LDFLAGS="-arch ppc" FFLAGS="-arch ppc" \
@@ -196,6 +204,16 @@ lipo -create -output libnetcdff.dylib ../i386/fortran/.libs/libnetcdff.dylib \
  ../x86_64/fortran/.libs/libnetcdff.dylib ../ppc/fortran/.libs/libnetcdff.dylib
 file libnetcdf* # to verify that all libraries are multi-arch
 sudo cp libnetcdf* /usr/local/lib
+
+Check your installation:
+nc-config --has-nc4
+
+and
+
+nc-config --has-hdf5
+
+should both return "yes".
+
 
 Now verify that you can build, check and install the ncdfFlow package.
 
