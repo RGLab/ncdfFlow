@@ -87,7 +87,7 @@ the GUI version and the command line version of R use different architectures
 by default.
 
 With many libraries, you can do a multi-arch install by simply pre-pending
-CFLAGS="-arch i386 -arch x86_64 ppc"
+CFLAGS="-arch i386 -arch x86_64 -arch ppc"
 to your configure command. That's how zlib is built below.
 Unfortunately, there are other cases where that doesn't work. 
 In these cases, we must build the three architectures separately
