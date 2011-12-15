@@ -9,7 +9,7 @@ setMethod("addFrame",
 #			browser()
 			#write to ncdf
 			#Since we don't update the indices, we have to make sure we update the correct subset
-			ind<-getIndices(ncfs,sampleName)
+			ind<-ncdfFlow::getIndices(ncfs,sampleName)
 			ddim<-dim(data)
 #						browser()
 			
@@ -70,43 +70,6 @@ setMethod("NcdfFlowSetToFlowSet",
 setMethod("ncdfFlowSet",
 			signature=(x="flowFrame"),
 			definition=function(x,fileName){
-			
-#			if(missing(fileName))
-#				fileName = ncdfFlow:::.guid() 
-#			guid<-description(x)$GUID
-#			if(is.null(guid))
-#				guid<-basename(description(x)$FILENAME)
-#			flowSetId = guid
-#			if (!length(grep(".", fileName, fixed = TRUE)))  
-#				fileName <- paste(fileName, "nc", sep = ".")
-#			
-#			
-#			e1<-new.env(hash=TRUE, parent=emptyenv())
-#			assign(guid, new("flowFrame",exprs=matrix(numeric(0),nrow=0,ncol=0),parameters(x),description(x)), env=e1)
-#			maxEvents=nrow(exprs(x))
-#			e2<-new.env(hash=TRUE, parent=emptyenv())
-#			assign(guid,rep(TRUE,maxEvents),e2)
-#			
-#			ncfs<-new("ncdfFlowSet", file = fileName, colnames = colnames(x), 
-#					frames =e1 ,maxEvents=maxEvents,flowSetId = flowSetId,
-#					phenoData= new("AnnotatedDataFrame", 
-#							data = data.frame(name=guid,row.names=guid),
-#							varMetadata = data.frame(labelDescription="Name",row.names="name")
-#					),indices=e2,origSampleVector=guid
-#			)
-#			
-#			metaSize<-length(serialize(ncfs,NULL))
-#			#create new ncdf file			
-#			msgCreate <- try(.Call("createFile", fileName, as.integer(ncfs@maxEvents), 
-#							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
-#							as.integer(metaSize),as.logical(TRUE)),silent = TRUE)
-#			
-#			ncdfFlow:::.writeSlice(ncfs,x,guid)
-#			initIndices(ncfs,TRUE)
-#			
-#			ncdfFlowSet_sync(ncfs)
-#			
-#			ncfs
 			warning("Please convert the flowFrame to flowSet before converting it to ncdfFlowSet!")
 
 		}
@@ -116,7 +79,7 @@ setMethod("ncdfFlowSet",
 setMethod("ncdfFlowSet_open",
 		signature=(x="character"),
 		definition=function(x){
-			ret<-.Call("readMeta", x)
+			ret<-.Call(dll$readMeta, x)
 			if(!is.raw(ret)&&!ret)stop()
 			if(length(ret)==0)
 			{
@@ -130,7 +93,7 @@ setMethod("ncdfFlowSet",
 		signature=(x="flowSet"),
 		definition=function(x,fileName){		
 			if(missing(fileName))
-				fileName = ncdfFlow:::.guid() 
+				fileName <-tempfile(pattern = "ncfs")#ncdfFlow:::.guid() 
 			flowSetId = fileName
 			
 			
@@ -162,7 +125,7 @@ setMethod("ncdfFlowSet",
 			
 			metaSize<-length(serialize(ncfs,NULL))
 			#create new ncdf file			
-			msgCreate <-.Call("createFile", fileName, as.integer(ncfs@maxEvents), 
+			msgCreate <-.Call(dll$createFile, fileName, as.integer(ncfs@maxEvents), 
 							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
 							as.integer(metaSize),as.logical(TRUE))
 			if(!msgCreate)stop()
@@ -179,11 +142,24 @@ setMethod("ncdfFlowSet",
 #save ncdfFlowSet object to ncdf file
 setMethod("ncdfFlowSet_sync",
 		signature=(x="ncdfFlowSet"),
-		definition=function(x){
+		definition=function(x,...){
 			toWrite<-serialize(x,NULL)
 #			browser()
-			.Call("writeMeta", x@file, toWrite , as.integer(1),as.integer(length(toWrite)))
+			.Call(dll$writeMeta, x@file, toWrite , as.integer(1),as.integer(length(toWrite)))
 			
+			path<-list(...)$path
+			if(!is.null(path))
+			{
+				if(!identical(dirname(x@file),path))
+				{
+					file.copy(x@file,path,overwrite=TRUE)
+					x@file<-file.path(path,x@file)
+				}
+			}
+			
+			print(paste("ncdfFlowSet saved in", x@file))
+
+				
 		})
 
 
@@ -343,6 +319,9 @@ setMethod("[",
 				if(any(is.na(colnames(ncfs))))
 					stop("Subset out of bounds", call.=FALSE)
 			}
+#			browser()
+#			if(isNew)
+#				ncfs<-clone.ncdfFlowSet(ncfs,isEmpty=FALSE,isNew=TRUE)
 			return(ncfs)
 		})
 

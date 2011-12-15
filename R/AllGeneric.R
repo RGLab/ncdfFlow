@@ -30,7 +30,7 @@ setGeneric("ncdfFlowSet", function(x,...) standardGeneric("ncdfFlowSet"))
 
 setGeneric("ncdfFlowSet_open", function(x,...) standardGeneric("ncdfFlowSet_open"))
 
-setGeneric("ncdfFlowSet_sync", function(x) standardGeneric("ncdfFlowSet_sync"))
+setGeneric("ncdfFlowSet_sync", function(x,...) standardGeneric("ncdfFlowSet_sync"))
 
 
 

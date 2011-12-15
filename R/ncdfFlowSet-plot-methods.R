@@ -3,6 +3,7 @@
 # Author: mike
 ###############################################################################
 ## Dedicated prepanel function to set up dimensions
+##need to explicitly use frames@frames instead of frames for ncdfFlowSet
 prepanel.densityplot.ncdfFlowset <- 
 		function(x, y, darg=list(n=50), frames, 
 				overlap=0.3, subscripts, ...,
@@ -13,6 +14,8 @@ prepanel.densityplot.ncdfFlowset <-
 	xl <- range(eapply(frames@frames, range, channel.name), finite=TRUE)
 	list(xlim=xl + c(-1,1)*0.07*diff(xl))   
 }
+
+## have to change ccall$frames <- data@frames to ccall$frames <- data for ncdfFlowSet
 setMethod("densityplot",
 		signature(x = "formula", data = "ncdfFlowSet"),
 		function(x, data, channels, xlab,
@@ -111,7 +114,7 @@ setMethod("densityplot",
 		})
 
 
-## xyplot method for flowSets with formula. 
+## pass data instead of data@frame for ncdfFlowSet
 setMethod("xyplot",
 		signature=signature(x="formula",
 				data="ncdfFlowSet"),

@@ -2,7 +2,10 @@
 # 
 # Author: mike
 ###############################################################################
-
+dll<-NULL
+.onLoad = function(libname, pkgname){
+	dll<<- library.dynam("ncdfFlow",pkgname,lib.loc=.libPaths())
+}
 
 validFilterResultList <- function(fres, set, strict=TRUE)
 {

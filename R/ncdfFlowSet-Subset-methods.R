@@ -15,7 +15,7 @@ setMethod("Subset",
 		{
 			flowCore:::validFilterResultList(subset, x, strict=FALSE)
 
-			ncfs<-clone.ncdfFlowSet(x,isNewNcFile=FALSE)
+			ncfs<-clone.ncdfFlowSet(x,isNew=FALSE)
 
 			for(i in names(subset)) {
 					
@@ -77,7 +77,7 @@ setMethod("Subset",
 				stop("You must supply a list of the same length as the ncdfFlowSet.")
 			used <- nn[nn %in% sn]
 			
-			ncfs<-clone.ncdfFlowSet(x,isNewNcFile=FALSE)
+			ncfs<-clone.ncdfFlowSet(x,isNew=FALSE)
 			for(i in used) {
 #				browser()
 				rawIndice<-getIndices(x,i)

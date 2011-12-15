@@ -31,7 +31,7 @@
 
 
 
-\title{flowCore: Provides netCDF storage based methods and functions for manipulation of flow cytometry data}
+\title{ncdfFlow: Provides netCDF storage based methods and functions for manipulation of flow cytometry data}
 \author{Mike Jiang,Greg Finak,N. Gopalakrishnan}
 
 \begin{document}
@@ -164,7 +164,7 @@ We also provide the coerce function to convert the flowSet to a ncdfFlowSet.
 <<ncdfFlowSet, echo=true,results=verbatim>>=
 data(GvHD)
 GvHD <- GvHD[pData(GvHD)$Patient %in% 6:7][1:4]
-nc1<-ncdfFlowSet(GvHD,"ncTest.nc")
+nc1<-ncdfFlowSet(GvHD)
 @
 
 Or coerce a ncdfFlowSet to flowSet

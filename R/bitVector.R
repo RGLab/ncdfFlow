@@ -16,7 +16,7 @@
 .makeBitVecOnes <- function(n) {
 	bt <- .makeBitVecZeros(n)
 	indx <- rep(TRUE, n)
-	sbt <- .Call("ncdf_bitarray_set", bt, indx)
+	sbt <- .Call(dll$ncdf_bitarray_set, bt, indx)
 	sbt
 }
 
@@ -25,14 +25,14 @@
 	if(length(indx) != attr(bt, "bitlen"))
 		stop("indx must be  a logical vector of the same length as number of
 						bits represented in the bit vector")
-	sbt <- .Call("ncdf_bitarray_set", bt, indx)
+	sbt <- .Call(dll$ncdf_bitarray_set, bt, indx)
 	sbt
 }
 
 .getSetBitIndx <- function(bt){
-	.Call("ncdf_bitarray_getSetBitPos", bt)
+	.Call(dll$ncdf_bitarray_getSetBitPos, bt)
 }
 
 .getBitStatus <- function(bt){
-	.Call("ncdf_bitarray_getBitStatus", bt)
+	.Call(dll$ncdf_bitarray_getBitStatus, bt)
 }

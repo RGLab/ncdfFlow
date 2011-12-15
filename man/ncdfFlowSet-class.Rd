@@ -126,7 +126,7 @@ Most of the other flowSet methods are not listed here,but they all work as the s
 							or setting \code{isSaveMeta} as TRUE when ncdfFlowSet is 
 							created by \code{link{read.ncdfFlowSet}} or \code{link{clone.ncdfFlowSet}}
      	 					}
-    \item{ncdfFlowSet}{create ncdfFlowSet from a flowSet oject 
+    \item{ncdfFlowSet}{create ncdfFlowSet from a flowSet object 
     						
 					    	\emph{Usage:}
 					      

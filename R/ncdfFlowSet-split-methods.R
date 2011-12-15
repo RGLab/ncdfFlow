@@ -30,14 +30,14 @@ setMethod("split",
 setMethod("split",
 		signature=signature(x="ncdfFlowSet",
 				f="list"),
-		definition=function(x, f, drop=FALSE, population=NULL,
+		definition=function(x, f,isNew=FALSE, drop=FALSE, population=NULL,
 				prefix=NULL, ...)
 		{
 			
 			
 #			browser()
-		
-		
+				
+			
 			sample.name <- sampleNames(x)
 			lf <- length(f)
 			lx <- length(x)
@@ -83,7 +83,7 @@ setMethod("split",
 			for(p in seq_along(population)){
 				tp <- population[p]
 #				res <- vector(mode="list", length=lf)
-				ncfs<-clone.ncdfFlowSet(x,isNewNcFile=FALSE)
+				ncfs<-clone.ncdfFlowSet(x,isNew = FALSE)
 				for(i in 1:lf){
 					tp <- unlist(tp)
 					curMultiFilterResult<-f[[i]]
@@ -105,6 +105,9 @@ setMethod("split",
 					
 				}
 				np <- names(population)[p]
+				if(isNew)
+					ncfs<-clone.ncdfFlowSet(x,isEmpty = FALSE,isNew=TRUE)
+				
 				finalRes[[np]] <- ncfs
 				phenoData(finalRes[[np]])$population <- np
 				varMetadata(finalRes[[np]])["population", "labelDescription"] <-
@@ -121,16 +124,23 @@ setMethod("split",
 setMethod("split",
 		signature=signature(x="ncdfFlowSet",
 				f="factor"),
-		definition=function(x, f, drop=FALSE, ...)
+		definition=function(x, f,isNew=FALSE, drop=FALSE, ...)
 		{
+			
+			
+			
 			if(!is.atomic(f) || length(f)!=length(x))
 				stop("split factor must be same length as flowSet",
 						call.=FALSE) 
 			gind <- split(1:length(f), f, drop=TRUE)
 			res <- vector(mode="list", length=length(gind))
-#			browser()
+
 			for(g in seq_along(gind)){
-				res[[g]] <-x[sampleNames(x)[gind[[g]]]] 
+				ncfs<-x[sampleNames(x)[gind[[g]]]]
+				if(isNew)
+					ncfs<-clone.ncdfFlowSet(ncfs,isEmpty=FALSE,isNew=TRUE)
+				res[[g]] <-ncfs
+				
 				phenoData(res[[g]])$split <- levels(f)[g]
 				varMetadata(res[[g]])["split", "labelDescription"] <-
 						"Split"

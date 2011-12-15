@@ -1,4 +1,4 @@
-useDynLib("ncdfFlow",.registration=TRUE)
+dll=useDynLib("ncdfFlow",.registration=TRUE)
 
 #Imports: Biobase, flowCore, flowViz, methods
 

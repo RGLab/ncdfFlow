@@ -86,7 +86,7 @@ setMethod("rbind2",
 #			phenoData(tmp) <- pd
 #			rbind2(x, ncfs)
 			warning("Please convert the flowFrame to ncdfFlowSet with the appropriate phenoData and then use rbind2 to combine the two ncdfFlowSets!")
-			
+			return(NULL)
 		})
 
 

@@ -12,7 +12,7 @@
 createIndiceFile<-function(ncFile,eventCount,nlist)
 {
 	
-	msgCreate <- .Call("_createIndiceFile", ncFile,as.integer(eventCount),length(nlist))
+	msgCreate <- .Call(dll$"_createIndiceFile", ncFile,as.integer(eventCount),length(nlist))
 			
 	if(!msgCreate)stop()
 }
@@ -29,7 +29,7 @@ writeIndice<-function(ncIndice,indiceMat,startNode)
 	}
 	nodeStartInd<-which(ncIndice$nlist==startNode)
 	
-	msgWrite <- .Call("_writeIndice",ncIndice$ncFile,indiceMat,as.integer(nodeStartInd))
+	msgWrite <- .Call(dll$"_writeIndice",ncIndice$ncFile,indiceMat,as.integer(nodeStartInd))
 	if(!msgWrite)stop()
 	
 	msgWrite
@@ -43,7 +43,7 @@ readIndice<-function(ncIndice,Node,nodeCount=1)
 	nodeStartInd<-which(ncIndice$nlist==Node)
 	
 	#	browser()
-	indiceMat <- .Call("_readIndice",ncIndice$ncFile,nodeStartInd,as.integer(nodeCount))
+	indiceMat <- .Call(dll$"_readIndice",ncIndice$ncFile,nodeStartInd,as.integer(nodeCount))
 	if(!is.matrix(indiceMat)&&!indiceMat)stop()
 	
 	indx <- nodeStartInd:(nodeStartInd+nodeCount-1)
@@ -71,6 +71,19 @@ readIndice<-function(ncIndice,Node,nodeCount=1)
 ##############################################################################################
 read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TRUE,isSaveMeta=FALSE,phenoData) 
 {
+#	browser()
+	#remove nonexisting files
+	fileInd<-file.exists(files)
+	missingFiles<-files[!fileInd]
+	if(length(missingFiles)>0)
+		message(paste(missingFiles,"is missing\n"))
+	files<-files[fileInd]
+	if(length(files)==0)
+	{
+		print("No file is found!")
+		return(NULL)
+	}
+		
 	compress<-TRUE##no need for this argument anymore 
 	
 	if(missing(ncdfFile)) 
@@ -122,12 +135,12 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 	
 	if(any(duplicated(guids)))
 		guids <- make.unique(guids)
-	
+#		browser()	
 	#create ncdf ncdf object 
 	ncfs<-new("ncdfFlowSet", file = ncdfFile, colnames = channelNames, 
 			frames = e1,maxEvents=maxEvents,flowSetId = flowSetId,phenoData=phenoData
 			,indices=e2,origSampleVector=guids,origColnames=channelNames)
-#		browser()
+
 	
 	#get the meta size
 	metaSize<-ifelse(isSaveMeta,length(serialize(ncfs,NULL)),0)
@@ -137,7 +150,7 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 	#create empty cdf file
 #	browser()
 	
-	msgCreate <- .Call("createFile", ncdfFile, as.integer(maxEvents), 
+	msgCreate <- .Call(dll$createFile, ncdfFile, as.integer(maxEvents), 
 					as.integer(maxChannels), as.integer(maxSamples),
 					as.integer(metaSize),as.logical(compress))
 	if(!msgCreate)stop()
@@ -151,6 +164,7 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 	{
 		lapply(seq_len(maxSamples), function(i, verbose)
 				{
+#					print(paste("writing ",guids[i]),"to cdf")
 					addFrame(ncfs,read.FCS(files[i]),guids[i])
 				}, verbose = TRUE)
 	}else
@@ -170,10 +184,12 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 }
 
 ##################################################################
+#this function is to be deprecated due to its copy of the entire cdf repository
 #if isEmpty is set as FAlSE,then simply copy the orginal cdf file including the data
 #by default,create empty cdf file and then add the data later on 
+#has the bug of  dimensions (sample*colnames) are not consistent with original cdf
 ##################################################################
-clone.ncdfFlowSet<-function(ncfs,newNcFile=NULL,isEmpty=TRUE,isNewNcFile=TRUE,isSaveMeta=FALSE)
+clone.ncdfFlowSet.old<-function(ncfs,newNcFile=NULL,isEmpty=TRUE,isNewNcFile=TRUE,isSaveMeta=FALSE)
 {
 #		browser()
 	
@@ -189,10 +205,10 @@ clone.ncdfFlowSet<-function(ncfs,newNcFile=NULL,isEmpty=TRUE,isNewNcFile=TRUE,is
 		if(isEmpty)
 		{
 			metaSize<-ifelse(isSaveMeta,length(serialize(ncfs,NULL)),0)
-			msgCreate <- .Call("createFile", newNcFile, as.integer(ncfs@maxEvents), 
+			msgCreate <- .Call(dll$createFile, newNcFile, as.integer(ncfs@maxEvents), 
 							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
 							as.integer(metaSize),as.logical(TRUE))
-			if(!msgCreate)stop()
+			if(!msgCreate)stop("make sure the file does not exist already or your have write permission to the folder!")
 		}
 		
 		else
@@ -238,10 +254,111 @@ clone.ncdfFlowSet<-function(ncfs,newNcFile=NULL,isEmpty=TRUE,isNewNcFile=TRUE,is
 	ncfs
 }
 
+clone.ncdfFlowSet<-function(ncfs,fileName=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMeta=FALSE)
+{
+	
+#	browser()
+	
+	##when isNew==TRUE, the actual data reflected by the current view of ncdfFlowSet is created 
+	##and the new ncfs is no longer associated to the orginal one. which mean it is no longer a view of subset
+	## of the original cdf repository
+	if(isNew)
+	{
+		orig<-ncfs
+		
+		if(is.null(fileName))
+			fileName<-tempfile(pattern = "ncfs")
+		
+		if (!length(grep(".", fileName, fixed = TRUE)))  
+			fileName <- paste(fileName, "nc", sep = ".")
+		#update file info
+		ncfs@file<-fileName	
+		
+		#sync the view info of samplenames and colnames
+		ncfs@origSampleVector<-sampleNames(orig)
+		ncfs@origColnames<-colnames(orig)
+		
+		#init view info of indices
+		ncfs@indices<-new.env(hash=TRUE, parent=emptyenv())
+		for(i in sampleNames(orig))
+		{
+			updateIndices(ncfs,i,NA)
+		}
+
+		
+		
+		
+		metaSize<-ifelse(isSaveMeta,length(serialize(ncfs,NULL)),0)
+		msgCreate <- .Call(dll$createFile, fileName, as.integer(ncfs@maxEvents), 
+				as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
+				as.integer(metaSize),as.logical(TRUE))
+		if(!msgCreate)stop("make sure the file does not exist already or your have write permission to the folder!")
+#		browser()
+		if(!isEmpty)##write the actual data 
+		{
+			for(i in sampleNames(orig))
+			{
+				print(paste("copying data slice:",i))
+				addFrame(ncfs,orig[[i]],i)
+				
+			}
+			
+		}
+	}else
+	{
+		#when isNew==FALSE, then keep the exact 3D view info of the original ncfs
+	
+		#copy frames info
+		orig<-ncfs@frames
+		ncfs@frames<-new.env(hash=TRUE, parent=emptyenv())
+		for(i in ls(orig))
+		{
+			assign(i,orig[[i]],ncfs@frames)
+		}
+		
+		#copy indices info if isEmpty==FALSE
+		if(isEmpty)#when empty init the indices with 
+		{
+			orig<-ncfs@indices
+			ncfs@indices<-new.env(hash=TRUE, parent=emptyenv())
+			#copy indices info
+			for(i in sampleNames(ncfs))
+			{
+				
+#			updateIndices(ncfs,i,rep(TRUE,length(eval(parse(text=paste("orig$'",i,"'",sep=""))))))
+				updateIndices(ncfs,i,NA)
+			}
+		}else
+		{
+			orig<-ncfs@indices
+			ncfs@indices<-new.env(hash=TRUE, parent=emptyenv())
+			#copy indices info
+			for(i in ls(orig))
+			{
+				if(class(orig[[i]])=="raw"){
+					updateIndices(x=ncfs,y=i,z=.getBitStatus(orig[[i]]))
+				}else{
+					updateIndices(x=ncfs,y=i,z=orig[[i]])
+				}
+
+			}	
+		}
+	}
+		
+	
+	ncfs
+}
+
+
 .writeSlice <- function(ncfs,data,sampleName)
 { 
-	
-	mat <- exprs(data)
+	if(class(data)=="flowFrame")
+	{
+		mat <- exprs(data)
+	}else
+	{
+		mat<-data
+	}
 	mode(mat) <- "single"
 	#make sure to use origSampleVector for IO since phetaData slot may change after subsetting
 	i<-which(ncfs@origSampleVector==sampleName)
@@ -255,7 +372,7 @@ clone.ncdfFlowSet<-function(ncfs,newNcFile=NULL,isEmpty=TRUE,isNewNcFile=TRUE,is
 	#if writing the data slice with the exact size and colnames of original one
 	#then simply write the input matrix
 	#get original slice
-	origMat <- .Call("readSlice", ncfs@file, as.integer(c(1,length(ncfs@origColnames))),as.integer(i))
+	origMat <- .Call(dll$readSlice, ncfs@file, as.integer(c(1,length(ncfs@origColnames))),as.integer(i))
 	if(nrow(origMat)>0)#if ncfs not empty
 	{
 		#get index of current channels in orignal slice
@@ -269,17 +386,18 @@ clone.ncdfFlowSet<-function(ncfs,newNcFile=NULL,isEmpty=TRUE,isNewNcFile=TRUE,is
 			origMat<-mat
 		}else
 		{
-			stop("You are trying to write a subset of columns to an empty ncdfFlowSet!")	
+			stop("Colnames of the input must be consistent with ncdfFlowSet when adding data to the empty slice of ncdfFlowSet "
+					,sampleName)	
 		}
 		
 	}
 	#write it back to disk
-	msgWrite <- .Call("writeSlice", ncfs@file, origMat , as.integer(i))
+	msgWrite <- .Call(dll$writeSlice, ncfs@file, origMat , as.integer(i))
 	
 	if(!msgWrite)
 	{
 #		browser()
-		stop("Writing to CDF file failed!")
+		stop("Writing to CDF file failed!",sampleName)
 	}
 	msgWrite
 
@@ -290,7 +408,7 @@ clone.ncdfFlowSet<-function(ncfs,newNcFile=NULL,isEmpty=TRUE,isNewNcFile=TRUE,is
 	#to optimize the reading process
 	samplePos<-which(object@origSampleVector==sampleName)
 #		browser()	
-	mat <- .Call("readSlice", object@file, as.integer(chIndx),as.integer(samplePos))
+	mat <- .Call(dll$readSlice, object@file, as.integer(chIndx),as.integer(samplePos))
 
 	
 	if(!is.matrix(mat)&&mat==FALSE) stop()

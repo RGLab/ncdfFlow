@@ -1,7 +1,9 @@
-0.1.0
+1.1.1
 
 FEATURES:
 	-netCDF support for large data sets.
+	-centralized storage of flow data in 3-D matrix (sample*channel*event)
+	-fast data accessing,subsetting and splitting 
 	-support all the related methods for flowSet
 	 
 KNOWN ISSUES:
@@ -10,4 +12,16 @@ KNOWN ISSUES:
 	Currently the meta data is first serialized in R and stored as raw vector in cdf. It can fail 
 	when the meta data size exceeds the limit of serialization function.  
 	 
-	
+CHANGES IN 1.1.2:
+
+	1.Using temporary directory instead of working directory to store cdf file in creating ncdfFlowSet from flowSet 
+	2.allow for user specified path in ncdfFlowSet_sync method to save the cdf in different location other than original one
+	3.clone.ncdfFlowSet function:
+		-change argument name to avoid confusion:sNewNcFile-->isNew ;newNcFile-->fileName 
+		-avoid copying the entire cdf repository when clone subsetted ncdfFlowSet
+		-fix the bug of inconsistent dimensions (sample*colnames) when create the new cdf file
+	4.check whether source file exist in read.ncdfFlowSet
+	5..writeSlice:
+		-allow for either flowFrame or matrix to be added by
+		-add sample name to the error message to help troubleshoot the problematic FCS file especially for loading large datasets
+	6.add isNew=FALSE to split method to allow for splitting into multipe cdf files for the sake of parallel computing 		 
