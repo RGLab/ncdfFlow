@@ -127,7 +127,7 @@ setMethod("ncdfFlowSet",
 			#create new ncdf file			
 			msgCreate <-.Call(dll$createFile, fileName, as.integer(ncfs@maxEvents), 
 							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
-							as.integer(metaSize),as.logical(TRUE))
+							as.integer(metaSize),as.logical(FALSE))
 			if(!msgCreate)stop()
 			
 			for(guid in sampleNames(x))

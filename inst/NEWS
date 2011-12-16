@@ -24,4 +24,5 @@ CHANGES IN 1.1.2:
 	5..writeSlice:
 		-allow for either flowFrame or matrix to be added by
 		-add sample name to the error message to help troubleshoot the problematic FCS file especially for loading large datasets
-	6.add isNew=FALSE to split method to allow for splitting into multipe cdf files for the sake of parallel computing 		 
+	6.add isNew=FALSE to split method to allow for splitting into multipe cdf files for the sake of parallel computing
+	7.set compress=FALSE to disable compression mode of CDF 		 

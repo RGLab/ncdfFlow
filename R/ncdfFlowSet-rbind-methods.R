@@ -42,9 +42,9 @@ setMethod("rbind2",
 			ncfs@phenoData <- pd1
 			#create new ncdf file		
 			#NOTE: rbind2 will not save the metadata in the new file..	
-			msgCreate <- try(.Call("createFile", newNcFile, as.integer(ncfs@maxEvents), 
+			msgCreate <- try(.Call(dll$createFile, newNcFile, as.integer(ncfs@maxEvents), 
 							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
-							as.integer(0),as.logical(TRUE)),silent = TRUE)
+							as.integer(0),as.logical(FALSE)),silent = TRUE)
 			
 			##need to assign the sample vector before add the actual frame 
 			ncfs@origSampleVector=c(lx,ly)

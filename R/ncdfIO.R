@@ -84,7 +84,7 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 		return(NULL)
 	}
 		
-	compress<-TRUE##no need for this argument anymore 
+	compress<-FALSE##no need for this argument anymore 
 	
 	if(missing(ncdfFile)) 
 		ncdfFile<-tempfile(pattern = "ncfs")
@@ -207,7 +207,7 @@ clone.ncdfFlowSet.old<-function(ncfs,newNcFile=NULL,isEmpty=TRUE,isNewNcFile=TRU
 			metaSize<-ifelse(isSaveMeta,length(serialize(ncfs,NULL)),0)
 			msgCreate <- .Call(dll$createFile, newNcFile, as.integer(ncfs@maxEvents), 
 							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
-							as.integer(metaSize),as.logical(TRUE))
+							as.integer(metaSize),as.logical(FALSE))
 			if(!msgCreate)stop("make sure the file does not exist already or your have write permission to the folder!")
 		}
 		
@@ -291,7 +291,7 @@ clone.ncdfFlowSet<-function(ncfs,fileName=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 		metaSize<-ifelse(isSaveMeta,length(serialize(ncfs,NULL)),0)
 		msgCreate <- .Call(dll$createFile, fileName, as.integer(ncfs@maxEvents), 
 				as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
-				as.integer(metaSize),as.logical(TRUE))
+				as.integer(metaSize),as.logical(FALSE))
 		if(!msgCreate)stop("make sure the file does not exist already or your have write permission to the folder!")
 #		browser()
 		if(!isEmpty)##write the actual data 
