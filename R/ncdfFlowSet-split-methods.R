@@ -106,7 +106,7 @@ setMethod("split",
 				}
 				np <- names(population)[p]
 				if(isNew)
-					ncfs<-clone.ncdfFlowSet(x,isEmpty = FALSE,isNew=TRUE)
+					ncfs<-clone.ncdfFlowSet(ncfs,isEmpty = FALSE,isNew=TRUE)
 				
 				finalRes[[np]] <- ncfs
 				phenoData(finalRes[[np]])$population <- np
