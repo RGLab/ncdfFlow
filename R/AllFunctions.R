@@ -98,7 +98,7 @@ checkParameters <- function(x) {
 
 
 ncdfExprs <- function(object, sample, channel=NULL,subByIndice=TRUE) {
-#						browser()
+#						
 	
 	origChNames <-object@origColnames ##
 	localChNames <-colnames(object)
@@ -128,7 +128,7 @@ ncdfExprs <- function(object, sample, channel=NULL,subByIndice=TRUE) {
 	matRead<- lapply(sample, function(x){
 				##.retNcdfMat always read a consecutive area from cdf 
 				thisMat<-.retNcdfMat(object, chIndx, x,subByIndice)
-#				browser()
+#				
 				
 				##do the subsetting by channel here instead of inside of .retNcdfMat function
 				if(!is.null(channel)) 

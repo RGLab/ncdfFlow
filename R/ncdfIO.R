@@ -42,7 +42,7 @@ readIndice<-function(ncIndice,Node,nodeCount=1)
 	
 	nodeStartInd<-which(ncIndice$nlist==Node)
 	
-	#	browser()
+	#	
 	indiceMat <- .Call(dll$"_readIndice",ncIndice$ncFile,nodeStartInd,as.integer(nodeCount))
 	if(!is.matrix(indiceMat)&&!indiceMat)stop()
 	
@@ -54,7 +54,7 @@ readIndice<-function(ncIndice,Node,nodeCount=1)
 	indices<-list()
 	for(i in 1:ncol(indiceMat))
 	{
-#		browser()
+#		
 		curCol<-indiceMat[,i]
 		eval(parse(text=paste("indices$`",clNames[i],"`<-structure(curCol,bitlen=attr(indiceMat,\"bitlen\"),nbitset=attr(indiceMat,\"nbitset\")[i])",sep="")))
 		
@@ -71,7 +71,7 @@ readIndice<-function(ncIndice,Node,nodeCount=1)
 ##############################################################################################
 read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TRUE,isSaveMeta=FALSE,phenoData) 
 {
-#	browser()
+#	
 	#remove nonexisting files
 	fileInd<-file.exists(files)
 	missingFiles<-files[!fileInd]
@@ -128,14 +128,14 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 		guids <- sampleNames(phenoData)
 	}else{
 		guids <- basename(files)
-#		browser()
+#		
 		phenoData = new("AnnotatedDataFrame", data = data.frame(name=guids,row.names=guids), 
 				varMetadata = data.frame(labelDescription="Name",row.names="name"))
 	}
 	
 	if(any(duplicated(guids)))
 		guids <- make.unique(guids)
-#		browser()	
+#			
 	#create ncdf ncdf object 
 	ncfs<-new("ncdfFlowSet", file = ncdfFile, colnames = channelNames, 
 			frames = e1,maxEvents=maxEvents,flowSetId = flowSetId,phenoData=phenoData
@@ -148,13 +148,13 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 	
 
 	#create empty cdf file
-#	browser()
+#	
 	
 	msgCreate <- .Call(dll$createFile, ncdfFile, as.integer(maxEvents), 
 					as.integer(maxChannels), as.integer(maxSamples),
 					as.integer(metaSize),as.logical(compress))
 	if(!msgCreate)stop()
-#	browser()
+#	
 	##remove indicies to keep the slot as empty by default for memory and speed issue
 	initIndices(ncfs,NA)
 	#############################################################
@@ -173,7 +173,7 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 #		initIndices(ncfs,TRUE)##when isWriteSlice is FALSE,indices have to been explictly initialized
 		
 	}
-#	browser()
+#	
 	
 	
 	#write metaData to cdf
@@ -191,7 +191,7 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 ##################################################################
 clone.ncdfFlowSet.old<-function(ncfs,newNcFile=NULL,isEmpty=TRUE,isNewNcFile=TRUE,isSaveMeta=FALSE)
 {
-#		browser()
+#		
 	
 	##if flag isNewNcFile=TRUE then creat new ncdf file
 	##otherwise keep using the original ncdf file
@@ -257,7 +257,7 @@ clone.ncdfFlowSet.old<-function(ncfs,newNcFile=NULL,isEmpty=TRUE,isNewNcFile=TRU
 clone.ncdfFlowSet<-function(ncfs,fileName=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMeta=FALSE)
 {
 	
-#	browser()
+#	
 	
 	##when isNew==TRUE, the actual data reflected by the current view of ncdfFlowSet is created 
 	##and the new ncfs is no longer associated to the orginal one. which mean it is no longer a view of subset
@@ -293,7 +293,7 @@ clone.ncdfFlowSet<-function(ncfs,fileName=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 				as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
 				as.integer(metaSize),as.logical(FALSE))
 		if(!msgCreate)stop("make sure the file does not exist already or your have write permission to the folder!")
-#		browser()
+#		
 		if(!isEmpty)##write the actual data 
 		{
 			for(i in sampleNames(orig))
@@ -368,7 +368,7 @@ clone.ncdfFlowSet<-function(ncfs,fileName=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 	#and the current iput mat could be a subset through channels or events
 	############################################################################################
 	
-#	browser()
+#	
 	#if writing the data slice with the exact size and colnames of original one
 	#then simply write the input matrix
 	#get original slice
@@ -396,7 +396,7 @@ clone.ncdfFlowSet<-function(ncfs,fileName=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 	
 	if(!msgWrite)
 	{
-#		browser()
+#		
 		stop("Writing to CDF file failed!",sampleName)
 	}
 	msgWrite
@@ -407,7 +407,7 @@ clone.ncdfFlowSet<-function(ncfs,fileName=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 	## chIndx is start and end positions and "readSlice" always get a consecutive chunk 
 	#to optimize the reading process
 	samplePos<-which(object@origSampleVector==sampleName)
-#		browser()	
+#			
 	mat <- .Call(dll$readSlice, object@file, as.integer(chIndx),as.integer(samplePos))
 
 	
@@ -418,7 +418,7 @@ clone.ncdfFlowSet<-function(ncfs,fileName=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 #	clNames <- colnames(eval(parse(text=paste("object@frames$'",sampleName,"'",sep=""))))[indx]  
 	clNames <- object@origColnames[indx]
 	colnames(mat) <- clNames
-#	browser()
+#	
 	if(subByIndice&&nrow(mat)>0)
 		
 		mat[getIndices(object,sampleName),,drop=FALSE]

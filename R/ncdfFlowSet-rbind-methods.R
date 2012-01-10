@@ -21,51 +21,70 @@ setMethod("rbind2",
 			pd1 <- phenoData(x)
 			pd2 <- phenoData(y)
 			if(!all(varLabels(pd1) == varLabels(pd2)))
-				stop("The phenoData of the two frames doesn't match.",
+				stop("The phenoData of the two ncdfFlowSets doesn't match.",
 						call.=FALSE)
-			
+			if(!all(colnames(x)==colnames(y)))
+				stop("The colnames of the two ncdfFlowSets doesn't match.",
+						call.=FALSE)
 			#new ncdf object 
 			#make sure we put the new nc file in the same path as the old ncfile
-			newNcFile = ncdfFlow:::.guid()
-			newNcFile<-paste(dirname(x@file),newNcFile,sep="/")
+#			newNcFile = ncdfFlow:::.guid()
+#			newNcFile<-paste(dirname(x@file),newNcFile,sep="/")
+			newNcFile<-tempfile(pattern = "ncfs")
 			if (!length(grep(".", newNcFile, fixed = TRUE)))  
 				newNcFile <- paste(newNcFile, "nc", sep = ".")
-			ncfs<-x
-			ncfs@file<-newNcFile## assign the new fileid
-			ncfs@frames<-env
-			ncfs@indices<-env2
-			ncfs@maxEvents<- max(x@maxEvents,y@maxEvents)
-#			browser()
 			
 			
-			pData(pd1) <- rbind(pData(pd1), pData(pd2))
-			ncfs@phenoData <- pd1
+			##init the environment slots to be able to pass the validity check of flowSet object
+			for(i in lx)
+			{
+				assign(i, x@frames[[i]], env=env)
+				assign(i, NA, env=env2)
+
+			}
+			for(i in ly)
+			{
+				
+				assign(i, y@frames[[i]], env=env)
+				assign(i, NA, env=env2)
+			}
+#			
+			#create ncdf ncdf object 
+			ncfs<-new("ncdfFlowSet"
+						,file = newNcFile
+						,colnames = colnames(x) 
+						,frames = env
+						,maxEvents=max(x@maxEvents,y@maxEvents)
+						,flowSetId = ""
+						,phenoData=AnnotatedDataFrame(rbind(pData(pd1), pData(pd2)))
+						,indices=env2
+						,origSampleVector=c(lx,ly)##need to assign the sample vector before add the actual frame
+						,origColnames=colnames(x)
+						)
+			
 			#create new ncdf file		
 			#NOTE: rbind2 will not save the metadata in the new file..	
 			msgCreate <- try(.Call(dll$createFile, newNcFile, as.integer(ncfs@maxEvents), 
 							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
 							as.integer(0),as.logical(FALSE)),silent = TRUE)
+			if(!msgCreate)stop(msgCreate)
+			 
 			
-			##need to assign the sample vector before add the actual frame 
-			ncfs@origSampleVector=c(lx,ly)
-#			browser()
+#			
 			#add frames to env and ncdf file
 			for(i in lx)
 			{
-				assign(i, x@frames[[i]], env=env)
-				assign(i, NA, env=env2)
 				addFrame(ncfs,x[[i]],i)
 			}
 			for(i in ly)
 			{
-							
-				
-				assign(i, y@frames[[i]], env=env)
-				assign(i, NA, env=env2)
 				addFrame(ncfs,y[[i]],i)
 			}				
 			#Comment out sync for metadata
 			#ncdfFlowSet_sync(ncfs)
+			
+			
+			
 			
 			return(ncfs)
 		})
@@ -80,7 +99,7 @@ setMethod("rbind2",
 #			pd <- phenoData(x)[1,]
 #			sampleNames(pd)
 #			pData(pd)[1,] <- NA
-#			browser()
+#			
 #			ncfs <- as(y,"flowSet")
 #			sampleNames(pd) <- sampleNames(tmp) <- "anonymous frame"
 #			phenoData(tmp) <- pd

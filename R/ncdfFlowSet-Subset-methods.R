@@ -21,7 +21,7 @@ setMethod("Subset",
 					
 					rawIndice<-getIndices(x,i)
 					localIndice<-as(subset[[i]],"logical")
-#					browser()
+#					
 					##update original indice vector with the new subset indice which is shorter than original one
 					if(all(is.na(rawIndice)))
 						rawIndice<-localIndice
@@ -79,7 +79,7 @@ setMethod("Subset",
 			
 			ncfs<-clone.ncdfFlowSet(x,isNew=FALSE)
 			for(i in used) {
-#				browser()
+#				
 				rawIndice<-getIndices(x,i)
 				localIndice<-as(subset[[i]],"logical")
 				##update original indice vector with the new subset indice which is shorter than original one

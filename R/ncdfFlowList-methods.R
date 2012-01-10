@@ -13,7 +13,7 @@ setMethod("[[",
 		{
 			if(length(i) != 1)
 				stop("subscript out of bounds (index must have length 1)")
-#			browser()
+#			
 			y<-x@datalist
 			groupName<-if(is.numeric(i)) names(y)[[i]] else i
 			ncfs <- y[[groupName]]
@@ -27,7 +27,7 @@ setMethod("[",
 		{
 			if(length(i) != 1)
 				stop("subscript out of bounds (index must have length 1)")
-#			browser()
+#			
 			y<-x@datalist
 			groupName<-if(is.numeric(i)) names(y)[[i]] else i
 			ncfs <- y[groupName]

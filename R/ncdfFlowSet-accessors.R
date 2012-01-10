@@ -6,12 +6,13 @@ setMethod("addFrame",
 		signature=c(ncfs="ncdfFlowSet",data="flowFrame"),
 		definition=function(ncfs,data,sampleName){
 			
-#			browser()
+#			
 			#write to ncdf
 			#Since we don't update the indices, we have to make sure we update the correct subset
 			ind<-ncdfFlow::getIndices(ncfs,sampleName)
 			ddim<-dim(data)
-#						browser()
+			
+#			
 			
 			#sdim is either size subset or full size
 			sdim<-dim(ncfs[[sampleName]])
@@ -117,7 +118,7 @@ setMethod("ncdfFlowSet",
 				assign(guid,rep(TRUE,maxEvents),e2)
 			}
 			
-#			browser()
+#			
 			ncfs<-new("ncdfFlowSet", file = fileName, colnames = colnames(x), 
 					frames =e1 ,maxEvents=as.integer(maxEvents),flowSetId = flowSetId,
 					phenoData= phenoData(x),indices=e2,origSampleVector=sampleNames(x)
@@ -134,7 +135,7 @@ setMethod("ncdfFlowSet",
 			{
 				.writeSlice(ncfs,x[[guid]],guid)
 			}
-#			browser()
+#			
 			initIndices(ncfs,TRUE)
 			ncdfFlowSet_sync(ncfs)
 			ncfs
@@ -144,7 +145,7 @@ setMethod("ncdfFlowSet_sync",
 		signature=(x="ncdfFlowSet"),
 		definition=function(x,...){
 			toWrite<-serialize(x,NULL)
-#			browser()
+#			
 			.Call(dll$writeMeta, x@file, toWrite , as.integer(1),as.integer(length(toWrite)))
 			
 			path<-list(...)$path
@@ -166,7 +167,7 @@ setMethod("ncdfFlowSet_sync",
 #setMethod("range",
 #		signature=signature(x="ncdfFlowSet"),
 #		definition=function(x, sample) {
-##			browser()
+##			
 #			if(missing(sample))
 #				stop("Please specify a sample for which the range is to be returned")
 #			par <- parameters(x@frames[[sample]])
@@ -209,7 +210,7 @@ setMethod("getIndices",
 		signature=signature(obj="ncdfFlowSet",y="character"), 
 		definition=function(obj,y,...)
 		{
-#			browser()
+#			
 			ret<-get(y,obj@indices)
 			if(all(!is.na(ret)))
 				ret<-.getBitStatus(ret)
@@ -222,7 +223,7 @@ setMethod("initIndices",
 		{
 			
 			for(i in sampleNames(x)){
-#				browser()
+#				
 				curData<-ncdfExprs(object=x,sample=i,subByIndice=FALSE)
 				nEvent<-nrow(curData)
 				if(is.na(y))
@@ -236,7 +237,7 @@ setMethod("updateIndices",
 		signature=signature(x="ncdfFlowSet",y="character",z="logical"), 
 		definition=function(x,y,z)
 		{
-#			browser()
+#			
 			if(all(!is.na(z)))
 				z<-.makeBitVec(length(z),z)
 			assign(y,z,x@indices)
@@ -262,13 +263,12 @@ setMethod("[",
 		definition=function(x, i, j, ..., drop=FALSE)
 		{
 			
-			
+	
 			if(missing(i) && missing(j)) 
 				return(x)
-			
-			newChnLen<-length(if(missing(j))colnames(x) else j)
-			newSampLen<-length(if(missing(i))sampleNames(x) else i)
-			
+					
+#			newChnLen<-length(if(missing(j))colnames(x) else j)
+#			newSampLen<-length(if(missing(i))sampleNames(x) else i)
 			#copy ncdfFlowSet object
 			ncfs<-x
 			#init two environment
@@ -289,6 +289,7 @@ setMethod("[",
 					i <- match(i,sampleNames(x))
 				}
 			}
+#						
 			
 			if(any(is.na(copy)))
 				stop("Subset out of bounds", call.=FALSE)
@@ -298,28 +299,33 @@ setMethod("[",
 				assign(nm,x@frames[[nm]],ncfs@frames)
 #				assign(nm,getIndices(x,nm),ncfs@indices)
 
-				updateIndices(x=ncfs,y=nm,z=getIndices(x,nm))
-#				browser()
+				updateIndices(x=ncfs,y=nm,z=ncdfFlow::getIndices(x,nm))
+#				
 				#update channels info for each frame
 				if(!missing(j))
 				{
 					##get old AnnotatedDataFrame
 					pd<-parameters(ncfs@frames[[nm]])
 					#update the parameter by subsetting AnnotatedDataFrame wotj parameter name
-					parameters(ncfs@frames[[nm]]) <- pd[pData(pd)$name%in%j,]
+					if(is.character(j))
+						parameters(ncfs@frames[[nm]]) <- pd[pData(pd)$name%in%j,]
+					else
+						parameters(ncfs@frames[[nm]]) <- pd[j,]
 				}
 			}
 			 
-			#update channels info for ncdfFlowSet  
+			#update colnames slot for ncdfFlowSet  
 			if(!missing(j)){
 				if(is.character(j))
-					colnames(ncfs) <- colnames(x)[match(j, colnames(x))]
+					ncfs@colnames <- colnames(x)[match(j, colnames(x))]
+#					colnames(ncfs) <- colnames(x)[match(j, colnames(x))]
 				else
-					colnames(ncfs) <- colnames(x)[j] 
+					ncfs@colnames <- colnames(x)[j]
+#					colnames(ncfs) <- colnames(x)[j] 
 				if(any(is.na(colnames(ncfs))))
 					stop("Subset out of bounds", call.=FALSE)
 			}
-#			browser()
+#			
 #			if(isNew)
 #				ncfs<-clone.ncdfFlowSet(ncfs,isEmpty=FALSE,isNew=TRUE)
 			return(ncfs)
@@ -330,10 +336,16 @@ setReplaceMethod("colnames",
 				value="ANY"),
 		definition=function(x, value)
 		{
+#			
+			if(length(value) != length(colnames(x)))
+				stop("length of new colnames doesn't match with the old one",call.=FALSE)
+	
+			#get the index of the colnames in the original colnames vector
 			colIndex<-which(x@origColnames%in%x@colnames)
-			x@colnames <- value
-			x@origColnames[colIndex]<-value
+			x@colnames <- value#update colnames slot
+			x@origColnames[colIndex]<-value#update the original colnames baed on the inex
 
+			##updte colnames of each flowFrames
 			for(i in sampleNames(x))
 				x@frames[[i]]@parameters@data$name <- value
 				#colnames(x@frames[[i]]) <- value
@@ -350,7 +362,7 @@ setReplaceMethod("colnames",
 #			
 #			if(length(y) != 1)
 #				stop("subscript out of bounds (index must have length 1)")
-##			browser()
+##			
 #			sampleName<-if(is.numeric(y)) sampleNames(x)[[y]] else y
 #			
 #			return(is.null(eval(parse(text=paste("x@indices$'",sampleName,"'",sep="")))))
@@ -371,9 +383,9 @@ setMethod("[[",
 
 			sampleName<-if(is.numeric(i)) sampleNames(x)[[i]] else i
 			fr <- x@frames[[sampleName]]
-#						browser()
+#						
 			subByIndice<-all(!is.na(x@indices[[sampleName]]))
-#			browser()
+			
 			
 #			if(!isEmpty(x,i))
 #			{
@@ -391,7 +403,7 @@ setMethod("[[",
 #          signature=signature(x="ncdfFlowSet"),
 #          definition=function(x, name) 
 #		  {
-##			  browser()
+##			  
 #			  x[[name]]
 #  })
 
@@ -441,7 +453,7 @@ setMethod("ncfsApply",
 			if(!is.function(FUN))
 				stop("This is not a function!")
 			x<-clone.ncdfFlowSet(x,newNcFile,isEmpty=FALSE)
-#			browser()			
+#						
 			lapply(sampleNames(x),function(n) {
 								y <- as(x[[n]],"flowFrame")
 								y<-FUN(if(use.exprs) exprs(y) else y,...)
@@ -470,7 +482,7 @@ setMethod("compensate",
 				spillover="ANY"),
 		definition=function(x, spillover)
 		{
-#			browser()
+#			
 			newNcFile<-paste(x@file,"comp",sep=".")
 			ncfsApply(x, compensate, spillover,newNcFile=newNcFile)
 			
@@ -511,7 +523,7 @@ setMethod("transform",
 		signature=signature(`_data`="ncdfFlowSet"),
 		definition=function(`_data`,...)
 		{
-#			browser()
+#			
 			newNcFile<-paste(`_data`@file,"trans",sep=".")
 			ncfsApply(`_data`,transform,...,newNcFile=newNcFile)
 		})

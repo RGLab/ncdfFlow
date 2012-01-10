@@ -8,7 +8,7 @@ setMethod("split",
 				prefix=NULL, ...)
 		{
 			fres <- filter(x,f)
-#			browser()
+#			
 			
 			split(x, fres, population=population, prefix=prefix,...)
 		})
@@ -35,7 +35,7 @@ setMethod("split",
 		{
 			
 			
-#			browser()
+#			
 				
 			
 			sample.name <- sampleNames(x)
@@ -88,7 +88,7 @@ setMethod("split",
 					tp <- unlist(tp)
 					curMultiFilterResult<-f[[i]]
 					curFilterResult<-curMultiFilterResult[[tp]]
-#					browser()
+#					
 					
 					indice<-x[[i]]%in%curFilterResult
 					curSampleName<-names(f)[i]
@@ -113,7 +113,7 @@ setMethod("split",
 				varMetadata(finalRes[[np]])["population", "labelDescription"] <-
 						"population identifier produced by splitting"
 			}
-#			browser()
+#			
 			res<-ncdfFlowList(finalRes)
 			return(res)
 		})
