@@ -27,4 +27,7 @@ void R_init_ncdfFlow(DllInfo *dll)
 	R_RegisterCCallable("ncdfFlow","ncdf_bitarray_getSetBitPos",(DL_FUNC)&ncdf_bitarray_getSetBitPos);
 	R_RegisterCCallable("ncdfFlow","ncdf_bitarray_getBitStatus",(DL_FUNC)&ncdf_bitarray_getBitStatus);
 	R_RegisterCCallable("ncdfFlow","ncdf_bitarray_Flip",(DL_FUNC)&ncdf_bitarray_Flip);
+
+
+
 }

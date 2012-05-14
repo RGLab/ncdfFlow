@@ -96,7 +96,7 @@ checkParameters <- function(x) {
 
 
 
-
+#to deprecated due to the merging of this routine to [[ for speed 
 ncdfExprs <- function(object, sample, channel=NULL,subByIndice=TRUE) {
 #						
 	
@@ -115,7 +115,7 @@ ncdfExprs <- function(object, sample, channel=NULL,subByIndice=TRUE) {
 	if(!is.null(sample)) {
 			sampNames <- sampleNames(object)
 		if(!all(sample %in% sampNames))
-			stop("All channels specified could not be found in the ncdfFlowSet")
+			stop("sample specified could not be found in the ncdfFlowSet")
 #		sampIndx <- which(sampNames %in% sample)
 		
 		#   matRead <- .retNcdfMat(object, chIndx, sampIndx)[,channel,drop=FALSE]
@@ -147,4 +147,3 @@ ncdfExprs <- function(object, sample, channel=NULL,subByIndice=TRUE) {
 	else 
 		return(matRead)
 }
-

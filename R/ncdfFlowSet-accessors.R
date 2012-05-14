@@ -374,38 +374,70 @@ setReplaceMethod("colnames",
 ## subsetting by sampleName(channels)(not for events) methods 
 ## - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ## to flowFrame
+#setMethod("[[",
+#		signature=signature(x="ncdfFlowSet"),
+#		definition=function(x, i, j, ...)
+#		{
+#			if(length(i) != 1)
+#				stop("subscript out of bounds (index must have length 1)")
+#
+#			sampleName<-if(is.numeric(i)) sampleNames(x)[[i]] else i
+#			fr <- x@frames[[sampleName]]
+##						
+#			subByIndice<-all(!is.na(x@indices[[sampleName]]))
+#			
+#			
+##			if(!isEmpty(x,i))
+##			{
+#				fr@exprs <- ncdfExprs(x, sampleName,subByIndice=subByIndice)
+##			}
+#			if(!missing(j))
+#				fr <- fr[,j]
+#			return(fr)
+#		})
+
+#merge ncdfExprs->.retNcdfMat routines into [[, to reduce the overhead of copying in R calls  
 setMethod("[[",
 		signature=signature(x="ncdfFlowSet"),
 		definition=function(x, i, j, ...)
 		{
 			if(length(i) != 1)
 				stop("subscript out of bounds (index must have length 1)")
-
+			
 			sampleName<-if(is.numeric(i)) sampleNames(x)[[i]] else i
 			fr <- x@frames[[sampleName]]
 #						
 			subByIndice<-all(!is.na(x@indices[[sampleName]]))
+#			browser()
 			
+			##always get the enire original slice for optimized reading
+			origChNames <-x@origColnames ##
+			chIndx <- c(1, length(origChNames))
+			#get sample index
+			samplePos<-which(x@origSampleVector==sampleName)
+			mat <- .Call(dll$readSlice, x@file, as.integer(chIndx),as.integer(samplePos))
+			if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
+
+			##append colnames to matrix
+			colnames(mat) <- origChNames
 			
-#			if(!isEmpty(x,i))
-#			{
-				fr@exprs <- ncdfExprs(x, sampleName,subByIndice=subByIndice)
-#			}
+			#subset data by indices if neccessary	
+			if(subByIndice&&nrow(mat)>0)
+				mat<-mat[getIndices(x,sampleName),,drop=FALSE]
+			
+			##subsetting by channel if necessary
+			localChNames <-colnames(x)
+#			chPos <- which(origChNames %in% localChNames)
+			if(!identical(localChNames,origChNames))
+				mat<-mat[,localChNames, drop= FALSE]##subset by local channel names which could be a subset of original channel names
+			
+			fr@exprs <- mat
+
 			if(!missing(j))
 				fr <- fr[,j]
 			return(fr)
 		})
 
-
-
-## to flowFrame
-#setMethod("$",
-#          signature=signature(x="ncdfFlowSet"),
-#          definition=function(x, name) 
-#		  {
-##			  
-#			  x[[name]]
-#  })
 
 ## replace a flowFrame
 setReplaceMethod("[[",

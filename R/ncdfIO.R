@@ -403,6 +403,7 @@ clone.ncdfFlowSet<-function(ncfs,fileName=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 
 }
 
+#to deprecated due to the merging of this routine to [[ for speed
 .retNcdfMat <- function(object, chIndx, sampleName,subByIndice){        
 	## chIndx is start and end positions and "readSlice" always get a consecutive chunk 
 	#to optimize the reading process
