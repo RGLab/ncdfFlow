@@ -10,7 +10,7 @@
 setMethod("rbind2",
 		signature=signature(x="ncdfFlowSet",
 				y="ncdfFlowSet"),
-		definition=function(x, y)
+		definition=function(x, y,file=tempfile(pattern = "ncfs"))
 		{
 			env <- new.env(hash=TRUE, parent=emptyenv())
 			env2<-new.env(hash=TRUE, parent=emptyenv())
@@ -30,7 +30,7 @@ setMethod("rbind2",
 			#make sure we put the new nc file in the same path as the old ncfile
 #			newNcFile = ncdfFlow:::.guid()
 #			newNcFile<-paste(dirname(x@file),newNcFile,sep="/")
-			newNcFile<-tempfile(pattern = "ncfs")
+			newNcFile<-file
 			if (!length(grep(".", newNcFile, fixed = TRUE)))  
 				newNcFile <- paste(newNcFile, "nc", sep = ".")
 			

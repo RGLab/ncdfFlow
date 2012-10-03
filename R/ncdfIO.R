@@ -264,7 +264,7 @@ clone.ncdfFlowSet<-function(ncfs,fileName=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 	## of the original cdf repository
 	if(isNew)
 	{
-		orig<-ncfs
+		orig<-ncfs#TODO:need deep copying of frames evironments
 		
 		if(is.null(fileName))
 			fileName<-tempfile(pattern = "ncfs")
