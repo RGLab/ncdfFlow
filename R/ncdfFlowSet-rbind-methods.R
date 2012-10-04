@@ -107,5 +107,100 @@ setMethod("rbind2",
 			warning("Please convert the flowFrame to ncdfFlowSet with the appropriate phenoData and then use rbind2 to combine the two ncdfFlowSets!")
 			return(NULL)
 		})
+#do rbind for > 2 ncdfFlowSets (without the need to create cdf for every two ncfs)
+setMethod("rbind",
+		signature=signature("ncdfFlowList"),
+		definition=function(x,file=tempfile(pattern = "ncfs"))
+		{
+			
+			nclist<-x@datalist
+		
+
+			sn <-unlist(lapply(nclist, sampleNames),use.names=F)
+			isDuplicated<-duplicated(sn)
+			if(any(isDuplicated))
+				stop("duplicated samples:",sn[isDuplicated])
+			
+			
+			pdlist <- lapply(nclist,phenoData)
+			
+			
+			varLabelList<-lapply(pdlist,varLabels)
+			
+			isDuplicated<-duplicated(varLabelList)
+			isSame<-isDuplicated[-1]
+			if(!all(isSame))
+				stop("The phenoData of the ncdfFlowSets don't match.",
+						call.=FALSE)
+			
+			collist <- lapply(nclist,colnames)
+			isDuplicated<-duplicated(collist)
+			isSame<-isDuplicated[-1]
+			if(!all(isSame))
+				stop("The colnames of the ncdfFlowSets don't match.",
+						call.=FALSE)
+			
+			#new ncdf object 
+			#make sure we put the new nc file in the same path as the old ncfile
 
 
+			newNcFile<-file
+			if (!length(grep(".", newNcFile, fixed = TRUE)))  
+				newNcFile <- paste(newNcFile, "nc", sep = ".")
+			
+			
+			##init the environment slots to be able to pass the validity check of flowSet object
+			frameEnv <- new.env(hash=TRUE, parent=emptyenv())
+			indiceEnv<-new.env(hash=TRUE, parent=emptyenv())
+			lapply(nclist,function(ncfs){
+								oldFrames<-ncfs@frames
+								copyEnv(oldFrames,frameEnv)
+				#				assign(i, nclist[[1]]@frames[[i]], env=env)
+									
+								lapply(ls(oldFrames),function(curSample)assign(curSample, NA, env=indiceEnv))
+								
+							})
+#			browser()
+			pdataList<-lapply(pdlist,pData)
+			newPd<-AnnotatedDataFrame(do.call(base::rbind,pdataList))
+			
+			
+			#create ncdf ncdf object 
+			ncfs<-new("ncdfFlowSet"
+					,file = newNcFile
+					,colnames = collist[[1]] 
+					,frames = frameEnv
+					,maxEvents=max(unlist(lapply(nclist,function(ncfs)ncfs@maxEvents)))
+					,flowSetId = ""
+					,phenoData=newPd
+					,indices=indiceEnv
+					,origSampleVector=sn##need to assign the sample vector before add the actual frame
+					,origColnames=collist[[1]]
+			)
+			
+			#create new ncdf file		
+			#NOTE: rbind2 will not save the metadata in the new file..	
+			msgCreate <- try(.Call(dll$createFile, newNcFile, as.integer(ncfs@maxEvents), 
+							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
+							as.integer(0),as.logical(FALSE)),silent = TRUE)
+			if(!msgCreate)stop(msgCreate)
+			
+			
+			
+			#add frames to env and ncdf file
+			for(nc in nclist)
+			{
+			
+				for(curSample in sampleNames(nc))
+				{	
+					addFrame(ncfs,nc[[curSample]],curSample)
+				}	
+			}
+			
+							
+			#Comment out sync for metadata
+			#ncdfFlowSet_sync(ncfs)
+			
+			
+			return(ncfs)
+		})

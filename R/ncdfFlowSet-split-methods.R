@@ -150,3 +150,10 @@ setMethod("split",
 			return(res)
 		})
 
+setMethod("split",
+		signature=signature(x="ncdfFlowSet",
+				f="character"),
+		definition=function(x, f, ...)
+		{
+			split(x,as.factor(f),...)
+		})	
