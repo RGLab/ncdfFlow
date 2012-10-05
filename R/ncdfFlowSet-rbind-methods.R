@@ -108,7 +108,7 @@ setMethod("rbind2",
 			return(NULL)
 		})
 #do rbind for > 2 ncdfFlowSets (without the need to create cdf for every two ncfs)
-setMethod("rbind",
+setMethod("rbind2",
 		signature=signature("ncdfFlowList"),
 		definition=function(x,file=tempfile(pattern = "ncfs"))
 		{
