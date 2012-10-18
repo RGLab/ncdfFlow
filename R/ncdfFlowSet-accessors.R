@@ -133,7 +133,8 @@ setMethod("ncdfFlowSet",
 			
 			for(guid in sampleNames(x))
 			{
-				.writeSlice(ncfs,x[[guid]],guid)
+#				.writeSlice(ncfs,x[[guid]],guid)
+				addFrame(ncfs,x[[guid]],guid)
 			}
 #			
 			initIndices(ncfs,TRUE)
@@ -489,7 +490,8 @@ setMethod("ncfsApply",
 			lapply(sampleNames(x),function(n) {
 								y <- as(x[[n]],"flowFrame")
 								y<-FUN(if(use.exprs) exprs(y) else y,...)
-								ncdfFlow:::.writeSlice(x,y,n)
+#								ncdfFlow:::.writeSlice(x,y,n)
+								addFrame(x,y,n)#always use addFrame to write data back to cdf
 							})
 			x
 		})

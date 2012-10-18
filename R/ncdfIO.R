@@ -129,7 +129,7 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 	}else{
 		guids <- basename(files)
 #		
-		phenoData = new("AnnotatedDataFrame", data = data.frame(name=guids,row.names=guids), 
+		phenoData = new("AnnotatedDataFrame", data = data.frame(name=guids,row.names=guids,stringsAsFactors=FALSE), 
 				varMetadata = data.frame(labelDescription="Name",row.names="name"))
 	}
 	
@@ -349,7 +349,7 @@ clone.ncdfFlowSet<-function(ncfs,fileName=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 	ncfs
 }
 
-
+##NOTE:It is for internal usage,do not use this API directly,try to use addFrame always!
 .writeSlice <- function(ncfs,data,sampleName)
 { 
 	if(class(data)=="flowFrame")
