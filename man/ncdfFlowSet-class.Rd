@@ -177,7 +177,10 @@ Most of the other flowSet methods are not listed here,but they all work as the s
     				size of the original one(such as compensate,transform...)
 			     	 Otherwise,\code{\link[flowCore:fsApply]{fsApply}} should be used instead. 
 					}
-    \item{rbind2}{equivalent to \code{\link[=rbind2,flowSet,flowSet-method]{flowCore:rbind2}}. It returns a new ncdfFlowSet with a new cdf file that combines two raw datasets. }
+    \item{rbind2}{smiliar to \code{\link[=rbind2,flowSet,flowSet-method]{flowCore:rbind2}}. It returns a new ncdfFlowSet with a new cdf file that combines two raw datasets.
+     				It is recommended to construct a ncdfFlowList and apply rbind2 to it directly when combining more than two ncdfFlowSets.
+     				Because using "do.call" on a list ncdfFlowSets will create one cdf file for every two ncdfFlowSets,which is not efficient.      
+     				}
    
     \item{split}{equivalent to \code{\link[=split,flowSet,ANY-method]{flowCore:split}}. It returns a new ncdfFlowSet object without creating new cdf raw data file but assigning logical indices to subset the original raw data.}
    
