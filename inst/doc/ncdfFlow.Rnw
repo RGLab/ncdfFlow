@@ -246,7 +246,7 @@ rm(nc2)
 
 #transformation
 asinhTrans <- arcsinhTransform(transformationId="ln-transformation", a=1, b=1, c=1)
-nc2 <- transform(nc1,`FSC-H`=asinhTrans(`FSC-H`))
+nc2 <- transform(nc1,`FL1-H`=asinhTrans(`FL1-H`))
 summary(nc1)[[1]]
 summary(nc2)[[1]]
 ncfsUnlink(nc2)

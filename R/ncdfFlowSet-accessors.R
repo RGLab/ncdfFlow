@@ -130,14 +130,14 @@ setMethod("ncdfFlowSet",
 							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
 							as.integer(metaSize),as.logical(FALSE))
 			if(!msgCreate)stop()
-			
+                        initIndices(ncfs,NA)			
 			for(guid in sampleNames(x))
 			{
 #				.writeSlice(ncfs,x[[guid]],guid)
 				addFrame(ncfs,x[[guid]],guid)
 			}
 #			
-			initIndices(ncfs,TRUE)
+#			initIndices(ncfs,TRUE)
 			ncdfFlowSet_sync(ncfs)
 			ncfs
 		})

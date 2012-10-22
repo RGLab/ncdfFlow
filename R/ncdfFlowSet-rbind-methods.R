@@ -8,7 +8,7 @@
 
 
 setMethod("rbind2",
-		signature=signature(x="ncdfFlowSet",
+		signature=c(x="ncdfFlowSet",
 				y="ncdfFlowSet"),
 		definition=function(x, y,file=tempfile(pattern = "ncfs"))
 		{
@@ -91,7 +91,7 @@ setMethod("rbind2",
 ##this method is removed because it is pointless to add a flowFrame 
 #without specifying the phenoData with the same structure as the existing ncdfFlowSet 
 setMethod("rbind2",
-		signature=signature(x="ncdfFlowSet",
+		signature=c(x="ncdfFlowSet",
 				y="flowFrame"),
 		definition=function(x,y)
 		{
@@ -109,7 +109,7 @@ setMethod("rbind2",
 		})
 #do rbind for > 2 ncdfFlowSets (without the need to create cdf for every two ncfs)
 setMethod("rbind2",
-		signature=signature("ncdfFlowList"),
+		signature=c("ncdfFlowList"),
 		definition=function(x,file=tempfile(pattern = "ncfs"))
 		{
 			
