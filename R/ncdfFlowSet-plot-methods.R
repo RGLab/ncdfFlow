@@ -123,8 +123,8 @@ setMethod("xyplot",
 				smooth=TRUE,
 				filter=NULL,
 				as.table=TRUE,
-				prepanel=flowViz:::prepanel.xyplot.flowset,
-				panel=flowViz:::panel.xyplot.flowset,
+				prepanel=prepanel.xyplot.flowset,
+				panel=panel.xyplot.flowset,
 				xlab=channel.x.name,
 				ylab=channel.y.name,
 				par.settings=NULL,
@@ -136,10 +136,19 @@ setMethod("xyplot",
 				x[[3]] <- (~dummy | name)[[2]]
 				x[[3]][[2]] <- tmp
 			}
+			if(! "name" %in% names(pData(data)))
+				pData(data)$name <- sampleNames(data)
 			## par.settings will not be passed on to the panel functions, so
 			## we have to fetch it from ... and stick the gate relevant stuff
 			## back it in there manually
-			gp <- par.settings
+			
+			gp<-par.settings
+			par.settings<-flowViz.par.get()#default theme for lattice
+			
+			if(!is.null(gp))#update the default theme if necessary
+			{
+				par.settings<-lattice:::updateList(par.settings,gp)  
+			}
 			## ugly hack to suppress warnings about coercion introducing
 			## NAs (needs to be `undone' inside prepanel and panel
 			## functions):
@@ -166,7 +175,7 @@ setMethod("xyplot",
 			channel.y <- as.expression(channel.y)
 			## use densityplot method with dedicated panel and prepanel
 			## functions to do the actual plotting
-#		  
+#		  browser()
 			densityplot(x, data=pd, prepanel=prepanel, panel=panel,
 					frames=data, channel.x=channel.x,
 					channel.y=channel.y, channel.x.name=channel.x.name,
@@ -174,3 +183,4 @@ setMethod("xyplot",
 					smooth=smooth, gp=gp, as.table=as.table, filter=filter,
 					par.settings=par.settings, ...)
 		})
+

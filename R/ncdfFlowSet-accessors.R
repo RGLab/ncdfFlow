@@ -305,11 +305,12 @@ setMethod("[",
 				#update channels info for each frame
 				if(!missing(j))
 				{
+#					browser()
 					##get old AnnotatedDataFrame
 					pd<-parameters(ncfs@frames[[nm]])
 					#update the parameter by subsetting AnnotatedDataFrame wotj parameter name
 					if(is.character(j))
-						parameters(ncfs@frames[[nm]]) <- pd[pData(pd)$name%in%j,]
+						parameters(ncfs@frames[[nm]]) <- pd[match(j,pData(pd)$name),]
 					else
 						parameters(ncfs@frames[[nm]]) <- pd[j,]
 				}
