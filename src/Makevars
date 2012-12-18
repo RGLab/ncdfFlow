@@ -1,0 +1,3 @@
+PKG_LIBS=-L/usr/local/lib -lnetcdf
+PKG_CPPFLAGS=-I/usr/local/include
+

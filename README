@@ -1,0 +1,2 @@
+To build this package, you must have the netcdf library (>=4.0.1) installed as well as hdf5. The configure script will check for nc-config and test to ensure the local library supports nc4, and correspondingly, hdf5. If a configure script cannot be found, you can specify it's location via --with-nc-config. In the absence of nc-config, the configure script will search standard locations for netcdf.h and for nc_open and nc_create within the library. The configure script was adapted from the ncdf package (1.6) on CRAN.
+ 
