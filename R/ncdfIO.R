@@ -150,7 +150,7 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 	#create empty cdf file
 #	
 	
-	msgCreate <- .Call(dll$createFile, ncdfFile, as.integer(maxEvents), 
+	msgCreate <- .Call(dll$createFile, path.expand(ncdfFile), as.integer(maxEvents), 
 					as.integer(maxChannels), as.integer(maxSamples),
 					as.integer(metaSize),as.logical(compress))
 	if(!msgCreate)stop()
