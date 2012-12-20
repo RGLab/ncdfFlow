@@ -70,7 +70,7 @@ setMethod("NcdfFlowSetToFlowSet",
 #create ncdfFlowSet from flowFrame
 setMethod("ncdfFlowSet",
 			signature=(x="flowFrame"),
-			definition=function(x,fileName){
+			definition=function(x,ncdfFile){
 			warning("Please convert the flowFrame to flowSet before converting it to ncdfFlowSet!")
 
 		}
@@ -92,14 +92,14 @@ setMethod("ncdfFlowSet_open",
 #create ncdfFlowSet from flowSet
 setMethod("ncdfFlowSet",
 		signature=(x="flowSet"),
-		definition=function(x,fileName){		
-			if(missing(fileName))
-				fileName <-tempfile(pattern = "ncfs")#ncdfFlow:::.guid() 
-			flowSetId = fileName
+		definition=function(x,ncdfFile){		
+			if(missing(ncdfFile))
+				ncdfFile <-tempfile(pattern = "ncfs")#ncdfFlow:::.guid() 
+			flowSetId = ncdfFile
 			
 			
-			if (!length(grep(".", fileName, fixed = TRUE)))  
-				fileName <- paste(fileName, "nc", sep = ".")
+			if (!length(grep(".", ncdfFile, fixed = TRUE)))  
+				ncdfFile <- paste(ncdfFile, "nc", sep = ".")
 			
 			e1<-new.env(hash=TRUE, parent=emptyenv())
 
@@ -119,14 +119,14 @@ setMethod("ncdfFlowSet",
 			}
 			
 #			
-			ncfs<-new("ncdfFlowSet", file = fileName, colnames = colnames(x), 
+			ncfs<-new("ncdfFlowSet", file = ncdfFile, colnames = colnames(x), 
 					frames =e1 ,maxEvents=as.integer(maxEvents),flowSetId = flowSetId,
 					phenoData= phenoData(x),indices=e2,origSampleVector=sampleNames(x)
 					,origColnames=colnames(x))
 			
 			metaSize<-length(serialize(ncfs,NULL))
 			#create new ncdf file			
-			msgCreate <-.Call(dll$createFile, fileName, as.integer(ncfs@maxEvents), 
+			msgCreate <-.Call(dll$createFile, ncdfFile, as.integer(ncfs@maxEvents), 
 							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
 							as.integer(metaSize),as.logical(FALSE))
 			if(!msgCreate)stop()
