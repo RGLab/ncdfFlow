@@ -92,6 +92,9 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 	
 	if (!length(grep(".", ncdfFile, fixed = TRUE)))  
 		ncdfFile <- paste(ncdfFile, "nc", sep = ".")
+	
+	ncdfFile<-path.expand(ncdfFile)
+	
 	file.names<-basename(files)
 	## obtain event counts and  number of parameters
 	bigFile <- files[which.max(file.info(files)[,"size"])]
@@ -254,7 +257,7 @@ clone.ncdfFlowSet.old<-function(ncfs,newNcFile=NULL,isEmpty=TRUE,isNewNcFile=TRU
 	ncfs
 }
 
-clone.ncdfFlowSet<-function(ncfs,fileName=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMeta=FALSE)
+clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMeta=FALSE)
 {
 	
 #	
@@ -266,13 +269,13 @@ clone.ncdfFlowSet<-function(ncfs,fileName=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 	{
 		orig<-ncfs#TODO:need deep copying of frames evironments
 		
-		if(is.null(fileName))
-			fileName<-tempfile(pattern = "ncfs")
+		if(is.null(ncdfFile))
+			ncdfFile<-tempfile(pattern = "ncfs")
 		
-		if (!length(grep(".", fileName, fixed = TRUE)))  
-			fileName <- paste(fileName, "nc", sep = ".")
+		if (!length(grep(".", ncdfFile, fixed = TRUE)))  
+			ncdfFile <- paste(ncdfFile, "nc", sep = ".")
 		#update file info
-		ncfs@file<-fileName	
+		ncfs@file<-ncdfFile	
 		
 		#sync the view info of samplenames and colnames
 		ncfs@origSampleVector<-sampleNames(orig)
@@ -289,7 +292,7 @@ clone.ncdfFlowSet<-function(ncfs,fileName=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 		
 		
 		metaSize<-ifelse(isSaveMeta,length(serialize(ncfs,NULL)),0)
-		msgCreate <- .Call(dll$createFile, fileName, as.integer(ncfs@maxEvents), 
+		msgCreate <- .Call(dll$createFile, ncdfFile, as.integer(ncfs@maxEvents), 
 				as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
 				as.integer(metaSize),as.logical(FALSE))
 		if(!msgCreate)stop("make sure the file does not exist already or your have write permission to the folder!")

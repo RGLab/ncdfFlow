@@ -7,7 +7,7 @@ Clone a ncdfFlowSet
 Create a new ncdfFlowSet object from an existing one
 }
 \usage{
-clone.ncdfFlowSet(ncfs,fileName=NULL,isEmpty=TRUE,
+clone.ncdfFlowSet(ncfs,ncdfFile=NULL,isEmpty=TRUE,
 		isNew=TRUE,isSaveMeta=FALSE)
 }
 \arguments{
@@ -17,7 +17,7 @@ clone.ncdfFlowSet(ncfs,fileName=NULL,isEmpty=TRUE,
   \item{isNew}{A logical scalar indicating whether the new cdf file should be created.
   					If FALSE, the original cdf file is associated with the new ncdfFlowSet object.}
   				
-  \item{fileName}{A character scalar giving the output file name. By
+  \item{ncdfFile}{A character scalar giving the output file name. By
     default, It is NULL and the function will generate a random
     file name, potentially adding the \code{.cdf} suffix unless a file
     extension is already present. It is only valid when isNewNcFile=TRUE }
