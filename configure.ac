@@ -1,4 +1,4 @@
-AC_INIT([ncdfFlow],0.99.2)
+AC_INIT([ncdfFlow],1.5.8)
 
 AC_ARG_WITH([nc-config],
     AC_HELP_STRING([--with-nc-configh=PATH], [location of nc-config]),
