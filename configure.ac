@@ -34,7 +34,7 @@ if test ${NC_BOUNDLED}="yes"; then
 	                echo "untarring boost include tree...";
 	                gunzip -dc ${NETCDFTGZNAME} | tar xf -;
 	fi;
-	
+
     AC_MSG_NOTICE([compiling netcdf library...])
     
     BUILD_DIR="${BASENETCDFNAME}/build"

@@ -20,4 +20,5 @@ Collate: AllGeneric.R
          ncdfIO.R
          ncdfFlowList-methods.R
          ncdfFlowSet-plot-methods.R
+         Ldpath.R
 Packaged: 2011-04-04 18:33:38 UTC; Jiang
