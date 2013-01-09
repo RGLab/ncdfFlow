@@ -4,8 +4,8 @@ Version: 1.5.10
 Author: Mike Jiang,Greg Finak,N. Gopalakrishnan
 Description: Provides netCDF storage based methods and functions for manipulation of flow cytometry data.
 Maintainer: M. Jiang <wjiang2@fhcrc.org> 
-Depends: R (>= 2.14.0), flowCore
-Imports: Biobase,flowCore,flowViz,methods 
+Depends: R (>= 2.14.0), flowCore (>= 1.25.9)
+Imports: Biobase,flowCore,flowViz (>= 1.23.1),methods 
 License: Artistic-2.0
 SystemRequirements: netcdf 4.0.1, hdf5
 biocViews: FlowCytometry
