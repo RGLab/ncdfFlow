@@ -31,19 +31,19 @@ ncdfFlowLdPath <- function() {
 ##                    of rpath on Linux if static==FALSE has been chosen
 ##                    Note that this is probably being called from LdFlags()
 ncdfFlowLdFlags <- function(static=staticLinking()) {
-    rcppdir <- ncdfFlowLdPath()
-    if (static) {                               # static is default on Windows and OS X
-        flags <- paste(rcppdir, "/libncdfFlow.a", sep="")
-        #if (.Platform$OS.type=="windows") {
-        #    flags <- shQuote(flags)
-        #}
-    } else {					# else for dynamic linking
-        flags <- paste("-L", rcppdir, " -lncdfFlow", sep="") # baseline setting
-        if ((.Platform$OS.type == "unix") &&    # on Linux, we can use rpath to encode path
-            (length(grep("^linux",R.version$os)))) {
-            flags <- paste(flags, " -Wl,-rpath,", rcppdir, sep="")
-        }
-    }
+    ncdfFlowdir <- ncdfFlowLdPath()
+#    if (static) {                               # static is default on Windows and OS X
+#        flags <- paste(rcppdir, "/libncdfFlow.a", sep="")
+#        #if (.Platform$OS.type=="windows") {
+#        #    flags <- shQuote(flags)
+#        #}
+#    } else {					# else for dynamic linking
+        flags <- paste("-L", ncdfFlowdir, " ncdfFlow.so", sep="") # baseline setting
+#        if ((.Platform$OS.type == "unix") &&    # on Linux, we can use rpath to encode path
+#            (length(grep("^linux",R.version$os)))) {
+#            flags <- paste(flags, " -Wl,-rpath,", rcppdir, sep="")
+#        }
+#    }
     invisible(flags)
 }
 
