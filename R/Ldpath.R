@@ -38,7 +38,8 @@ ncdfFlowLdFlags <- function(static=staticLinking()) {
 #        #    flags <- shQuote(flags)
 #        #}
 #    } else {					# else for dynamic linking
-        flags <- paste("-L", ncdfFlowdir, " ncdfFlow.so", sep="") # baseline setting
+#        flags <- paste("-L", ncdfFlowdir, " ncdfFlow.so", sep="") # baseline setting
+		flags <- file.path(ncdfFlowdir, "ncdfFlow.so") # baseline setting
 #        if ((.Platform$OS.type == "unix") &&    # on Linux, we can use rpath to encode path
 #            (length(grep("^linux",R.version$os)))) {
 #            flags <- paste(flags, " -Wl,-rpath,", rcppdir, sep="")
