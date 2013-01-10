@@ -59,7 +59,7 @@ Objects can be created by using:
 or 
 \code{ncdfFlowSet(
 			x,					#x is a flowSet
-			fileName			#the output cdf file name
+			ncdfFile			#the output cdf file name
 			)
  }
  

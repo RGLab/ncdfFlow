@@ -1,0 +1,2 @@
+echo "removing exploded netcdf source..."
+cd src; rm -rf trimmed_netcdf-4.2.1.1

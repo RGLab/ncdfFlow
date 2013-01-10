@@ -14,10 +14,11 @@ read.ncdfFlowSet(files = NULL,ncdfFile,flowSetId,
   
   \item{files}{ A character vector giving the source FCS raw file paths.}
   
-  \item{ncdfFile}{A character scalar giving the output file name. By
-    default, It is NULL and the function will generate a random
-    file name, potentially adding the \code{.cdf} suffix unless a file
-    extension is already present. It is only valid when isNewNcFile=TRUE }
+  \item{ncdfFile}{A character scalar giving the output file name. Default is NULL and the function will generate a random
+    file in the temporary folder, potentially adding the \code{.cdf} suffix unless a file
+    extension is already present. It is sometimes useful to specify this file path to avoid the failure of writing large flow data set to cdf file 
+    due to the the shortage of disk space in system temporary folder. 
+    It is only valid when isNewNcFile=TRUE }
     
   \item{flowSetId}{ A character scalar giving the unique ncdfFlowSet ID.}
   

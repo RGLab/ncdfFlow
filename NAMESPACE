@@ -30,7 +30,7 @@ importFrom(flowCore, norm2Filter, read.FCS, read.FCSheader)
 
 importFrom(flowViz, flowViz.par.get, panel.densityplot.flowset)
 
-importFrom(methods,  as, is, new)
+importFrom(methods, as, is, new)
 
 exportClasses(ncdfFlowSet,ncdfFlowList)
 
