@@ -1990,6 +1990,8 @@ HDF5_LIBS="${HDF5_LIBS} -lhdf5 -lhdf5_hl"
 		fi
 		CC=`${R_HOME}/bin/R CMD config CC`
 		CFLAGS=`${R_HOME}/bin/R CMD config CFLAGS`
+		CPPFAGS=`${R_HOME}/bin/R CMD config CPPFLAGS`
+		LDFLAGS=`${R_HOME}/bin/R CMD config LDFLAGS`
 		ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -2802,7 +2804,7 @@ $as_echo "$as_me: compiling netcdf library..." >&6;}
     mkdir "${BUILD_DIR}"
     cd "${BUILD_DIR}"
     CPICFLAGS=`${R_HOME}/bin/R CMD config CPICFLAGS`
-    `${CC} ${CFLAGS} ${CPICFLAGS} -c -I../ -I../include ../liblib/*.c ../libdispatch/*.c ../libsrc/*.c ../libsrc4/*.c`
+    `${CC} ${CFLAGS} ${CPICFLAGS} -c -I../ -I../include ${CPPFLAGS} ../liblib/*.c ../libdispatch/*.c ../libsrc/*.c ../libsrc4/*.c`
     cd "${PKG_DIR}"
 	NETCDF_LIBS="${BUILD_DIR}/*.o"
 
@@ -3318,7 +3320,7 @@ fi
 fi
 
 PKG_CFLAGS="${NETCDF_CFLAGS} ${HDF5_CFLAGS}"
-PKG_LIBS="${NETCDF_LIBS} ${HDF5_LIBS}"
+PKG_LIBS="${NETCDF_LIBS} ${HDF5_LIBS} ${LDFLAGS}"
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: Using the following compilation and linking flags for ncdfFlow" >&5
 $as_echo "$as_me: Using the following compilation and linking flags for ncdfFlow" >&6;}
