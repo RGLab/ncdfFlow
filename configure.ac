@@ -31,10 +31,10 @@ if test ${NC_BOUNDLED}="yes"; then
 	        then
 	                echo 'found ' $BASENETCDFNAME ' header sources and tar archive;using what is there.'
 	        else
-	                echo "untarring boost include tree...";
+	                echo "untarring netcdf include tree...";
 	                gunzip -dc ${NETCDFTGZNAME} | tar xf -;
 	fi;
-	
+
     AC_MSG_NOTICE([compiling netcdf library...])
     
     BUILD_DIR="${BASENETCDFNAME}/build"

@@ -1,2 +1,13 @@
 echo "removing exploded netcdf source..."
-cd src; rm -rf trimmed_netcdf-4.2.1.1
+if [ -e src/trimmed_netcdf-4.2.1.1 ]; then
+	rm -rf src/trimmed_netcdf-4.2.1.1
+fi
+for f in ./config.*; do
+	rm -f $f
+done
+for f in ./autom4*; do
+	rm -rf $f
+done
+if [ -e src/Makevars ]; then
+	rm -f src/Makevars
+fi
