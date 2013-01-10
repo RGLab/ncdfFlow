@@ -20,6 +20,8 @@ HDF5_LIBS="${HDF5_LIBS} -lhdf5 -lhdf5_hl"
 		fi
 		CC=`${R_HOME}/bin/R CMD config CC`
 		CFLAGS=`${R_HOME}/bin/R CMD config CFLAGS`
+		CPPFAGS=`${R_HOME}/bin/R CMD config CPPFLAGS`
+		LDFLAGS=`${R_HOME}/bin/R CMD config LDFLAGS`
 		AC_PROG_CC
 		
 if test ${NC_BOUNDLED}="yes"; then
@@ -41,7 +43,7 @@ if test ${NC_BOUNDLED}="yes"; then
     mkdir "${BUILD_DIR}"
     cd "${BUILD_DIR}"
     CPICFLAGS=`${R_HOME}/bin/R CMD config CPICFLAGS`
-    `${CC} ${CFLAGS} ${CPICFLAGS} -c -I../ -I../include ../liblib/*.c ../libdispatch/*.c ../libsrc/*.c ../libsrc4/*.c`
+    `${CC} ${CFLAGS} ${CPICFLAGS} -c -I../ -I../include ${CPPFLAGS} ../liblib/*.c ../libdispatch/*.c ../libsrc/*.c ../libsrc4/*.c`
     cd "${PKG_DIR}"
 	NETCDF_LIBS="${BUILD_DIR}/*.o"
 
@@ -97,7 +99,7 @@ else
 fi
 
 PKG_CFLAGS="${NETCDF_CFLAGS} ${HDF5_CFLAGS}"
-PKG_LIBS="${NETCDF_LIBS} ${HDF5_LIBS}"
+PKG_LIBS="${NETCDF_LIBS} ${HDF5_LIBS} ${LDFLAGS}"
 
 AC_MSG_NOTICE([Using the following compilation and linking flags for ncdfFlow])
 AC_MSG_NOTICE([	PKG_CFLAGS=${PKG_CFLAGS}])
