@@ -596,7 +596,7 @@ ac_includes_default="\
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 PKG_LIBS
-PKG_CFLAGS
+PKG_CPPFLAGS
 EGREP
 GREP
 CPP
@@ -650,7 +650,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 with_bundled_netcdf
-with_hdf5_lib
+with_hdf5
 with_nc_config
 with_netcdf_include
 with_netcdf_lib
@@ -1273,9 +1273,8 @@ if test -n "$ac_init_help"; then
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-bundled-netcdf=yes/no
-                          whether to use bundled netcdf library
-  --with-hdf5-lib=DIR     location of hdf5 libraries
+  --with-bundled-netcdf   whether to use bundled netcdf library
+  --with-hdf5=DIR         location of hdf5 libraries
   --with-nc-configh=PATH  location of nc-config
   --with-netcdf-include=DIR
                           location of netcdf header files
@@ -1965,7 +1964,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 # Check whether --with-bundled-netcdf was given.
 if test "${with_bundled_netcdf+set}" = set; then :
-  withval=$with_bundled_netcdf; NC_BOUNDLED="${with-bundled-netcdf}"
+  withval=$with_bundled_netcdf; NC_BOUNDLED="${withval}"
 else
   NC_BOUNDLED="yes"
 
@@ -1973,13 +1972,18 @@ fi
 
 # library path for HDF5
 
-# Check whether --with-hdf5-lib was given.
-if test "${with_hdf5_lib+set}" = set; then :
-  withval=$with_hdf5_lib; hdf5_lib_path=$withval
+# Check whether --with-hdf5 was given.
+if test "${with_hdf5+set}" = set; then :
+  withval=$with_hdf5; hdf5_path="${withval}"
+
 fi
 
-if test -n "$hdf5_lib_path"; then
-   HDF5_LIBS="-L${hdf5_lib_path}"
+if test -n "$hdf5_path"; then
+	HDF5_LIBS="-L${hdf5_path}/lib64 -L${hdf5_path}/lib"
+	HDF5_CPPFLAGS="-I${hdf5_path}/include"
+else
+	HDF5_LIBS="-L/usr/lib64 -L$/usr/lib -L/usr/local/lib64 -L/usr/local/lib"
+	HDF5_CPPFLAGS="-I/usr/include -I/usr/local/include"
 fi
 HDF5_LIBS="${HDF5_LIBS} -lhdf5 -lhdf5_hl"
 
@@ -2883,10 +2887,10 @@ if test "${with_netcdf_include+set}" = set; then :
 fi
 
 		if test -n "${netcdf_include_path}"; then
-		   NETCDF_CFLAGS="-I${netcdf_include_path}"
+		   NETCDF_CPPFLAGS="-I${netcdf_include_path}"
 		else
 			if test -n ${NETCDF_INCLUDE}; then
-			   NETCDF_CFLAGS="-I${NETCDF_INCLUDE}"
+			   NETCDF_CPPFLAGS="-I${NETCDF_INCLUDE}"
 			fi
 		fi
 
@@ -3319,13 +3323,13 @@ fi
 	fi
 fi
 
-PKG_CFLAGS="${NETCDF_CFLAGS} ${HDF5_CFLAGS}"
+PKG_CPPFLAGS="${NETCDF_CPPFLAGS} ${HDF5_CPPFLAGS}"
 PKG_LIBS="${NETCDF_LIBS} ${HDF5_LIBS} ${LDFLAGS}"
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: Using the following compilation and linking flags for ncdfFlow" >&5
 $as_echo "$as_me: Using the following compilation and linking flags for ncdfFlow" >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}: 	PKG_CFLAGS=${PKG_CFLAGS}" >&5
-$as_echo "$as_me: 	PKG_CFLAGS=${PKG_CFLAGS}" >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}: 	PKG_CPPFLAGS=${PKG_CPPFLAGS}" >&5
+$as_echo "$as_me: 	PKG_CPPFLAGS=${PKG_CPPFLAGS}" >&6;}
 { $as_echo "$as_me:${as_lineno-$LINENO}: 	PKG_LIBS=${PKG_LIBS}" >&5
 $as_echo "$as_me: 	PKG_LIBS=${PKG_LIBS}" >&6;}
 
