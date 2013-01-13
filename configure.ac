@@ -1,15 +1,20 @@
 AC_INIT([ncdfFlow],1.5.10,wjiang2@fhcrc.org)
 AC_ARG_WITH([bundled-netcdf],
-    AC_HELP_STRING([--with-bundled-netcdf=yes/no], [whether to use bundled netcdf library]),
-    [NC_BOUNDLED="${with-bundled-netcdf}"],
+    AC_HELP_STRING([--with-bundled-netcdf], [whether to use bundled netcdf library]),
+    [NC_BOUNDLED="${withval}"],
     [NC_BOUNDLED="yes"]
 )
 # library path for HDF5
-AC_ARG_WITH([hdf5-lib],
-    AC_HELP_STRING([--with-hdf5-lib=DIR], [location of hdf5 libraries]),
-    [hdf5_lib_path=$withval])
-if test -n "$hdf5_lib_path"; then
-   HDF5_LIBS="-L${hdf5_lib_path}"
+AC_ARG_WITH([hdf5],
+    AC_HELP_STRING([--with-hdf5=DIR], [location of hdf5 libraries]),
+    [hdf5_path="${withval}"]
+)
+if test -n "$hdf5_path"; then
+	HDF5_LIBS="-L${hdf5_path}/lib64 -L${hdf5_path}/lib"
+	HDF5_CPPFLAGS="-I${hdf5_path}/include"
+else
+	HDF5_LIBS="-L/usr/lib64 -L$/usr/lib -L/usr/local/lib64 -L/usr/local/lib"
+	HDF5_CPPFLAGS="-I/usr/include -I/usr/local/include"
 fi
 HDF5_LIBS="${HDF5_LIBS} -lhdf5 -lhdf5_hl"
 
@@ -77,10 +82,10 @@ else
 				   [location of netcdf header files]),
 		    [netcdf_include_path=$withval])
 		if test -n "${netcdf_include_path}"; then
-		   NETCDF_CFLAGS="-I${netcdf_include_path}"
+		   NETCDF_CPPFLAGS="-I${netcdf_include_path}"
 		else
 			if test -n ${NETCDF_INCLUDE}; then
-			   NETCDF_CFLAGS="-I${NETCDF_INCLUDE}"
+			   NETCDF_CPPFLAGS="-I${NETCDF_INCLUDE}"
 			fi
 		fi
 		AC_CHECK_HEADERS(netcdf.h, , AC_MSG_ERROR(netcdf header netcdf.h not found))
@@ -98,13 +103,13 @@ else
 	fi
 fi
 
-PKG_CFLAGS="${NETCDF_CFLAGS} ${HDF5_CFLAGS}"
+PKG_CPPFLAGS="${NETCDF_CPPFLAGS} ${HDF5_CPPFLAGS}"
 PKG_LIBS="${NETCDF_LIBS} ${HDF5_LIBS} ${LDFLAGS}"
 
 AC_MSG_NOTICE([Using the following compilation and linking flags for ncdfFlow])
-AC_MSG_NOTICE([	PKG_CFLAGS=${PKG_CFLAGS}])
+AC_MSG_NOTICE([	PKG_CPPFLAGS=${PKG_CPPFLAGS}])
 AC_MSG_NOTICE([	PKG_LIBS=${PKG_LIBS}])
-AC_SUBST(PKG_CFLAGS)
+AC_SUBST(PKG_CPPFLAGS)
 AC_SUBST(PKG_LIBS)
 
 AC_OUTPUT(src/Makevars)
