@@ -20,6 +20,7 @@ as("ncdfFlowList",nclist = .... #a list of ncdfFlowSet objects)
  	
     \item{show}{display object summary.}
      \item{rbind2}{combine a list of ncdfFlowSets into one.}
+     }
     
 }
 
