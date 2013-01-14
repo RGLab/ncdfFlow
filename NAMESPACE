@@ -34,7 +34,7 @@ importFrom(methods, as, is, new)
 
 exportClasses(ncdfFlowSet,ncdfFlowList)
 
-export(ncfsUnlink,clone.ncdfFlowSet,read.ncdfFlowSet,ncdfExprs,NcdfFlowSetToFlowSet,ncdfFlowList)
+export(ncfsUnlink,clone.ncdfFlowSet,read.ncdfFlowSet,ncdfExprs,NcdfFlowSetToFlowSet)
 
 exportMethods("show","[[","[","colnames","parameters","compensate","rbind2",
 				"transform","ncfsApply","Subset","split","getIndices","updateIndices"

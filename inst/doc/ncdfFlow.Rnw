@@ -306,10 +306,12 @@ ncList[[2]][[1]]
 ncList[[1]][[1]]
 @
 
-Keep in mind that the \Robject{ncdfFlowSet} objects contained in \Robject{ncdfFlowList} share the 
-same ncdf file as the original \Robject{ncdfFlowSet}. So deleting \Robject{ncdfFlowList} by \Rfunction{ncfsUnlink} 
-is also going to make the data not accessible to the original \Robject{ncdfFlowSet}. 
-
+Note that the \Robject{ncdfFlowSet} objects contained in \Robject{ncdfFlowList} by default share the 
+same ncdf file as the original \Robject{ncdfFlowSet}. In order to keep its own data copy, try to set argument \Robject{isNew} to "TRUE"
+in \Robject{split} method. 
+<<split, echo=true>>=
+ncList_new<-split(nc1,fr,isNew=TRUE)
+@
 
 
 \clearpage

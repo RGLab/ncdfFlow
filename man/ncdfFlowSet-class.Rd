@@ -22,8 +22,6 @@
 \alias{rbind2}
 \alias{rbind2,ncdfFlowSet,flowFrame-method}
 \alias{rbind2,ncdfFlowSet,ncdfFlowSet-method}
-\alias{rbind2,ncdfFlowList-method}
-\alias{rbind2,ncdfFlowList,ANY-method}
 \alias{show,ncdfFlowSet-method}
 \alias{split}
 \alias{split,ncdfFlowSet,factor-method}
@@ -182,7 +180,7 @@ Most of the other flowSet methods are not listed here,but they all work as the s
 					}
     \item{rbind2}{similar to \code{\link[=rbind2,flowSet,flowSet-method]{flowCore:rbind2}}. It returns a new ncdfFlowSet with a new cdf file that combines two raw datasets.
      				It is recommended to construct a ncdfFlowList and apply rbind2 to it directly when combining more than two ncdfFlowSets.
-     				Because using "do.call" on a list ncdfFlowSets will create one cdf file for every two ncdfFlowSets,which is not efficient.      
+     				Because using "do.call" on a list ncdfFlowSets will create one cdf file for every pair of ncdfFlowSets,which is not efficient.      
      				}
    
     \item{split}{equivalent to \code{\link[=split,flowSet,ANY-method]{flowCore:split}}. It returns a new ncdfFlowSet object without creating new cdf raw data file but assigning logical indices to subset the original raw data.}

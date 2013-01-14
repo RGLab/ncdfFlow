@@ -113,8 +113,8 @@ setMethod("rbind2",
 		definition=function(x,ncdfFile=tempfile(pattern = "ncfs"))
 		{
 			
-			nclist<-x@datalist
-		
+#			nclist<-x@datalist
+			nclist<-x
 
 			sn <-unlist(lapply(nclist, sampleNames),use.names=F)
 			isDuplicated<-duplicated(sn)
