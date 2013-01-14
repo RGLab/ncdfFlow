@@ -1273,9 +1273,13 @@ if test -n "$ac_init_help"; then
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-bundled-netcdf   whether to use bundled netcdf library
+  --with-bundled-netcdf=yes/no
+
+                          whether to build ncdfFlow with the bundled netcdf
+                          library
+
   --with-hdf5=DIR         location of hdf5 libraries
-  --with-nc-configh=PATH  location of nc-config
+  --with-nc-config=PATH   location of nc-config
   --with-netcdf-include=DIR
                           location of netcdf header files
   --with-netcdf-lib=DIR   location of netcdf libraries
@@ -1970,6 +1974,7 @@ else
 
 fi
 
+
 # library path for HDF5
 
 # Check whether --with-hdf5 was given.
@@ -1979,11 +1984,9 @@ if test "${with_hdf5+set}" = set; then :
 fi
 
 if test -n "$hdf5_path"; then
-	HDF5_LIBS="-L${hdf5_path}/lib64 -L${hdf5_path}/lib"
-	HDF5_CPPFLAGS="-I${hdf5_path}/include"
+	HDF5_LIBS="-L${hdf5_path}/lib64"
 else
-	HDF5_LIBS="-L/usr/lib64 -L$/usr/lib -L/usr/local/lib64 -L/usr/local/lib"
-	HDF5_CPPFLAGS="-I/usr/include -I/usr/local/include"
+	HDF5_LIBS="-L/usr/lib64 -L/usr/local/lib64"
 fi
 HDF5_LIBS="${HDF5_LIBS} -lhdf5 -lhdf5_hl"
 
@@ -2788,7 +2791,9 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-if test ${NC_BOUNDLED}="yes"; then
+
+if test ${NC_BOUNDLED} = "yes"; then
+
 	PKG_DIR=`pwd`
 	cd src
 	BASENETCDFNAME="trimmed_netcdf-4.2.1.1"
@@ -2870,15 +2875,15 @@ $as_echo "$as_me: WARNING: 'NC_CONFIG' is set to an invalid value and will be ig
 	fi
 
 	if test -n "${NC_CONFIG}"; then
-	  PKG_CPPFLAGS=`${NC_CONFIG} --cflags`
-	  PKG_LIBS=`${NC_CONFIG} --libs`
+
+	  NETCDF_CPPFLAGS=`${NC_CONFIG} --cflags`
+	  NETCDF_LIBS=`${NC_CONFIG} --libs`
 	  NC4=`${NC_CONFIG} --has-nc4`
 		if  test $NC4 != "yes"; then
 			echo "Need netcdf version 4 linked against hdf5"
 			exit 1
 		fi
 	else
-
 
 
 # Check whether --with-netcdf-include was given.
@@ -3323,7 +3328,7 @@ fi
 	fi
 fi
 
-PKG_CPPFLAGS="${NETCDF_CPPFLAGS} ${HDF5_CPPFLAGS}"
+PKG_CPPFLAGS="${NETCDF_CPPFLAGS}"
 PKG_LIBS="${NETCDF_LIBS} ${HDF5_LIBS} ${LDFLAGS}"
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: Using the following compilation and linking flags for ncdfFlow" >&5

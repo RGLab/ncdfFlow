@@ -29,26 +29,6 @@ setClass("ncdfFlowSet",
 
 
 
-				
-setClass("ncdfFlowList",
-        representation = representation(
-                sampleNames = "character",
-				datalist = "list"),
-        prototype = list(sampleNames = character(0),
-				datalist=list()),
-        validity = function(object) {
+#this class exists for the purpose of method dispatching (e.g. rbind2)
+setClass("ncdfFlowList",contains="list")
 
-        })
-#
-#
-#setClass("projDetails",
-#         representation = representation(
-#                name = "character",
-#                flowSet = "ncdfFlowSet",
-#                processTree = "graph",
-#                opsObject = "list"))
-#
-#setClass("flowProject", 
-#          representation = representation(env = "environment"))
-
-    

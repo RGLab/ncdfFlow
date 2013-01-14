@@ -113,8 +113,8 @@ setMethod("split",
 				varMetadata(finalRes[[np]])["population", "labelDescription"] <-
 						"population identifier produced by splitting"
 			}
-#			
-			res<-ncdfFlowList(finalRes)
+#			browser()
+			res<-as(finalRes,"ncdfFlowList")
 			return(res)
 		})
 
@@ -146,7 +146,9 @@ setMethod("split",
 						"Split"
 			}
 			names(res) <- names(gind)
-			res<-ncdfFlowList(res)
+#			res<-ncdfFlowList(res)
+			res<-as(res,"ncdfFlowList")
+			
 			return(res)
 		})
 
