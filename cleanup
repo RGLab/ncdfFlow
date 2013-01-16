@@ -1,13 +1,9 @@
-echo "removing exploded netcdf source..."
+#echo "removing exploded netcdf source..."
 if [ -e src/trimmed_netcdf-4.2.1.1 ]; then
-	rm -rf src/trimmed_netcdf-4.2.1.1
+	echo "removing .o files"
+	rm -rf src/trimmed_netcdf-4.2.1.1/*/*.o
 fi
-for f in ./config.*; do
-	rm -f $f
-done
-for f in ./autom4*; do
-	rm -rf $f
-done
-if [ -e src/Makevars ]; then
-	rm -f src/Makevars
-fi
+#if [ -e src/Makevars ]; then
+	#echo "removing Makevars file"
+	#rm -f src/Makevars
+#fi

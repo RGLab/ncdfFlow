@@ -1,3 +1,22 @@
-PKG_LIBS=@PKG_LIBS@
-PKG_CPPFLAGS=@PKG_CPPFLAGS@
+netcdf_basename=@netcdf_basename@
 
+netcdf_cflags=-I$(netcdf_basename)/ -I$(netcdf_basename)/include
+netcdf_src=${wildcard \
+						${netcdf_basename}/liblib/*.c \
+						${netcdf_basename}/libdispatch/*.c \
+						${netcdf_basename}/libsrc/*.c \
+						${netcdf_basename}/libsrc4/*.c \
+				}
+				
+netcdf_objs=${netcdf_src:.c=.o}
+
+PKG_CPPFLAGS=@PKG_CPPFLAGS@ ${netcdf_cflags}
+
+PKG_LIBS=@PKG_LIBS@ ${netcdf_objs}
+
+
+.PHONY: all
+
+all: ${SHLIB}
+
+${SHLIB} : ${netcdf_objs}
