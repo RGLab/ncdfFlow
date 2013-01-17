@@ -16,9 +16,9 @@ staticLinking <- function() {
 ## plus optinally an arch-specific directory on system building multi-arch
 ncdfFlowLdPath <- function() {
     if (nzchar(.Platform$r_arch)) {	## eg amd64, ia64, mips
-        path <- ncdfFlow.system.file("libs",.Platform$r_arch)
+        path <- ncdfFlow.system.file("lib",.Platform$r_arch)
     } else {
-        path <- ncdfFlow.system.file("libs")
+        path <- ncdfFlow.system.file("lib")
     }
     path
 }
@@ -32,19 +32,18 @@ ncdfFlowLdPath <- function() {
 ##                    Note that this is probably being called from LdFlags()
 ncdfFlowLdFlags <- function(static=staticLinking()) {
     ncdfFlowdir <- ncdfFlowLdPath()
-#    if (static) {                               # static is default on Windows and OS X
-#        flags <- paste(rcppdir, "/libncdfFlow.a", sep="")
+    if (static) {                               # static is default on Windows and OS X
+        flags <- paste(ncdfFlowdir, "/libncdfFlow.a", sep="")
 #        #if (.Platform$OS.type=="windows") {
 #        #    flags <- shQuote(flags)
 #        #}
-#    } else {					# else for dynamic linking
-#        flags <- paste("-L", ncdfFlowdir, " ncdfFlow.so", sep="") # baseline setting
-		flags <- file.path(ncdfFlowdir, "ncdfFlow.so") # baseline setting
-#        if ((.Platform$OS.type == "unix") &&    # on Linux, we can use rpath to encode path
-#            (length(grep("^linux",R.version$os)))) {
-#            flags <- paste(flags, " -Wl,-rpath,", rcppdir, sep="")
-#        }
-#    }
+    } else {					# else for dynamic linking
+        flags <- paste("-L", ncdfFlowdir, " -lncdfFlow", sep="") # baseline setting
+        if ((.Platform$OS.type == "unix") &&    # on Linux, we can use rpath to encode path
+            (length(grep("^linux",R.version$os)))) {
+            flags <- paste(flags, " -Wl,-rpath,", ncdfFlowdir, sep="")
+        }
+    }
     invisible(flags)
 }
 
