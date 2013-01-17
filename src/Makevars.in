@@ -28,10 +28,15 @@ userLibrary: 	$(USERLIB) $(USERLIBST)
 		cp $(USERLIBST) $(USERDIR)$(R_ARCH)
 		rm $(USERLIB) $(USERLIBST)
 
-$(USERLIB):$(OBJECTS) $(netcdf_objs)
-		@echo target $(USERLIB)
-		$(SHLIB_LD) -o $(USERLIB) $(SHLIB_LDFLAGS) $(OBJECTS) $(netcdf_objs)
-		@if test -e "/usr/bin/install_name_tool"; then /usr/bin/install_name_tool -id $(R_PACKAGE_DIR)/lib$(R_ARCH)/$(USERLIB) $(USERLIB); fi
+#simply copy the SHLIB instead of rebuilding it
+$(USERLIB):$(SHLIB)
+	cp $(SHLIB) $(USERLIB) 
+
+#note that $ALL_LIBS contains $(netcdf_objs) already
+#$(USERLIB):$(OBJECTS) $(netcdf_objs)
+#		@echo target $(USERLIB)
+#		$(SHLIB_LD) -o $(USERLIB) $(SHLIB_LDFLAGS) $(OBJECTS) $(ALL_LIBS) 
+#		@if test -e "/usr/bin/install_name_tool"; then /usr/bin/install_name_tool -id $(R_PACKAGE_DIR)/lib$(R_ARCH)/$(USERLIB) $(USERLIB); fi
 
 $(USERLIBST): 	$(OBJECTS) $(netcdf_objs)
 		@echo target $@
