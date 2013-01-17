@@ -37,7 +37,7 @@ Maintainer: Mike Jiang <wjiang2@fhcrc.org>
 }
 \examples{
 data(GvHD)
-GvHD <- GvHD[pData(GvHD)$Patient %in% 6:7][1:4]
+GvHD <- GvHD[pData(GvHD)$Patient \%in\% 6:7][1:4]
 nc1<-ncdfFlowSet(GvHD)
 
 ##splitting by a gate
