@@ -1216,7 +1216,7 @@ if test -n "$ac_init_help"; then
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-hdf5=DIR         location of hdf5 libraries
+  --with-hdf5=DIR         prefix of hdf5 libraries
 
 Report bugs to <wjiang2@fhcrc.org>.
 _ACEOF
@@ -1664,20 +1664,55 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 # Check whether --with-hdf5 was given.
 if test "${with_hdf5+set}" = set; then :
-  withval=$with_hdf5; hdf5_path="${withval}"
+  withval=$with_hdf5; HDF5_PREFIX="${withval}"
 
 fi
 
-	if test -n "$hdf5_path"; then
-		HDF5_LIBS="-L${hdf5_path}/lib64"
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: hdf5 library path:${HDF5_LIBS}" >&5
-$as_echo "$as_me: hdf5 library path:${HDF5_LIBS}" >&6;}
+	HDF5_FILE_TOTEST="libhdf5.so"
+	#if prefix is set by user then search for libhdf5 under that path
+	if test -n "${HDF5_PREFIX}"; then
+			for HDF5_LIB_PATH in lib lib64
+			do
+			HDF5_LIB_PATH_ABS=${HDF5_PREFIX}/${HDF5_LIB_PATH}
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: search for hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&5
+$as_echo "$as_me: search for hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&6;}
+			if test -e ${HDF5_LIB_PATH_ABS}/${HDF5_LIB_TOTEST}; then
+				HDF5_LIBS="-L${HDF5_LIB_PATH_ABS}"
+				HDF5_LIBS="${HDF5_LIBS} -lhdf5 -lhdf5_hl"
+				HDF5_CFLAGS="-I${HDF5_PREFIX}/include"
+				{ $as_echo "$as_me:${as_lineno-$LINENO}: found hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&5
+$as_echo "$as_me: found hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&6;}
+				break;
+			fi
+			done
+	# if prefix not provided,then search some default standard location
 	else
-		HDF5_LIBS="-L/usr/lib64 -L/usr/local/lib64"
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: trying default hdf5 library path:${HDF5_LIBS}" >&5
-$as_echo "$as_me: trying default hdf5 library path:${HDF5_LIBS}" >&6;}
+		for HDF5_PREFIX in "/usr" "/usr/local"
+		do
+			for HDF5_LIB_PATH in lib lib64
+			do
+			HDF5_LIB_PATH_ABS=${HDF5_PREFIX}/${HDF5_LIB_PATH}
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: search for hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&5
+$as_echo "$as_me: search for hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&6;}
+			if test -e ${HDF5_LIB_PATH_ABS}/${HDF5_LIB_TOTEST}; then
+				HDF5_LIBS="-L${HDF5_LIB_PATH_ABS}"
+				HDF5_LIBS="${HDF5_LIBS} -lhdf5 -lhdf5_hl"
+				HDF5_CFLAGS="-I${HDF5_PREFIX}/include"
+				{ $as_echo "$as_me:${as_lineno-$LINENO}: found hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&5
+$as_echo "$as_me: found hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&6;}
+				break;
+			fi
+			done
+		if test -n "${HDF5_LIBS}"; then
+			break
+		fi
+		done
 	fi
-	HDF5_LIBS="${HDF5_LIBS} -lhdf5 -lhdf5_hl"
+
+	if test -z "${HDF5_LIBS}"; then
+			as_fn_error "hdf5 library not found in \"${HDF5_PREFIX}\"" "$LINENO" 5
+	fi
+
 
 
 
@@ -1696,7 +1731,7 @@ $as_echo "$as_me: untarring netcdf include tree..." >&6;}
 fi
 cd ../
 
-PKG_CPPFLAGS=
+PKG_CPPFLAGS=${HDF5_CFLAGS}
 PKG_LIBS="${HDF5_LIBS}"
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: Using the following compilation and linking flags for ncdfFlow" >&5
