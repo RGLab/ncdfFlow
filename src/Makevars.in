@@ -22,26 +22,23 @@ all: 	$(SHLIB) userLibrary
 
 $(SHLIB): $(OBJECTS) $(netcdf_objs)
 		
-userLibrary: 	$(USERLIB) $(USERLIBST)
+userLibrary: 	$(USERLIB)
 		-@if test ! -e $(USERDIR)$(R_ARCH); then mkdir -p $(USERDIR)$(R_ARCH); fi
 		cp $(USERLIB) $(USERDIR)$(R_ARCH)
-		cp $(USERLIBST) $(USERDIR)$(R_ARCH)
-		rm $(USERLIB) $(USERLIBST)
+		rm $(USERLIB)
 
 #simply copy the SHLIB instead of rebuilding it
+#make sure to insert the full path of lib since mac has problem to find it at run time
 $(USERLIB):$(SHLIB)
 	cp $(SHLIB) $(USERLIB) 
-
 #note that $ALL_LIBS contains $(netcdf_objs) already
-#$(USERLIB):$(OBJECTS) $(netcdf_objs)
-#		@echo target $(USERLIB)
-#		$(SHLIB_LD) -o $(USERLIB) $(SHLIB_LDFLAGS) $(OBJECTS) $(ALL_LIBS) 
-#		@if test -e "/usr/bin/install_name_tool"; then /usr/bin/install_name_tool -id $(R_PACKAGE_DIR)/lib$(R_ARCH)/$(USERLIB) $(USERLIB); fi
+		@if test -e "/usr/bin/install_name_tool"; then /usr/bin/install_name_tool -id $(R_PACKAGE_DIR)/lib$(R_ARCH)/$(USERLIB) $(USERLIB); fi
 
-$(USERLIBST): 	$(OBJECTS) $(netcdf_objs)
-		@echo target $@
-		$(AR) rcs $(USERLIBST) $(OBJECTS) $(netcdf_objs)
-		@if test -n "$(RANLIB)"; then $(RANLIB) $(USERLIBST); fi
+#static lib doesn't work since it misses the info of hdf5
+#$(USERLIBST): 	$(OBJECTS) $(netcdf_objs)
+#		@echo target $@
+#		$(AR) rcs $(USERLIBST) $(OBJECTS) $(netcdf_objs)
+#		@if test -n "$(RANLIB)"; then $(RANLIB) $(USERLIBST); fi
 
 .PHONY: 	all clean userLibrary
 
