@@ -11,7 +11,7 @@ netcdf_src=${wildcard \
 netcdf_objs=${netcdf_src:.c=.o}
 
 PKG_CPPFLAGS=@PKG_CPPFLAGS@ ${netcdf_cflags}
-PKG_LIBS=@PKG_LIBS@ ${netcdf_objs}
+PKG_LIBS=${netcdf_objs} @PKG_LIBS@ 
 
 USERDIR =	../inst/lib
 USERLIB	=	libncdfFlow$(DYLIB_EXT)
