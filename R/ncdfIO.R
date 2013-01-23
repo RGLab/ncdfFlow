@@ -69,7 +69,13 @@ readIndice<-function(ncIndice,Node,nodeCount=1)
 ############################################################################################
 # the following routines are IO for ncdfFlowSet object to cdf file
 ##############################################################################################
-read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TRUE,isSaveMeta=FALSE,phenoData) 
+read.ncdfFlowSet <- function(files = NULL
+								,ncdfFile,flowSetId=""
+								,isWriteSlice= TRUE
+								,isSaveMeta=FALSE
+								,phenoData
+								,channels=NULL
+								,...) #dots to be passed to read.FCS
 {
 #	
 	#remove nonexisting files
@@ -96,20 +102,68 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 	ncdfFile<-path.expand(ncdfFile)
 	
 	file.names<-basename(files)
-	## obtain event counts and  number of parameters
-	bigFile <- files[which.max(file.info(files)[,"size"])]
-	tmp <- read.FCSheader(bigFile)[[1]]
-	maxEvents <- as.integer(tmp[["$TOT"]])
-	maxChannels <- as.integer(tmp[["$PAR"]])
-	maxSamples <- length(files)
-	channelNames <- unlist(lapply(1:maxChannels,function(i)flowCore:::readFCSgetPar(tmp,paste("$P",i,"N",sep="")))) 
-	channelNames <- unname(channelNames)
+#	browser()
+	nFile<-length(files)
+	events<-vector("integer",nFile)
+	channels.all<-vector("character",nFile)
+	message("Determine the max total events by reading FCS headers ...")
+	for(i in 1:nFile){
+		curFile<-files[i]
+		txt<-flowCore:::read.FCSheader(curFile)[[1]]
+		nChannels <- as.integer(txt[["$PAR"]])
+		channelNames <- unlist(lapply(1:nChannels,function(i)flowCore:::readFCSgetPar(txt,paste("$P",i,"N",sep="")))) 
+		channelNames<- unname(channelNames)
+		if(!is.null(channels))#check if channel names contains the specified one 
+		{
+			channel.notFound<-!is.element(channels,channelNames)
+			if(any(channel.notFound))
+				stop(channels[channel.notFound],"not Found in ",basename(curFile)," !")
+		}else
+			channels.all[i]<-paste(channelNames,collapse="|") #save the channel names to list to find common ones later
+		
+		events[i]<-as.integer(txt[["$TOT"]])
+	}
+	#try to find common channels among fcs files
+	if(is.null(channels))
+	{
+		
+		chnls_unique<-names(table(channels.all))
+		chnls_list<-lapply(chnls_unique,function(x){
+					strsplit(x,split="\\|")[[1]]
+				})
+		chnls_common<-chnls_list[[1]]
+		
+		if(length(chnls_list)==1)
+			message("All FCS files have the same following channels:\n"
+					,paste(chnls_common,collapse="\n")
+					)
+		else
+		{
+			message("Not all FCS files have the same channels\n")
+					
+			for(i in 2:length(chnls_list))
+			{
+				chnls_common<-intersect(chnls_common,chnls_list[[i]])
+			}	
+			message("Only load the following common channels:\n"
+					,paste(chnls_common,collapse="\n")
+			)
+		}
+	}
+#	bigFile <- files[which.max(file.info(files)[,"size"])]
+	tmp <- read.FCSheader(files[1])[[1]]
+#	maxEvents <- as.integer(tmp[["$TOT"]])
+#	maxChannels <- as.integer(tmp[["$PAR"]])
+	maxEvents<-max(events)
+	message("Maximum total events: ",maxEvents)
+#	channelNames <- unlist(lapply(1:maxChannels,function(i)flowCore:::readFCSgetPar(tmp,paste("$P",i,"N",sep="")))) 
+#	channelNames <- unname(channelNames)
 	#make a dummy parameters slot for every frames to pass the validity check of flowSet class
-	params <- flowCore:::makeFCSparameters(channelNames,tmp, transformation=F, scale=F,decades=0, realMin=-111)		
+	params <- flowCore:::makeFCSparameters(chnls_common,tmp, transformation=F, scale=F,decades=0, realMin=-111)		
 	#assign metaData to two environment slots
 	e1<-new.env(hash=TRUE, parent=emptyenv())
 	e2<-new.env(hash=TRUE, parent=emptyenv())
-	for(i in seq_len(maxSamples)) {
+	for(i in seq_len(nFile)) {
 		assign(x=file.names[i]
 				,value=new("flowFrame",parameters=params)
 				,envir=e1
@@ -139,14 +193,14 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 	#create ncdf ncdf object 
 	ncfs<-new("ncdfFlowSet"
 				,frames = e1
-				, colnames = channelNames 
+				, colnames = chnls_common 
 				,flowSetId = flowSetId
 				, file = ncdfFile
 				,maxEvents=maxEvents
 				,phenoData=pd
 				,indices=e2
 				,origSampleVector=guids
-				,origColnames=channelNames
+				,origColnames=chnls_common
 			)
 
 	
@@ -156,7 +210,7 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 	#create empty cdf file
 #	
 	msgCreate <- .Call(dll$createFile, ncdfFile, as.integer(maxEvents), 
-					as.integer(maxChannels), as.integer(maxSamples),
+					length(chnls_common), as.integer(nFile),
 					as.integer(metaSize),as.logical(compress))
 	if(!msgCreate)stop()
 #	
@@ -167,10 +221,16 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 	#############################################################
 	if(isWriteSlice)
 	{
-		lapply(seq_len(maxSamples), function(i, verbose)
+		lapply(seq_len(nFile), function(i, verbose)
 				{
-#					print(paste("writing ",guids[i]),"to cdf")
-					addFrame(ncfs,read.FCS(files[i]),guids[i])
+					curFile<-files[i]
+					message("writing data:",basename(curFile))
+					addFrame(ncfs
+							,read.FCS(curFile
+										,column.pattern=paste(chnls_common,collapse="|")
+										,...)
+							,guids[i]
+							)
 				}, verbose = TRUE)
 	}else
 	{
@@ -185,6 +245,7 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 	if(isSaveMeta)
 		ncdfFlowSet_sync(ncfs)
 	
+	message("done!")
 	return(ncfs)
 }
 
