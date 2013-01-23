@@ -267,9 +267,18 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 	##when isNew==TRUE, the actual data reflected by the current view of ncdfFlowSet is created 
 	##and the new ncfs is no longer associated to the orginal one. which mean it is no longer a view of subset
 	## of the original cdf repository
+	
+	
 	if(isNew)
 	{
-		orig<-ncfs#TODO:need deep copying of frames evironments
+		orig<-ncfs#
+
+		#update frames info
+		ncfs@frames<-new.env(hash=TRUE, parent=emptyenv())
+		for(i in sampleNames(orig))
+		{
+			assign(i,orig[[i]],ncfs@frames)
+		}
 		
 		if(is.null(ncdfFile))
 			ncdfFile<-tempfile(pattern = "ncfs")
