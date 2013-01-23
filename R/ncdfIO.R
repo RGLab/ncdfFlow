@@ -102,57 +102,59 @@ read.ncdfFlowSet <- function(files = NULL,ncdfFile,flowSetId="",isWriteSlice= TR
 	maxEvents <- as.integer(tmp[["$TOT"]])
 	maxChannels <- as.integer(tmp[["$PAR"]])
 	maxSamples <- length(files)
-	### read the big fcs file to get the channel names 
-	tmp  <- read.FCS(bigFile)
-	channelNames <- as.character(as.character(parameters(tmp)@data[,"name"])) 
-	
-	#get metaData from each fcs 
-	pars <- lapply(seq_len(maxSamples), function(i, verbose){
-				tmp <- read.FCS(files[i])
-				
-				list("description" = description(tmp), "parameters" = parameters(tmp), 
-						"guids" = identifier(tmp))
-				
-			}, verbose = TRUE)
-	
-	guids <- list()
+	channelNames <- unlist(lapply(1:maxChannels,function(i)flowCore:::readFCSgetPar(tmp,paste("$P",i,"N",sep="")))) 
+	channelNames <- unname(channelNames)
+	#make a dummy parameters slot for every frames to pass the validity check of flowSet class
+	params <- flowCore:::makeFCSparameters(channelNames,tmp, transformation=F, scale=F,decades=0, realMin=-111)		
 	#assign metaData to two environment slots
 	e1<-new.env(hash=TRUE, parent=emptyenv())
 	e2<-new.env(hash=TRUE, parent=emptyenv())
 	for(i in seq_len(maxSamples)) {
-		
-		assign(x=file.names[i],value=new("flowFrame", exprs=matrix(numeric(0),nrow=0,ncol=0), description=pars[[i]][["description"]],
-						parameters=pars[[i]][["parameters"]]),envir=e1) 
+		assign(x=file.names[i]
+				,value=new("flowFrame",parameters=params)
+				,envir=e1
+				) 
 		assign(file.names[i],rep(TRUE,maxEvents),e2)
-		guids[[i]] <- pars[[i]][["guids"]]
-		
 	}
+	
 	if(!missing(phenoData)){
-		guids <- sampleNames(phenoData)
+		guids <- sampleNames(pd)
+		pd<-phenoData
 	}else{
 		guids <- basename(files)
 #		
-		phenoData = new("AnnotatedDataFrame", data = data.frame(name=guids,row.names=guids,stringsAsFactors=FALSE), 
-				varMetadata = data.frame(labelDescription="Name",row.names="name"))
+		pd <- AnnotatedDataFrame(data = data.frame(name=guids
+											,row.names=guids
+											,stringsAsFactors=FALSE
+											)
+						,varMetadata = data.frame(labelDescription="Name"
+													,row.names="name")
+						)
+						
 	}
 	
 	if(any(duplicated(guids)))
 		guids <- make.unique(guids)
-#			
+	
 	#create ncdf ncdf object 
-	ncfs<-new("ncdfFlowSet", file = ncdfFile, colnames = channelNames, 
-			frames = e1,maxEvents=maxEvents,flowSetId = flowSetId,phenoData=phenoData
-			,indices=e2,origSampleVector=guids,origColnames=channelNames)
+	ncfs<-new("ncdfFlowSet"
+				,frames = e1
+				, colnames = channelNames 
+				,flowSetId = flowSetId
+				, file = ncdfFile
+				,maxEvents=maxEvents
+				,phenoData=pd
+				,indices=e2
+				,origSampleVector=guids
+				,origColnames=channelNames
+			)
 
 	
 	#get the meta size
 	metaSize<-ifelse(isSaveMeta,length(serialize(ncfs,NULL)),0)
-	
-	
 
 	#create empty cdf file
 #	
-	
 	msgCreate <- .Call(dll$createFile, ncdfFile, as.integer(maxEvents), 
 					as.integer(maxChannels), as.integer(maxSamples),
 					as.integer(metaSize),as.logical(compress))
