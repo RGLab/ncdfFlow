@@ -8,7 +8,7 @@ read FCS files from the disk and load them into a ncdfFlowSet object
 }
 \usage{
 read.ncdfFlowSet(files = NULL,ncdfFile,flowSetId,
-	isWriteSlice=TRUE,isSaveMeta=FALSE,phenoData) 
+	isWriteSlice=TRUE,isSaveMeta=FALSE,phenoData,channels=NULL,...) 
 }
 \arguments{
   
@@ -28,7 +28,16 @@ read.ncdfFlowSet(files = NULL,ncdfFile,flowSetId,
   \item{isSaveMeta}{A logical scalar indicating whether the meta data other than raw data should be saved in cdf.
   					It should be set as TRUE if the entire ncdfFlowSet is going to be loaded by \code{\link{ncdfFlowSet_open,character-method}}.
   					}
-  \item{phenoData}{An object of \code{AnnotatedDataFrame} providing a way to manually set the phenotyoic data for the whole data set in ncdfFlowSet.}  					
+  \item{phenoData}{An object of \code{AnnotatedDataFrame} providing a way to manually set the phenotyoic data for the whole data set in ncdfFlowSet.}
+  
+  \item{channels}{ A character vector specifying which channels to extract from FCS files.
+  					It can be useful when FCS files do not share exactly the same channel names.
+  					Thus this argument is used to select those common channels that are of interests.
+  					Default value is NULL and the function will try to scan the FCS headers of all files
+  					and determine the common channels.
+  			}
+  \item{...}{extra arguments to be passed to \code{\link{read.FCS}}.}
+    					
 }
 
 \value{
