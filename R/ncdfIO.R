@@ -388,7 +388,7 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 		ncfs@frames<-new.env(hash=TRUE, parent=emptyenv())
 		for(i in ls(orig))
 		{
-			assign(i,orig@frames[[i]],ncfs@frames)
+			assign(i,orig[[i]],ncfs@frames)
 		}
 		
 		#copy indices info if isEmpty==FALSE
