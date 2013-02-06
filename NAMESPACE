@@ -1,0 +1,42 @@
+dll=useDynLib("ncdfFlow",.registration=TRUE)
+
+#Imports: Biobase, flowCore, flowViz, methods
+
+importClassesFrom(Biobase, AnnotatedDataFrame)
+
+importClassesFrom(flowCore, filter, filterResultList, flowFrame,
+                  flowSet)
+
+importClassesFrom(methods, ANY, character, environment, factor,
+                  formula, integer, list, logical)
+
+importMethodsFrom(Biobase, description, "description<-", exprs,
+                  "exprs<-", pData, "pData<-", phenoData,
+                  "phenoData<-", sampleNames, "sampleNames<-",
+                  varLabels, varMetadata, "varMetadata<-")
+
+importMethodsFrom(flowCore, assign, colnames, "colnames<-", compensate,
+                  each_col, eval, filter, fsApply, get, identifier,"%in%", ls
+                  , ncol, nrow, parameters, "parameters<-",
+                  sort, spillover, split, Subset, transform)
+
+importMethodsFrom(flowViz, densityplot, xyplot)
+
+importMethodsFrom(methods, rbind2, show)
+
+
+
+importFrom(flowCore, norm2Filter, read.FCS, read.FCSheader)
+
+importFrom(flowViz, flowViz.par.get, panel.densityplot.flowset)
+
+importFrom(methods, as, is, new)
+
+exportClasses(ncdfFlowSet,ncdfFlowList)
+
+export(ncfsUnlink,clone.ncdfFlowSet,read.ncdfFlowSet,ncdfExprs,NcdfFlowSetToFlowSet)
+
+exportMethods("show","[[","[","colnames","parameters","compensate","rbind2",
+				"transform","ncfsApply","Subset","split","getIndices","updateIndices"
+				,"initIndices","ncdfFlowSet","ncdfFlowSet_sync","ncdfFlowSet_open","addFrame"
+				,"xyplot","densityplot","colnames<-")
