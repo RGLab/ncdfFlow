@@ -225,10 +225,13 @@ read.ncdfFlowSet <- function(files = NULL
 				{
 					curFile<-files[i]
 					message("writing data:",basename(curFile))
+                    this_fr <- read.FCS(curFile
+                        ,column.pattern=paste(chnls_common,collapse="|")
+                        ,...)
+                    #we need to reorder columns in order to make them identical across samples
+                    this_fr <- this_fr[,chnls_common]
 					addFrame(ncfs
-							,read.FCS(curFile
-										,column.pattern=paste(chnls_common,collapse="|")
-										,...)
+							,this_fr
 							,guids[i]
 							)
 				}, verbose = TRUE)
