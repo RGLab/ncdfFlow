@@ -92,7 +92,7 @@ setMethod("ncdfFlowSet_open",
 #create ncdfFlowSet from flowSet
 setMethod("ncdfFlowSet",
 		signature=(x="flowSet"),
-		definition=function(x,ncdfFile){		
+		definition=function(x,ncdfFile,isSaveMeta = FALSE){		
 			if(missing(ncdfFile))
 				ncdfFile <-tempfile(pattern = "ncfs")#ncdfFlow:::.guid() 
 			flowSetId = ncdfFile
@@ -138,7 +138,8 @@ setMethod("ncdfFlowSet",
 			}
 #			
 #			initIndices(ncfs,TRUE)
-			ncdfFlowSet_sync(ncfs)
+            if(isSaveMeta)
+              ncdfFlowSet_sync(ncfs)
 			ncfs
 		})
 #save ncdfFlowSet object to ncdf file
