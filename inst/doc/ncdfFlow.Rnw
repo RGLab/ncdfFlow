@@ -108,21 +108,6 @@ ncfsUnlink(nc1)
 rm(nc1)
 @
 
-Sometime it is necessary to save both data matrix and meta data on disk and reload the \Robject{ncdfFlowSet} object later. In order to do this,
-isSaveMeta argument has to be set to TRUE when the ncdfFlowSet is created by \Rfunction{read.ncdfFlowSet}.
-\Rfunction{ncdfFlowSet\_sync} can be also called to save the meta data explicitly in cdf file.
-
-<<ncdfFlowSet, echo=true,results=hide>>=
-nc1 <- read.ncdfFlowSet(files=files,ncdfFile="ncfsTest.nc",isSaveMeta=TRUE)
-rm(nc1)
-
-nc1<-ncdfFlowSet_open("ncfsTest.nc")
-nc1[[1]]
-
-ncfsUnlink(nc1)
-rm(nc1)
-@
-
 Users can also create an empty ncdfFlowSet first and add data slices later by assigning argument isWriteSlice as FALSE.
 
 <<ncdfFlowSet, echo=true,results=verbatim>>=
