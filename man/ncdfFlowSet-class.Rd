@@ -115,7 +115,7 @@ Most of the other flowSet methods are not listed here,but they all work as the s
 			    	  	
 			    	  	\code{   updateIndices(ncfs,sampleName,y)}	
 			    	}
-    \item{ncdfFlowSet_open}{load the ncdfFlowSet object from the cdf file,return a ncdfFlowSet object
+    \item{ncdfFlowSet_open}{(Deprecated!)load the ncdfFlowSet object from the cdf file,return a ncdfFlowSet object
     						
 					    	\emph{Usage:}
 					      
@@ -135,7 +135,7 @@ Most of the other flowSet methods are not listed here,but they all work as the s
      	 
 					     	Note that only flowSet can be coerced to ncdfFlowSet,attempt to apply this method to flowFrame will get an error message.
      	 					}
-    \item{ncdfFlowSet_sync}{save phenoData to cdf file.
+    \item{ncdfFlowSet_sync}{(Deprecated!)save phenoData to cdf file.
     						
     						\emph{Usage:}
       

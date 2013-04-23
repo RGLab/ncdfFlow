@@ -80,6 +80,7 @@ setMethod("ncdfFlowSet",
 setMethod("ncdfFlowSet_open",
 		signature=(x="character"),
 		definition=function(x){
+          .Deprecated()
 			ret<-.Call(dll$readMeta, x)
 			if(!is.raw(ret)&&!ret)stop()
 			if(length(ret)==0)
@@ -92,7 +93,7 @@ setMethod("ncdfFlowSet_open",
 #create ncdfFlowSet from flowSet
 setMethod("ncdfFlowSet",
 		signature=(x="flowSet"),
-		definition=function(x,ncdfFile,isSaveMeta = FALSE){		
+		definition=function(x,ncdfFile){		
 			if(missing(ncdfFile))
 				ncdfFile <-tempfile(pattern = "ncfs")#ncdfFlow:::.guid() 
 			flowSetId = ncdfFile
@@ -123,8 +124,9 @@ setMethod("ncdfFlowSet",
 					frames =e1 ,maxEvents=as.integer(maxEvents),flowSetId = flowSetId,
 					phenoData= phenoData(x),indices=e2,origSampleVector=sampleNames(x)
 					,origColnames=colnames(x))
-			
-			metaSize<-length(serialize(ncfs,NULL))
+                
+            
+            metaSize<-0
 			#create new ncdf file			
 			msgCreate <-.Call(dll$createFile, ncdfFile, as.integer(ncfs@maxEvents), 
 							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
@@ -136,16 +138,14 @@ setMethod("ncdfFlowSet",
 #				.writeSlice(ncfs,x[[guid]],guid)
 				addFrame(ncfs,x[[guid]],guid)
 			}
-#			
-#			initIndices(ncfs,TRUE)
-            if(isSaveMeta)
-              ncdfFlowSet_sync(ncfs)
+
 			ncfs
 		})
 #save ncdfFlowSet object to ncdf file
 setMethod("ncdfFlowSet_sync",
 		signature=(x="ncdfFlowSet"),
 		definition=function(x,...){
+          .Deprecated()
 			toWrite<-serialize(x,NULL)
 #			
 			.Call(dll$writeMeta, x@file, toWrite , as.integer(1),as.integer(length(toWrite)))
