@@ -123,8 +123,11 @@ setMethod("ncdfFlowSet",
 					frames =e1 ,maxEvents=as.integer(maxEvents),flowSetId = flowSetId,
 					phenoData= phenoData(x),indices=e2,origSampleVector=sampleNames(x)
 					,origColnames=colnames(x))
-			
-			metaSize<-length(serialize(ncfs,NULL))
+                
+            if(isSaveMeta)
+			  metaSize<-length(serialize(ncfs,NULL))
+            else
+              metaSize<-0
 			#create new ncdf file			
 			msgCreate <-.Call(dll$createFile, ncdfFile, as.integer(ncfs@maxEvents), 
 							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
