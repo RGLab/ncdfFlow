@@ -26,7 +26,7 @@ setMethod("densityplot",
 		{
 #		  
 			ocall <- sys.call(sys.parent())
-			ccall <- match.call(expand.dots = FALSE)
+			ccall <- match.call(expand.dots = TRUE)
 			ccall <- flowViz:::manipulate.call(ocall, ccall)
 			pd <- pData(phenoData(data))
 			uniq.name <- flowViz:::createUniqueColumnName(pd)
@@ -85,7 +85,7 @@ setMethod("densityplot",
 			gpar <- flowViz.par.get()
 			if(!is.null(gp))
 				gpar <- lattice:::updateList(gpar, gp)
-			ccall$gpar <- gpar$gate.density
+			ccall$gp <- gpar$gate.density
 			ccall$x <- new.x
 			ccall$data <- pd
 			ccall$prepanel <- prepanel
