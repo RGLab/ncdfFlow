@@ -161,16 +161,15 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _sample) {
 
 }
 
-SEXP readSlice(SEXP _fileName, SEXP _y, SEXP _sample ) {
+SEXP readSlice(SEXP _fileName, SEXP _y, SEXP _chCount, SEXP _sample ) {
     //Rprintf("readSlice\n");
     hid_t estack;
     //estack = H5Eget_current_stack();
-    int retval, ncid, varid, colStart, colEnd, nRow, sample,failcount=0;
+    int retval, ncid, varid, chCount, nRow, sample,failcount=0;
     SEXP ans, dnms;
     sample = INTEGER(_sample)[0]-1;  // R to C indexing
-    colStart = INTEGER(_y)[0] -1;
-    colEnd = INTEGER(_y)[1] -1;
-  
+    chCount = INTEGER(_chCount)[0];
+    int * chIndx = INTEGER(_y);
     //Rprintf("ReadSlice: opening\n");
     if ((retval = nc_open(translateChar(STRING_ELT(_fileName, 0)), NC_NOWRITE,&ncid))){
         //H5Eprint(estack,stderr);
@@ -193,27 +192,22 @@ SEXP readSlice(SEXP _fileName, SEXP _y, SEXP _sample ) {
         ERR(retval);
     nRow = eCount[sample] ;
     
-    size_t start[] = {sample, colStart, 0};
-    size_t count[] = {1, colEnd +1 - colStart, nRow};
-    PROTECT(ans = allocVector(REALSXP, nRow*(colEnd + 1- colStart)));
+    PROTECT(ans = allocVector(REALSXP, nRow*chCount));
     double *mat = REAL(ans);
-    //Rprintf("ReadSlice: reading\n");
-    if((retval = nc_get_vara_double(ncid, varid, start, count, mat)))
-        ERR(retval);
-//    retval = nc_get_vara_double(ncid, varid, start, count, mat);
-//    if(retval!=NC_NOERR)
-//    {
-//    	Rprintf( "Error in readSlice on nc_get_vara_double call: %s\n",
-//    			nc_strerror(retval) );
-//    }
+    for(unsigned i=0;i<chCount;i++){
+    	int colStart = chIndx[i]-1;
+    	size_t start[] = {sample, colStart, 0};
+		size_t count[] = {1, 1, nRow};
+		double * vec = mat+i*nRow;
+		if((retval = nc_get_vara_double(ncid, varid, start, count, vec)))
+			ERR(retval);
+    }
 
-
-    //Rprintf("ReadSlice: closing\n");
     if ((retval = nc_close(ncid)))
         ERR(retval);
     PROTECT(dnms = allocVector(INTSXP, 2));
     INTEGER(dnms)[0] = nRow;
-    INTEGER(dnms)[1]= colEnd + 1 - colStart;
+    INTEGER(dnms)[1]=  chCount;
     setAttrib(ans,R_DimSymbol, dnms);
     UNPROTECT(2);
     return(ans);

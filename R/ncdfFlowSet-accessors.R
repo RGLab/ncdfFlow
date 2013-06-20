@@ -415,29 +415,26 @@ setMethod("[[",
 			
 			##always get the enire original slice for optimized reading
 			origChNames <-x@origColnames ##
-			chIndx <- c(1, length(origChNames))
+            localChNames <-colnames(x)
+            if(!missing(j))
+              localChNames <- localChNames[j]
+			chIndx <- match(localChNames,origChNames)
+            
 			#get sample index
 			samplePos<-which(x@origSampleVector==sampleName)
-			mat <- .Call(dll$readSlice, x@file, as.integer(chIndx),as.integer(samplePos))
+			mat <- .Call(dll$readSlice, x@file, as.integer(chIndx),length(chIndx), as.integer(samplePos))
 			if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
 
 			##append colnames to matrix
-			colnames(mat) <- origChNames
+			colnames(mat) <- localChNames
 			
 			#subset data by indices if neccessary	
 			if(subByIndice&&nrow(mat)>0)
 				mat<-mat[getIndices(x,sampleName),,drop=FALSE]
 			
-			##subsetting by channel if necessary
-			localChNames <-colnames(x)
-#			chPos <- which(origChNames %in% localChNames)
-			if(!identical(localChNames,origChNames))
-				mat<-mat[,localChNames, drop= FALSE]##subset by local channel names which could be a subset of original channel names
-			
 			fr@exprs <- mat
 
-			if(!missing(j))
-				fr <- fr[,j]
+			
 			return(fr)
 		})
 
