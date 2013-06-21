@@ -215,7 +215,7 @@ read.ncdfFlowSet <- function(files = NULL
 	if(!msgCreate)stop()
 #	
 	##remove indicies to keep the slot as empty by default for memory and speed issue
-	initIndices(ncfs,NA)
+	initIndices(ncfs)
 	#############################################################
 	#when isWriteSlice is False,keep the ncdf matrix empty(Mike)
 	#############################################################
@@ -235,11 +235,6 @@ read.ncdfFlowSet <- function(files = NULL
 							,guids[i]
 							)
 				}, verbose = TRUE)
-	}else
-	{
-		
-#		initIndices(ncfs,TRUE)##when isWriteSlice is FALSE,indices have to been explictly initialized
-		
 	}
 #	
 	
@@ -445,12 +440,12 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 	#since the C function only write the entire ogirinal slice intead of a subset of it
 	#and the current iput mat could be a subset through channels or events
 	############################################################################################
-	
+    colCount <- length(ncfs@origColnames)
 #	
 	#if writing the data slice with the exact size and colnames of original one
 	#then simply write the input matrix
 	#get original slice
-	origMat <- .Call(dll$readSlice, ncfs@file, as.integer(c(1,length(ncfs@origColnames))),as.integer(i))
+	origMat <- .Call(dll$readSlice, ncfs@file, as.integer(1:colCount), as.integer(colCount), as.integer(i))
 	if(nrow(origMat)>0)#if ncfs not empty
 	{
 		#get index of current channels in orignal slice
@@ -481,28 +476,5 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 
 }
 
-#to deprecated due to the merging of this routine to [[ for speed
-.retNcdfMat <- function(object, chIndx, sampleName,subByIndice){        
-	## chIndx is start and end positions and "readSlice" always get a consecutive chunk 
-	#to optimize the reading process
-	samplePos<-which(object@origSampleVector==sampleName)
-#			
-	mat <- .Call(dll$readSlice, object@file, as.integer(chIndx),as.integer(samplePos))
 
-	
-	if(!is.matrix(mat)&&mat==FALSE) stop()
-	
-	indx <- seq.int(chIndx[1], chIndx[2], 1)
-	##get colnames from frame slot instead of flowSet colnames slot since it may not be synchronized
-#	clNames <- colnames(eval(parse(text=paste("object@frames$'",sampleName,"'",sep=""))))[indx]  
-	clNames <- object@origColnames[indx]
-	colnames(mat) <- clNames
-#	
-	if(subByIndice&&nrow(mat)>0)
-		
-		mat[getIndices(object,sampleName),,drop=FALSE]
-	else
-		mat
-	
-}
 

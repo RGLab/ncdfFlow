@@ -10,7 +10,7 @@
 \alias{getIndices}
 \alias{getIndices,ncdfFlowSet,character-method}
 \alias{initIndices}
-\alias{initIndices,ncdfFlowSet,logical-method}
+\alias{initIndices,ncdfFlowSet-method}
 \alias{ncdfFlowSet_sync}
 \alias{ncdfFlowSet_sync,ncdfFlowSet-method}
 \alias{NcdfFlowSetToFlowSet}
@@ -38,7 +38,6 @@
 \alias{updateIndices,ncdfFlowSet,character,logical-method}
 \alias{ncdfFlowSet_open}
 \alias{ncdfFlowSet_open,character-method}
-\alias{ncdfExprs}
 \alias{ncdfFlowSet,flowFrame-method}
 \alias{ncdfFlowSet,flowSet-method}
 \alias{densityplot,formula,ncdfFlowSet-method}
@@ -103,11 +102,11 @@ Most of the other flowSet methods are not listed here,but they all work as the s
 				     	
 				      	\code{   getIndices(ncfs,sampleName)}
 				      }
-    \item{initIndices}{initialize the event indices for the entire ncdfFlowSet with either an NA or TRUE/FALSE logical value
+    \item{initIndices}{initialize the event indices for the entire ncdfFlowSet with NA 
 			    		
 			    		\emph{Usage:}
 				      	
-				      	\code{   initIndices(ncfs,y)}
+				      	\code{   initIndices(ncfs)}
 			    		}
     \item{updateIndices}{update the event indices of the target sample in ncdfFlowSet
 			    		
@@ -150,13 +149,7 @@ Most of the other flowSet methods are not listed here,but they all work as the s
 				     	 Note that ncdfFlowSet object is unrecoverable after cdf is deleted.
 				     	 So this method is usually called when ncdfFlowSet object is no longer in need.
      	 				}
-	\item{ncdfExprs}{Extract or replace the raw data intensities,equivalent to \code{\link{exprs}}.
-					It reads the data matrix from cdf file instead of memory.    
-			     	
-			     	\emph{Usage:}
-			      
-			     	 \code{ncdfExprs(ncfs,sampleName, channel,subByIndice)}
-     	 			}
+
     \item{NcdfFlowSetToFlowSet}{convert a subset of ncdfFlowSet to flowSet.
     
 						  		  \emph{Usage:}

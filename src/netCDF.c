@@ -31,7 +31,7 @@ SEXP createFile(SEXP _fileName, SEXP _X, SEXP _Y, SEXP _Z, SEXP _metaSize,SEXP _
     int m_dimid,m_varid;//metadata
     int compress = LOGICAL(_compress)[0];
     SEXP k = allocVector(LGLSXP,1);
-    size_t chunksize[] = {1, Y, X};
+    size_t chunksize[] = {1, 1, X};
     
     if ((retval = nc_create( translateChar(STRING_ELT(_fileName, 0)), NC_NETCDF4, &ncid)))
       ERR(retval);
@@ -59,9 +59,9 @@ SEXP createFile(SEXP _fileName, SEXP _X, SEXP _Y, SEXP _Z, SEXP _metaSize,SEXP _
     
     if (( retval = nc_def_var_chunking(ncid, varid, NC_CHUNKED, chunksize)))
         ERR(retval);
-
-    if (( retval = nc_set_var_chunk_cache(ncid, varid, CACHE_SIZE, CACHE_NELEMS, CACHE_PREEMPTION)))
-        ERR(retval);
+    	/*use default cache settings since we are not using it at the moment*/
+//    if (( retval = nc_set_var_chunk_cache(ncid, varid, CACHE_SIZE, CACHE_NELEMS, CACHE_PREEMPTION)))
+//        ERR(retval);
     
     if(compress) {
         if (( retval = nc_def_var_deflate(ncid, varid, 0, 1, DEFLATE_LEVEL)))

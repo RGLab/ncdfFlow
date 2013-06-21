@@ -43,8 +43,7 @@ setMethod("addFrame",
 			#replace the indices
 			updateIndices(ncfs,sampleName,ind);
 
-#			updateIndices(ncfs,sampleName,rep(TRUE,nrow(data)))
-			
+	
 			##update all other slots to keep the whole flowFrame consistent
 			eval(parse(text=paste("ncfs@frames$'",sampleName,"'@parameters<-parameters(data)",sep="")))
 			eval(parse(text=paste("ncfs@frames$'",sampleName,"'@description<-description(data)",sep="")))
@@ -132,7 +131,7 @@ setMethod("ncdfFlowSet",
 							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
 							as.integer(metaSize),as.logical(FALSE))
 			if(!msgCreate)stop()
-                        initIndices(ncfs,NA)			
+                        initIndices(ncfs)			
 			for(guid in sampleNames(x))
 			{
 #				.writeSlice(ncfs,x[[guid]],guid)
@@ -166,32 +165,6 @@ setMethod("ncdfFlowSet_sync",
 		})
 
 
-#setMethod("range",
-#		signature=signature(x="ncdfFlowSet"),
-#		definition=function(x, sample) {
-##			
-#			if(missing(sample))
-#				stop("Please specify a sample for which the range is to be returned")
-#			par <- parameters(x@frames[[sample]])
-#			rng <- t(par@data[c("minRange", "maxRange")])
-#			rownames(rng) <- c("min","max")
-#			colnames(rng) <- colnames(x)
-#			rng
-#			
-#		})
-
-
-
-### replace a flowFrame
-#setReplaceMethod("parameters",
-#		signature=signature(object="ncdfFlowSet",
-#				value="AnnotatedDataFrame"),
-#		definition=function(object, sample, value)
-#		{
-#			parameters(x,sample)
-#			eval(parse(text=paste("object@frames$",sample,"@parameters<-value",sep="")))
-#		}
-#)
 
 
 
@@ -220,19 +193,13 @@ setMethod("getIndices",
 		})
 		
 setMethod("initIndices",
-		signature=signature(x="ncdfFlowSet",y="logical"), 
+		signature=signature(x="ncdfFlowSet"), 
 		definition=function(x,y)
 		{
 			
 			for(i in sampleNames(x)){
-#				
-				curData<-ncdfExprs(object=x,sample=i,subByIndice=FALSE)
-				nEvent<-nrow(curData)
-				if(is.na(y))
-					updateIndices(x,i,y)
-				else
-					updateIndices(x,i,rep(y,nEvent))
-					}
+					updateIndices(x,i,NA)
+                  }
 		})
 		
 setMethod("updateIndices",
@@ -244,16 +211,6 @@ setMethod("updateIndices",
 				z<-.makeBitVec(length(z),z)
 			assign(y,z,x@indices)
 		})
-## ==========================================================================
-##  we iterate over each frame and provide summaries for those.
-## - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#setMethod("summary",
-#		signature=signature(object="ncdfFlowSet"), 
-#		definition=function(object, ...)
-#		{
-#			fsApply(object, function(x) apply(exprs(x), 2, summary),
-#					simplify=FALSE)
-#		})
 
 
 ## ==========================================================================
@@ -269,8 +226,6 @@ setMethod("[",
 			if(missing(i) && missing(j)) 
 				return(x)
 					
-#			newChnLen<-length(if(missing(j))colnames(x) else j)
-#			newSampLen<-length(if(missing(i))sampleNames(x) else i)
 			#copy ncdfFlowSet object
 			ncfs<-x
 			#init two environment
@@ -299,7 +254,7 @@ setMethod("[",
 			{
 				#copy the frames and indices for the selected samples	
 				assign(nm,x@frames[[nm]],ncfs@frames)
-#				assign(nm,getIndices(x,nm),ncfs@indices)
+
 
 				updateIndices(x=ncfs,y=nm,z=ncdfFlow::getIndices(x,nm))
 #				
@@ -321,16 +276,14 @@ setMethod("[",
 			if(!missing(j)){
 				if(is.character(j))
 					ncfs@colnames <- colnames(x)[match(j, colnames(x))]
-#					colnames(ncfs) <- colnames(x)[match(j, colnames(x))]
+
 				else
 					ncfs@colnames <- colnames(x)[j]
-#					colnames(ncfs) <- colnames(x)[j] 
+ 
 				if(any(is.na(colnames(ncfs))))
 					stop("Subset out of bounds", call.=FALSE)
 			}
 #			
-#			if(isNew)
-#				ncfs<-clone.ncdfFlowSet(ncfs,isEmpty=FALSE,isNew=TRUE)
 			return(ncfs)
 		})
 
@@ -351,55 +304,13 @@ setReplaceMethod("colnames",
 			##updte colnames of each flowFrames
 			for(i in sampleNames(x))
 				x@frames[[i]]@parameters@data$name <- value
-				#colnames(x@frames[[i]]) <- value
+				
 			x
 		})		
 		
-#
-#setMethod("isEmpty",
-#		signature=signature(x="ncdfFlowSet"),
-#		definition=function(x,y)
-#		{
-#			if(missing(y))
-#				return(length(x@indices)==0)
-#			
-#			if(length(y) != 1)
-#				stop("subscript out of bounds (index must have length 1)")
-##			
-#			sampleName<-if(is.numeric(y)) sampleNames(x)[[y]] else y
-#			
-#			return(is.null(eval(parse(text=paste("x@indices$'",sampleName,"'",sep="")))))
-#			
-#		})
 
 
-## ==========================================================================
-## subsetting by sampleName(channels)(not for events) methods 
-## - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-## to flowFrame
-#setMethod("[[",
-#		signature=signature(x="ncdfFlowSet"),
-#		definition=function(x, i, j, ...)
-#		{
-#			if(length(i) != 1)
-#				stop("subscript out of bounds (index must have length 1)")
-#
-#			sampleName<-if(is.numeric(i)) sampleNames(x)[[i]] else i
-#			fr <- x@frames[[sampleName]]
-##						
-#			subByIndice<-all(!is.na(x@indices[[sampleName]]))
-#			
-#			
-##			if(!isEmpty(x,i))
-##			{
-#				fr@exprs <- ncdfExprs(x, sampleName,subByIndice=subByIndice)
-##			}
-#			if(!missing(j))
-#				fr <- fr[,j]
-#			return(fr)
-#		})
-
-#merge ncdfExprs->.retNcdfMat routines into [[, to reduce the overhead of copying in R calls  
+  
 setMethod("[[",
 		signature=signature(x="ncdfFlowSet"),
 		definition=function(x, i, j, ...)
@@ -455,11 +366,6 @@ setReplaceMethod("[[",
                                  "the colnames of the flowSet.")
                         
 			sel <- if(is.numeric(i)) sampleNames(x)[[i]] else i
-			
-#			x@frames[[sel]]@parameters <- value@parameters
-#			x@frames[[sel]]@description <- value@description
-#			ncdfFlow:::.writeSlice(x,value,sel)
-
 			addFrame(x,value,sel)
 			
 			return(x)
@@ -496,16 +402,6 @@ setMethod("ncfsApply",
 		})
 
 
-#setReplaceMethod("colnames",
-#		signature=signature(x="ncdfFlowSet",
-#				value="ANY"),
-#		definition=function(x, value)
-#		{
-#			x@colnames <- value
-#			for(i in sampleNames(x))
-#				x@frames[[i]]@parameters@data$name <- value
-#			x
-#		})
 
 ## ===========================================================================
 ## compensate method
@@ -530,23 +426,15 @@ setMethod("show",
 			cat("An ncdfFlowSet with", length(sampleNames(object)),"samples.\n")
 			cat("flowSetId :", object@flowSetId, "\n") 
 			cat("NCDF file :", object@file, "\n")
-#			if(any(varMetadata(object@phenoData)$labelDescription != "Name")){
+
 				show(object@phenoData)
 				cat("\n")
 #			}
 			cat("  column names:\n  ")
 			cat(" ", paste(colnames(object), collapse = ", "))
 			cat("\n")
-#			cat("  maxEvents:  ")
-#			cat(object@maxEvents)
-#			cat("\n")
-			
-			
-			
-#			cat("  stain names:\n   ")
-#			cat(" ", paste(stainNames(object), collapse = ", "))
 			cat("\n")
-			#checkParameters(object) 
+ 
 		})
 
 ## ==========================================================================
