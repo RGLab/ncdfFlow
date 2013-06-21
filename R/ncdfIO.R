@@ -445,7 +445,7 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 	#if writing the data slice with the exact size and colnames of original one
 	#then simply write the input matrix
 	#get original slice
-	origMat <- .Call(dll$readSlice, ncfs@file, as.integer(1:colCount), as.integer(colCount), as.integer(i))
+	origMat <- .Call(dll$readSlice, ncfs@file, as.integer(1:colCount), as.integer(i))
 	if(nrow(origMat)>0)#if ncfs not empty
 	{
 		#get index of current channels in orignal slice

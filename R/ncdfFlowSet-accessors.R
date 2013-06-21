@@ -333,7 +333,7 @@ setMethod("[[",
             
 			#get sample index
 			samplePos<-which(x@origSampleVector==sampleName)
-			mat <- .Call(dll$readSlice, x@file, as.integer(chIndx),length(chIndx), as.integer(samplePos))
+			mat <- .Call(dll$readSlice, x@file, as.integer(chIndx), as.integer(samplePos))
 			if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
 
 			##append colnames to matrix

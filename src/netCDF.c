@@ -161,33 +161,32 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _sample) {
 
 }
 
-SEXP readSlice(SEXP _fileName, SEXP _y, SEXP _chCount, SEXP _sample ) {
-    //Rprintf("readSlice\n");
-    hid_t estack;
-    //estack = H5Eget_current_stack();
-    int retval, ncid, varid, chCount, nRow, sample,failcount=0;
+SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sample ) {
+
+    int retval, ncid, varid, nRow;
     SEXP ans, dnms;
-    sample = INTEGER(_sample)[0]-1;  // R to C indexing
-    chCount = INTEGER(_chCount)[0];
-    int * chIndx = INTEGER(_y);
-    //Rprintf("ReadSlice: opening\n");
+    int sample = INTEGER(_sample)[0]-1;  // R to C indexing
+    int * chIndx = INTEGER(_chIndx);
+    int chCount = length(_chIndx);
+
+
     if ((retval = nc_open(translateChar(STRING_ELT(_fileName, 0)), NC_NOWRITE,&ncid))){
-        //H5Eprint(estack,stderr);
+
         ERR(retval);
     }
         
     
-    //Rprintf("ReadSlice: get variable\n");
+
     if((retval = nc_inq_varid (ncid, "exprsMat", &varid)))
         ERR(retval);  
 
     int sampCount;
-    //Rprintf("ReadSlice: get sample count\n");
+
     if((retval = nc_get_att_int(ncid, varid, "sampleCount", &sampCount)))
         ERR(retval);
  
     int *eCount = (int *) R_alloc( sizeof(int), sampCount);
-    //Rprintf("ReadSlice: get event count\n");
+
     if((retval = nc_get_att_int(ncid, varid, "eventCount", eCount)))
         ERR(retval);
     nRow = eCount[sample] ;
