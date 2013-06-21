@@ -154,7 +154,7 @@ nc1<-ncdfFlowSet(GvHD)
 
 Or coerce a ncdfFlowSet to flowSet
 <<ncdfFlowSet, echo=true,results=verbatim>>=
-fs1<-NcdfFlowSetToFlowSet(nc1,top=2)
+fs1<-as.flowSet(nc1,top=2)
 @
 
 Note that \Rclass{ncdfFlowSet} is designed to store large datasets and it is not recommened to 
