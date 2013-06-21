@@ -90,11 +90,12 @@ setMethod("densityplot",
 			ccall$data <- pd
 			ccall$prepanel <- prepanel
 			ccall$panel <- panel
-			ccall$frames <- data
+			
 			ccall$channel <- formula.struct$right.comps ## channel
 			## That is super ugly!!! How do we get to the channel name
 			## from the formula???
 			ccall$channel.name <- gsub("^.*\\(`|`\\).*$", "", channel.name)
+            ccall$frames <- data[,ccall$channel.name]
 			ccall$as.table <- as.table
 			ccall$overlap <- overlap
 			ccall$xlab <- xlab
@@ -176,6 +177,7 @@ setMethod("xyplot",
 			## use densityplot method with dedicated panel and prepanel
 			## functions to do the actual plotting
 #		  browser()
+            data <- data[,c(channel.x.name,channel.y.name)]
 			densityplot(x, data=pd, prepanel=prepanel, panel=panel,
 					frames=data, channel.x=channel.x,
 					channel.y=channel.y, channel.x.name=channel.x.name,

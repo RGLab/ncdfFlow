@@ -50,11 +50,25 @@ setMethod("addFrame",
 			
 		})
 
-
+as.flowSet <- function(from,top)
+    {
+      if(!missing(top))
+      {
+        indice<-round(seq(from=1,to=length(from),length.out=top))
+        from<-from[indice]
+      }
+      frs <- structure(lapply(sampleNames(from),function(n)from[[n]])
+          ,names=sampleNames(from))
+      fs<-as(frs,"flowSet")
+      fs@phenoData<-from@phenoData
+      return(fs)
+    }
+    
 setMethod("NcdfFlowSetToFlowSet",
 		signature=(x="ncdfFlowSet"),
 		definition=function(x,top){
-			
+			.Defunct("as.flowSet")
+            
 			if(!missing(top))
 			{
 				indice<-round(seq(from=1,to=length(x),length.out=top))

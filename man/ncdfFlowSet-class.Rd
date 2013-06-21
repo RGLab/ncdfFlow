@@ -15,6 +15,7 @@
 \alias{ncdfFlowSet_sync,ncdfFlowSet-method}
 \alias{NcdfFlowSetToFlowSet}
 \alias{NcdfFlowSetToFlowSet,ncdfFlowSet-method}
+\alias{as.flowSet}
 \alias{ncfsApply}
 \alias{ncfsApply,ncdfFlowSet-method}
 \alias{ncfsUnlink}
@@ -150,11 +151,11 @@ Most of the other flowSet methods are not listed here,but they all work as the s
 				     	 So this method is usually called when ncdfFlowSet object is no longer in need.
      	 				}
 
-    \item{NcdfFlowSetToFlowSet}{convert a subset of ncdfFlowSet to flowSet.
+    \item{as.flowSet}{convert a subset of ncdfFlowSet to flowSet.
     
 						  		  \emph{Usage:}
 						      
-						     	 \code{NcdfFlowSetToFlowSet(ncfs,top)}
+						     	 \code{as.flowSet(ncfs,top)}
 						     	 
 						     	 Argument \code{top} specifies the number of samples evenly selected
 						     	 from ncdfFlowSet. 
