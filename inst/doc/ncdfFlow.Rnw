@@ -115,12 +115,12 @@ nc1  <- read.ncdfFlowSet(files=files,ncdfFile="ncfsTest.nc",isWriteSlice= FALSE)
 nc1[[1]]
 @
 
-As we see here,before add the actual flowFrame by \Rfunction{addFrame}, 
+As we see here,before writing the actual flowFrame by \Rfunction{[[<-}, 
 the flowFrame object returned by \Rfunction{[[} has 0 events.
 
 <<ncdfFlowSet, echo=true,results=verbatim>>=
 targetSampleName<-sampleNames(fs1)[1]
-addFrame(nc1,fs1[[1]],targetSampleName)
+nc1[[targetSampleName]] <- fs1[[1]]
 nc1[[1]]
 nc1[[2]]
 @
@@ -133,7 +133,7 @@ Sometime it is helpful to copy the structure from an existing ncdfFlow object an
 <<ncdfFlowSet, echo=true,results=hide>>=
 nc2<-clone.ncdfFlowSet(nc1,"clone.nc")
 nc2[[1]]
-addFrame(nc2,fs1[[1]],sampleNames(fs1)[1])
+nc2[[sampleNames(fs1)[1]]] <- fs1[[1]]
 nc2[[1]]
 @
 

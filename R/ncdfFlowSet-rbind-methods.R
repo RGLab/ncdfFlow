@@ -74,11 +74,11 @@ setMethod("rbind2",
 			#add frames to env and ncdf file
 			for(i in lx)
 			{
-				addFrame(ncfs,x[[i]],i)
+				ncfs[[i]] <- x[[i]]
 			}
 			for(i in ly)
 			{
-				addFrame(ncfs,y[[i]],i)
+				ncfs[[i]] <- y[[i]]
 			}				
 			#Comment out sync for metadata
 			#ncdfFlowSet_sync(ncfs)
@@ -201,7 +201,7 @@ setMethod("rbind2",
     			
     				for(curSample in sampleNames(nc))
     				{	
-    					addFrame(ncfs,nc[[curSample]],curSample)
+    					ncfs[[curSample]] <- nc[[curSample]]
     				}	
     			}
 	

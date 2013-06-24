@@ -224,16 +224,12 @@ read.ncdfFlowSet <- function(files = NULL
 		lapply(seq_len(nFile), function(i, verbose)
 				{
 					curFile<-files[i]
-					message("writing data:",basename(curFile))
                     this_fr <- read.FCS(curFile
                         ,column.pattern=paste(chnls_common,collapse="|")
                         ,...)
                     #we need to reorder columns in order to make them identical across samples
                     this_fr <- this_fr[,chnls_common]
-					addFrame(ncfs
-							,this_fr
-							,guids[i]
-							)
+					ncfs[[guids[i]]] <- this_fr
 				}, verbose = TRUE)
 	}
 #	
@@ -372,7 +368,7 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 			for(i in sampleNames(orig))
 			{
 				print(paste("copying data slice:",i))
-				addFrame(ncfs,orig[[i]],i)
+				ncfs[[i]] <- orig[[i]]
 				
 			}
 			
@@ -422,9 +418,11 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 	ncfs
 }
 
-##NOTE:It is for internal usage,do not use this API directly,try to use addFrame always!
+#Defunct:merged into [[<- method
 .writeSlice <- function(ncfs,data,sampleName)
 { 
+  .Defunct("[[<-")
+  
 	if(class(data)=="flowFrame")
 	{
 		mat <- exprs(data)
@@ -435,37 +433,22 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 	mode(mat) <- "single"
 	#make sure to use origSampleVector for IO since phetaData slot may change after subsetting
 	i<-which(ncfs@origSampleVector==sampleName)
-	############################################################################################
-	#make sure the data matrix contains the same channels as original one before write it back
-	#since the C function only write the entire ogirinal slice intead of a subset of it
-	#and the current iput mat could be a subset through channels or events
-	############################################################################################
-    colCount <- length(ncfs@origColnames)
+	
+    ##always get the enire original slice for optimized reading
+    origChNames <-ncfs@origColnames ##
+    localChNames <-colnames(data)
+    chIndx <- match(localChNames,origChNames)
 #	
-	#if writing the data slice with the exact size and colnames of original one
-	#then simply write the input matrix
-	#get original slice
-	origMat <- .Call(dll$readSlice, ncfs@file, as.integer(1:colCount), as.integer(i))
-	if(nrow(origMat)>0)#if ncfs not empty
+	
+	if(any(is.na(chIndx)))
 	{
-		#get index of current channels in orignal slice
-		colIndex<-which(ncfs@origColnames%in%colnames(ncfs))
-		#update original slice
-		origMat[,colIndex]<-mat	
-	}else
-	{
-		if(ncol(mat)==length(ncfs@origColnames))
-		{
-			origMat<-mat
-		}else
-		{
-			stop("Colnames of the input must be consistent with ncdfFlowSet when adding data to the empty slice of ncdfFlowSet "
-					,sampleName)	
-		}
-		
+		stop("Colnames of the input are not consistent with ncdfFlowSet!"
+				,sampleName)	
 	}
+		
+	
 	#write it back to disk
-	msgWrite <- .Call(dll$writeSlice, ncfs@file, origMat , as.integer(i))
+	msgWrite <- .Call(dll$writeSlice, ncfs@file, mat , as.integer(i), as.integer(chIndx))
 	
 	if(!msgWrite)
 	{

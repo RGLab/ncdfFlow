@@ -2,21 +2,23 @@
 \docType{methods}
 \alias{addFrame}
 \alias{addFrame-methods}
+\alias{[[<-,ncdfFlowSet,ANY,ANY,flowFrame-method}
 \alias{addFrame,ncdfFlowSet,flowFrame-method}
 \title{add/replace the data in ncdfFlowSet}
 \description{
-Add one flowFrame to the ncdfFlowSet.
+Add one flowFrame to the ncdfFlowSet.(it is defunct, For writing flow data to cdf, use [[<- directly)
 }
 \usage{
+ncfs[[i]] <- value
 addFrame(ncfs,data,sampleName)}
 \arguments{
 
 	\item{ncfs}{a \code{ncdfFlowSet} object}
 
- 	 \item{data}{a \code{flowFrame} to be added}
+ 	 \item{value,data}{a \code{flowFrame} to be added}
 
 
-	\item{sampleName}{
+	\item{i,sampleName}{
 					a \code{character} object with the name of the target sample  
 			}
 
@@ -43,7 +45,7 @@ files<-list.files(path,full.names=TRUE)[1:3]
 nc1  <- read.ncdfFlowSet(files=files,ncdfFile="ncfsTest.nc",flowSetId="fs1",isWriteSlice= FALSE)
 fs1<-read.flowSet(files);
 #add the actual data slices afterwards
-addFrame(nc1,fs1[[1]],sampleNames(fs1)[1])
+nc1[[sampleNames(fs1)[1]]] <- fs1[[1]]
 nc1[[1]]##show the added flowFrame
 nc1[[2]]##show empty flowFrame
 }

@@ -3,7 +3,6 @@
 \alias{ncdfFlowSet-class}
 \alias{ncdfFlowSet}
 \alias{[,ncdfFlowSet,ANY-method}
-\alias{[[<-,ncdfFlowSet,ANY,ANY,flowFrame-method}
 \alias{[[,ncdfFlowSet,ANY-method}
 \alias{colnames<-,ncdfFlowSet-method}
 \alias{compensate,ncdfFlowSet,ANY-method}

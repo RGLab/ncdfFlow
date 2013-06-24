@@ -105,7 +105,7 @@ SEXP createFile(SEXP _fileName, SEXP _X, SEXP _Y, SEXP _Z, SEXP _metaSize,SEXP _
 /*each sample is stored as a data chunk(size=channel x events), which is
 indexed in file and fast to access as a whole unit(slice),so the C API for accessing
 events or channels are not provided due to the inefficient IO.   */
-SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _sample) {
+SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sample) {
     //Rprintf("writeSlice\n");
     int retval, ncid, varid, nRow, nCol, sample;
     SEXP Rdim, k = allocVector(LGLSXP,1);
@@ -113,24 +113,33 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _sample) {
     nRow = INTEGER(Rdim)[0];
     nCol = INTEGER(Rdim)[1];
     sample = INTEGER(_sample)[0]-1;  // R to C indexing
-    size_t start[] = {sample, 0, 0};
-    size_t count[] = {1, nCol, nRow};
+
+
     double *mat = REAL(_mat);
+    int * chIndx = INTEGER(_chIndx);
+	int chCount = length(_chIndx);
     
-    //Rprintf("Opening file\n");
+
     if ((retval = nc_open(translateChar(STRING_ELT(_fileName, 0)), NC_WRITE, &ncid)))
         ERR(retval);
     
-    //Rprintf("Retrieving variable\n");
+
     if((retval = nc_inq_varid (ncid, "exprsMat", &varid)))
         ERR(retval);
-    // check if max rows of ncdf file is exceeded at R level
-    //Rprintf("Write variable\n");
-    if((retval = nc_put_vara_double(ncid, varid, start, count, mat)))
-        ERR(retval);
+
+    for(unsigned i=0;i<chCount;i++)
+	{
+		int colStart = chIndx[i]-1;
+		size_t start[] = {sample, colStart, 0};
+		size_t count[] = {1, 1, nRow};
+		double * vec = mat+i*nRow;
+		if((retval = nc_put_vara_double(ncid, varid, start, count, vec)))
+				ERR(retval);
+
+      }
 
     int sampCount;
-    //Rprintf("Get sampleCount attribute\n");
+
     if((retval = nc_get_att_int(ncid, varid, "sampleCount", &sampCount)))
         ERR(retval);
 
@@ -138,17 +147,19 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _sample) {
     if(sample >= sampCount) {
         len = sample;
     }
+
     int *eCount = (int *) R_alloc( sizeof(int), len);
     //Rprintf("Get eventCount attribute\n");
     if((retval = nc_get_att_int(ncid, varid, "eventCount", eCount)))
         ERR(retval);
     eCount[sample] = nRow;
+
+
     //Rprintf("Redefine ncid\n");
-    if((retval = nc_redef(ncid)))
-        ERR(retval);
-    //Rprintf("Writing eventCount\n");
+	if((retval = nc_redef(ncid)))
+		ERR(retval);
     if((retval = nc_put_att_int(ncid, varid, "eventCount", NC_INT, len, eCount)))
-        ERR(retval);
+		ERR(retval);
     //Rprintf("Finished defining ncid\n");
     if((retval = nc_enddef(ncid)))
         ERR(retval);
