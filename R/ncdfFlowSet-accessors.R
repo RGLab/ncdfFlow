@@ -482,8 +482,8 @@ setReplaceMethod("[[",
         
         
         ##update all other slots to keep the whole flowFrame consistent
-        eval(parse(text=paste("ncfs@frames$'",sampleName,"'@parameters<-parameters(value)",sep="")))
-        eval(parse(text=paste("ncfs@frames$'",sampleName,"'@description<-description(value)",sep="")))
+        eval(parse(text=paste("x@frames$'",sampleName,"'@parameters<-parameters(value)",sep="")))
+        eval(parse(text=paste("x@frames$'",sampleName,"'@description<-description(value)",sep="")))
         
 		
 		return(x)
