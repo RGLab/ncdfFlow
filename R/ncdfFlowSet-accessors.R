@@ -15,12 +15,12 @@ setMethod("addFrame",
 #			
 			
 			#sdim is either size subset or full size
-            slice <- ncfs[[sampleName]]
+            
 			sdim<-dim(origData)
 			#if indice is defined,update the subset defined by indices
 			if(!any(is.na(ind))){
 				updateIndices(ncfs,sampleName,NA)
-				
+                slice <- ncfs[[sampleName]]	
 				tmp<-exprs(slice)
 				tmp[ind,]<-exprs(data)
 				exprs(slice)<-tmp
@@ -409,6 +409,7 @@ setReplaceMethod("[[",
         ind<-ncdfFlow::getIndices(ncfs,sampleName)
               
         #source data to be updated
+        updateIndices(ncfs,sampleName,NA)#clear indices to get the data of original size
         srcFr <- ncfs[[sampleName]]
         srcData<-exprs(srcFr)
         srcCount<-nrow(srcData)
@@ -479,7 +480,8 @@ setReplaceMethod("[[",
         {
           stop("Writing to CDF file failed!",sampleName)
         }
-        
+        #restore the indices
+        updateIndices(ncfs,sampleName,ind);
         
         ##update all other slots to keep the whole flowFrame consistent
         eval(parse(text=paste("x@frames$'",sampleName,"'@parameters<-parameters(value)",sep="")))
