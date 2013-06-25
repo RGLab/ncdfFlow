@@ -418,10 +418,10 @@ setReplaceMethod("[[",
         newData <- exprs(value)
         newCount<-nrow(newData)
         
-        #if indice is defined,update the subset defined by indices
-        #otherwise, simply update the entire data range
+        #if indice is defined,extend newData to the original size
         if(all(!is.na(ind))){
           srcData[ind,] <- newData
+          newData <- srcData 
         }
         
         if(is.na(ind)){
@@ -434,7 +434,7 @@ setReplaceMethod("[[",
         if(newCount == srcCount){
           #update the source with data of the same size
           message("updating ", sampleName , "...")
-          toWrite <- srcData
+          
         }else if(newCount == origCount){
           #give the warning when view size doesn't match the new size
           # but matches the original cdf cell couint
@@ -443,19 +443,16 @@ setReplaceMethod("[[",
                     , " data size ", newCount
                     , sampleName
                   )
-          toWrite <- newData
-                  
         }else if(srcCount == 0)
         {
           #add the data when source event is empty
           message("write ", sampleName, "to empty cdf slot...")
-          toWrite <- newData
         }
         
         ##################
         #write to ncdf
         ###################
-        mode(toWrite) <- "single"
+        mode(newData) <- "single"
         #make sure to use origSampleVector for IO since phetaData slot may change after subsetting
         sampleInd<-which(ncfs@origSampleVector==sampleName)
         
@@ -474,7 +471,7 @@ setReplaceMethod("[[",
         
         
         #write to disk
-        msgWrite <- .Call(dll$writeSlice, ncfs@file, toWrite, as.integer(chIndx), as.integer(sampleInd))
+        msgWrite <- .Call(dll$writeSlice, ncfs@file, newData, as.integer(chIndx), as.integer(sampleInd))
         
         if(!msgWrite)
         {
