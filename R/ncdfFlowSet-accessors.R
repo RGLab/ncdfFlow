@@ -369,17 +369,23 @@ setMethod("[[",
 
 
 #' write the flow data from a \code{flowFrame} to \code{ncdfFlowSet} 
+#' flowFrame can have less channels than ncdfFlowSet,which is used for partial updating(useful for \code{normalization}) 
+#' 
 #' @param x a \code{ncdfFlowSet}
 #' @param i a \code{numeric} or \code{character} used as sample index of \code{ncdfFlowSet}
 #' @param j not used
 #' @param check.names a \code{logical} indicating whether the colnames of flowFrame
-#' should be matched to ncdfFlowSet, it can be set as FALSE in case of parseWorkspace 
-#' where the flowFrame with pre-fixed colnames needs to be written to fs
-#' yet the colnames of fs is not ready to be updated in the middle of parsing    
+#' should be matched to ncdfFlowSet, it can be set as FALSE 
+#' Thus simply update the first n channels wihtin ncdfFlowSet without matching channel names
+#' It is useful in parseWorkspace where the flowFrame with pre-fixed colnames needs to be written to fs
+#' where the colnames has not yet ready to be updated in the middle of parsing
+#' @param only.exprs a \code{logical} scalar When TRUE, it will only update the exprs data
+#' othewise, the parameters and decriptions slot are updated as well. 
+#'    
 
 setReplaceMethod("[[",
 		signature=signature(x="ncdfFlowSet",value="flowFrame"),
-		definition=function(x, i, j = "missing", check.names = TRUE, ..., value)
+		definition=function(x, i, j = "missing", check.names = TRUE, only.exprs = FALSE,..., value)
 {
        
         #check sample index  
@@ -394,11 +400,19 @@ setReplaceMethod("[[",
         if(check.names){
           localChIndx <- match(frChNames,localChNames)
           if(any(is.na(localChIndx)))
-            stop("Colnames of the input are not consistent with ncdfFlowSet!", sampleName)  
+            stop("Not all colnames of the input are present in ncdfFlowSet!", sampleName)  
         }else{
           localChIndx <- 1:length(frChNames)
         }
-        
+        #when need to update other slots in flowFrame
+        #make sure the channel names are the same as the ones in ncfs
+        if(!only.exprs){
+          if(!setequal(frChNames, localChNames))
+            stop("Can't update the entire flowFrame because colnames of the input are not consistent with ncdfFlowSet!"
+#                    , sampleName
+                    , "\n To only update raw data,set only.exprs = TRUE"
+                )
+        }
 
         
         #####################################
@@ -480,10 +494,12 @@ setReplaceMethod("[[",
         #restore the indices
         updateIndices(ncfs,sampleName,ind);
         
-        ##update all other slots to keep the whole flowFrame consistent
-        eval(parse(text=paste("x@frames$'",sampleName,"'@parameters<-parameters(value)",sep="")))
-        eval(parse(text=paste("x@frames$'",sampleName,"'@description<-description(value)",sep="")))
-        
+        ##update all other slots of flowFrame
+        ##This is valid only when value has the same colnames as x
+        if(!only.exprs){
+          x@frames[[sampleName]]@description<-description(value)
+          x@frames[[sampleName]]@parameters<-parameters(value)
+        }
 		
 		return(x)
 })
