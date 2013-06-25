@@ -329,7 +329,6 @@ setReplaceMethod("colnames",
 #' @param x a \code{ncdfFlowSet}
 #' @param i a \code{numeric} or \code{character} used as sample index
 #' @param j a \code{numeric} or \code{character} used as channel index
-    
 setMethod("[[",
 		signature=signature(x="ncdfFlowSet"),
 		definition=function(x, i, j, ...)
@@ -373,9 +372,14 @@ setMethod("[[",
 #' @param x a \code{ncdfFlowSet}
 #' @param i a \code{numeric} or \code{character} used as sample index of \code{ncdfFlowSet}
 #' @param j not used
+#' @param check.names a \code{logical} indicating whether the colnames of flowFrame
+#' should be matched to ncdfFlowSet, it can be set as FALSE in case of parseWorkspace 
+#' where the flowFrame with pre-fixed colnames needs to be written to fs
+#' yet the colnames of fs is not ready to be updated in the middle of parsing    
+
 setReplaceMethod("[[",
 		signature=signature(x="ncdfFlowSet",value="flowFrame"),
-		definition=function(x, i, j = "missing", ..., value)
+		definition=function(x, i, j = "missing", check.names = TRUE, ..., value)
 {
        
         #check sample index  
@@ -387,9 +391,14 @@ setReplaceMethod("[[",
         #validity check for channels in flowFrame
         localChNames <-colnames(x)
         frChNames <- colnames(value)
-        localChIndx <- match(frChNames,localChNames)
-        if(any(is.na(localChIndx)))
-          stop("Colnames of the input are not consistent with ncdfFlowSet!", sampleName)
+        if(check.names){
+          localChIndx <- match(frChNames,localChNames)
+          if(any(is.na(localChIndx)))
+            stop("Colnames of the input are not consistent with ncdfFlowSet!", sampleName)  
+        }else{
+          localChIndx <- 1:length(frChNames)
+        }
+        
 
         
         #####################################
@@ -451,11 +460,15 @@ setReplaceMethod("[[",
         
         #get original channel ind  
         origChNames <-x@origColnames ##
-        chIndx <- match(frChNames,origChNames)
-        if(any(is.na(chIndx)))
-        {
-          stop("Colnames of the input are not consistent with ncdfFlowSet!"
-              ,sampleName)    
+        if(check.names){
+          chIndx <- match(frChNames,origChNames)
+          if(any(is.na(chIndx)))
+          {
+            stop("Colnames of the input are not consistent with ncdfFlowSet!"
+                ,sampleName)    
+          }
+        }else{
+          chIndx <- match(colnames(ncfs),origChNames)
         }
         
         
