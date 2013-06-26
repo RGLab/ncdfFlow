@@ -460,13 +460,13 @@ setReplaceMethod("[[",
         }else if(srcCount == 0)
         {
           #add the data when source event is empty
-          message("write ", sampleName, "to empty cdf slot...")
+          message("write ", sampleName, " to empty cdf slot...")
         }
         
         ##################
         #write to ncdf
         ###################
-        mode(newData) <- "single"
+#        mode(newData) <- "single"
         #make sure to use origSampleVector for IO since phetaData slot may change after subsetting
         sampleInd<-which(ncfs@origSampleVector==sampleName)
         
@@ -476,7 +476,7 @@ setReplaceMethod("[[",
           chIndx <- match(frChNames,origChNames)
           if(any(is.na(chIndx)))
           {
-            stop("Colnames of the input are not consistent with ncdfFlowSet!"
+            stop("Colnames of the input are not consistent with ncdfFlowSet! "
                 ,sampleName)    
           }
         }else{
@@ -489,7 +489,7 @@ setReplaceMethod("[[",
         
         if(!msgWrite)
         {
-          stop("Writing to CDF file failed!",sampleName)
+          stop("Writing to CDF file failed! ",sampleName)
         }
         #restore the indices
         updateIndices(ncfs,sampleName,ind);
