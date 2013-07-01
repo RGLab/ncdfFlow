@@ -54,7 +54,7 @@ SEXP createFile(SEXP _fileName, SEXP _X, SEXP _Y, SEXP _Z, SEXP _metaSize,SEXP _
     if ((retval = nc_def_var(ncid, "metaData", NC_BYTE, M, &m_dimid, &m_varid)))//metadata
         ERR(retval);
 
-    if ((retval = nc_def_var(ncid, "exprsMat", NC_FLOAT, NDIMS, dimids, &varid)))
+    if ((retval = nc_def_var(ncid, "exprsMat", NC_DOUBLE, NDIMS, dimids, &varid)))
         ERR(retval);
     
     if (( retval = nc_def_var_chunking(ncid, varid, NC_CHUNKED, chunksize)))
@@ -102,9 +102,9 @@ SEXP createFile(SEXP _fileName, SEXP _X, SEXP _Y, SEXP _Z, SEXP _metaSize,SEXP _
 }
 
 
-/*each sample is stored as a data chunk(size=channel x events), which is
+/*each channel  is stored as a data chunk(size= events), which is
 indexed in file and fast to access as a whole unit(slice),so the C API for accessing
-events or channels are not provided due to the inefficient IO.   */
+events  are not provided due to the inefficient IO.   */
 SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sample) {
     //Rprintf("writeSlice\n");
     int retval, ncid, varid, nRow, nCol, sample;
