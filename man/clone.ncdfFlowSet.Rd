@@ -61,7 +61,7 @@ nc2[[1]]
 
 #add the actual raw data
 fs1  <- read.flowSet(files=files)
-addFrame(nc2,fs1[[1]],sampleNames(fs1)[1])
+nc2[[sampleNames(fs1)[1]]] <- fs1[[1]]
 nc2[[1]]
 
 
