@@ -329,43 +329,43 @@ setReplaceMethod("colnames",
 #' @param x a \code{ncdfFlowSet}
 #' @param i a \code{numeric} or \code{character} used as sample index
 #' @param j a \code{numeric} or \code{character} used as channel index
+#' @param use.exprs a \code{logical} scalar indicating whether to read the actual data from cdf
 setMethod("[[",
 		signature=signature(x="ncdfFlowSet"),
-		definition=function(x, i, j, ...)
+		definition=function(x, i, j, use.exprs = TRUE, ...)
 		{
 			if(length(i) != 1)
 				stop("subscript out of bounds (index must have length 1)")
 			
 			sampleName<-if(is.numeric(i)) sampleNames(x)[[i]] else i
 			fr <- x@frames[[sampleName]]
-#						
-			subByIndice<-all(!is.na(x@indices[[sampleName]]))
-#			browser()
-			
-			#get channel index 
-			origChNames <-x@origColnames ##
-            localChNames <-colnames(x)
-            if(!missing(j))
-              localChNames <- localChNames[j]
-			chIndx <- match(localChNames,origChNames)
-            
-			#get sample index
-			samplePos<-which(x@origSampleVector==sampleName)
-			mat <- .Call(dll$readSlice, x@file, as.integer(chIndx), as.integer(samplePos))
-			if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
 
-			##append colnames to matrix
-			colnames(mat) <- localChNames
-			
-			#subset data by indices if neccessary	
-			if(subByIndice&&nrow(mat)>0)
-				mat<-mat[getIndices(x,sampleName),,drop=FALSE]
-			
-			fr@exprs <- mat
-
-			
-			return(fr)
-		})
+            if(use.exprs){
+            			
+    			subByIndice<-all(!is.na(x@indices[[sampleName]]))
+    			#get channel index 
+    			origChNames <-x@origColnames ##
+                localChNames <-colnames(x)
+                if(!missing(j))
+                  localChNames <- localChNames[j]
+    			chIndx <- match(localChNames,origChNames)
+                
+    			#get sample index
+    			samplePos<-which(x@origSampleVector==sampleName)
+    			mat <- .Call(dll$readSlice, x@file, as.integer(chIndx), as.integer(samplePos))
+    			if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
+    
+    			##append colnames to matrix
+    			colnames(mat) <- localChNames
+    			
+    			#subset data by indices if neccessary	
+    			if(subByIndice&&nrow(mat)>0)
+    				mat<-mat[getIndices(x,sampleName),,drop=FALSE]
+    			
+    			fr@exprs <- mat
+          }			
+		return(fr)
+	})
 
 
 #' write the flow data from a \code{flowFrame} to \code{ncdfFlowSet} 
