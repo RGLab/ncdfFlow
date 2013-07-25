@@ -199,5 +199,19 @@ Maintainer: Mike Jiang <wjiang2@fhcrc.org>
 \seealso{
 \code{\link{flowSet}},\code{\link{read.ncdfFlowSet}},\code{\link{ncdfFlowList}}
 }
+\examples{
+data(GvHD)
 
+nc1 <- ncdfFlowSet(GvHD[1:2])
+nc2 <- ncdfFlowSet(GvHD[3:4])
+nc3 <- ncdfFlowSet(GvHD[5:6])
+
+##combine two ncdfFlowSets
+nc4 <- rbind2(nc1,nc2)
+
+##combine more than two ncdfFlowSets
+ncfslist <- as(list(nc1,nc2,nc3),"ncdfFlowList")
+nc5 <- rbind2(ncfslist)
+
+}
 \keyword{classes}
