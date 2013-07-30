@@ -340,15 +340,31 @@ setMethod("[[",
 			sampleName<-if(is.numeric(i)) sampleNames(x)[[i]] else i
 			fr <- x@frames[[sampleName]]
 
+            #get channel index 
+            origChNames <-x@origColnames ##
+            localChNames <-colnames(x)
+            
+            #subset by channel
+            if(!missing(j)){
+              if(is.character(j)){
+                j <- match(j, localChNames)
+                if(any(is.na(j)))
+                  stop("subscript out of bounds")
+              }
+             
+              
+              pData(fr@parameters) <- pData(fr@parameters)[j,]
+              localChNames <- localChNames[j]
+            }
+             
+            
+
+            
             if(use.exprs){
-            			
+                
+                chIndx <- match(localChNames,origChNames)#only fetch the subset of channels
+                
     			subByIndice<-all(!is.na(x@indices[[sampleName]]))
-    			#get channel index 
-    			origChNames <-x@origColnames ##
-                localChNames <-colnames(x)
-                if(!missing(j))
-                  localChNames <- localChNames[j]
-    			chIndx <- match(localChNames,origChNames)
                 
     			#get sample index
     			samplePos<-which(x@origSampleVector==sampleName)
