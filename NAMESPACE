@@ -36,7 +36,7 @@ exportClasses(ncdfFlowSet,ncdfFlowList)
 
 export(ncfsUnlink,clone.ncdfFlowSet,read.ncdfFlowSet,NcdfFlowSetToFlowSet,as.flowSet)
 
-exportMethods("show","[[","[","colnames","parameters","compensate","rbind2",
+exportMethods("show","[[","[","[[<-","colnames","parameters","compensate","rbind2",
 				"transform","ncfsApply","Subset","split","getIndices","updateIndices"
 				,"initIndices","ncdfFlowSet","ncdfFlowSet_sync","ncdfFlowSet_open","addFrame"
 				,"xyplot","densityplot","colnames<-")
