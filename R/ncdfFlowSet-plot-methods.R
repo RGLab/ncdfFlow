@@ -115,74 +115,13 @@ setMethod("densityplot",
 		})
 
 
-## pass data instead of data@frame for ncdfFlowSet
+
 setMethod("xyplot",
 		signature=signature(x="formula",
 				data="ncdfFlowSet"),
-		definition=function(x,
-				data,
-				smooth=TRUE,
-				filter=NULL,
-				as.table=TRUE,
-				prepanel=prepanel.xyplot.flowset,
-				panel=panel.xyplot.flowset,
-				xlab=channel.x.name,
-				ylab=channel.y.name,
-				par.settings=NULL,
-				...)
+		definition=function(x, data, ...)
 		{
-			## no conditioning variable, we chose 'name' as default
-			if (length(x[[3]]) == 1){
-				tmp <- x[[3]]
-				x[[3]] <- (~dummy | name)[[2]]
-				x[[3]][[2]] <- tmp
-			}
-			if(! "name" %in% names(pData(data)))
-				pData(data)$name <- sampleNames(data)
-			## par.settings will not be passed on to the panel functions, so
-			## we have to fetch it from ... and stick the gate relevant stuff
-			## back it in there manually
-			
-			gp<-par.settings
-			par.settings<-flowViz.par.get()#default theme for lattice
-			
-			if(!is.null(gp))#update the default theme if necessary
-			{
-				par.settings<-lattice:::updateList(par.settings,gp)  
-			}
-			## ugly hack to suppress warnings about coercion introducing
-			## NAs (needs to be `undone' inside prepanel and panel
-			## functions):
-			pd <- pData(data)
-			uniq.name <- flowViz:::createUniqueColumnName(pd)
-			pd[[uniq.name]] <- factor(sampleNames(data))
-			## deparse the formula structure
-			channel.y <- x[[2]]
-			channel.x <- x[[3]]
-			if (length(channel.x) == 3)
-			{
-				channel.x <- channel.x[[2]]
-				x[[3]][[2]] <- as.name(uniq.name)
-				x[[2]] <- NULL
-			}
-			else
-			{
-				x[[3]] <- as.name(uniq.name)
-				x[[2]] <- NULL
-			}
-			channel.x.name <- flowViz:::expr2char(channel.x)
-			channel.y.name <- flowViz:::expr2char(channel.y)
-			channel.x <- as.expression(channel.x)
-			channel.y <- as.expression(channel.y)
-			## use densityplot method with dedicated panel and prepanel
-			## functions to do the actual plotting
-#		  browser()
-            data <- data[,c(channel.x.name,channel.y.name)]
-			densityplot(x, data=pd, prepanel=prepanel, panel=panel,
-					frames=data, channel.x=channel.x,
-					channel.y=channel.y, channel.x.name=channel.x.name,
-					channel.y.name=channel.y.name, xlab=xlab, ylab=ylab,
-					smooth=smooth, gp=gp, as.table=as.table, filter=filter,
-					par.settings=par.settings, ...)
+          thisTrellisObj <- flowViz:::.xyplot.flowSet(x, data, ...)
+          thisTrellisObj
 		})
 
