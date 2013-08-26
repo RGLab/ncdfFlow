@@ -13,7 +13,7 @@ importClassesFrom(methods, ANY, character, environment, factor,
 importMethodsFrom(Biobase, description, "description<-", exprs,
                   "exprs<-", pData, "pData<-", phenoData,
                   "phenoData<-", sampleNames, "sampleNames<-",
-                  varLabels, varMetadata, "varMetadata<-")
+                  varLabels, varMetadata, "varMetadata<-",AnnotatedDataFrame)
 
 importMethodsFrom(flowCore, assign, colnames, "colnames<-", compensate,
                   each_col, eval, filter, fsApply, get, identifier,"%in%", ls
@@ -24,7 +24,7 @@ importMethodsFrom(flowViz, densityplot, xyplot)
 
 importMethodsFrom(methods, rbind2, show)
 
-
+importFrom(Biobase, copyEnv)
 
 importFrom(flowCore, norm2Filter, read.FCS, read.FCSheader)
 
