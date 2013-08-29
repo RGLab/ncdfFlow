@@ -5,7 +5,7 @@ setMethod("densityplot",
 		{
           
           #construct lattice object
-          thisTrellisObj <- flowViz:::.densityplot.flowSet(x, data, ...)
+          thisTrellisObj <- flowViz:::.densityplot.adapor(x, data, ...)
           #subset data on channel
           chnl <- thisTrellisObj[["panel.args.common"]][["channel.name"]]
           thisData <- thisTrellisObj[["panel.args.common"]][["frames"]]
