@@ -71,7 +71,7 @@ rm(nc1)
 #create empty ncdfFlowSet from fcs and add data slices afterwards
 nc1  <- read.ncdfFlowSet(files=files,ncdfFile="ncfsTest.nc",flowSetId="fs1",isWriteSlice= FALSE)
 fs1<-read.flowSet(files)
-addFrame(nc1,fs1[[1]],sampleNames(fs1)[1])
+nc1[[1]] <- fs1[[1]]
 nc1[[1]]
 nc1[[2]]
 

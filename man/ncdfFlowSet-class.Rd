@@ -3,18 +3,19 @@
 \alias{ncdfFlowSet-class}
 \alias{ncdfFlowSet}
 \alias{[,ncdfFlowSet,ANY-method}
-\alias{[[<-,ncdfFlowSet,ANY,ANY,flowFrame-method}
 \alias{[[,ncdfFlowSet,ANY-method}
+\alias{[[<-,ncdfFlowSet,ANY,ANY,flowFrame-method}
 \alias{colnames<-,ncdfFlowSet-method}
 \alias{compensate,ncdfFlowSet,ANY-method}
 \alias{getIndices}
 \alias{getIndices,ncdfFlowSet,character-method}
 \alias{initIndices}
-\alias{initIndices,ncdfFlowSet,logical-method}
+\alias{initIndices,ncdfFlowSet-method}
 \alias{ncdfFlowSet_sync}
 \alias{ncdfFlowSet_sync,ncdfFlowSet-method}
 \alias{NcdfFlowSetToFlowSet}
 \alias{NcdfFlowSetToFlowSet,ncdfFlowSet-method}
+\alias{as.flowSet}
 \alias{ncfsApply}
 \alias{ncfsApply,ncdfFlowSet-method}
 \alias{ncfsUnlink}
@@ -38,7 +39,6 @@
 \alias{updateIndices,ncdfFlowSet,character,logical-method}
 \alias{ncdfFlowSet_open}
 \alias{ncdfFlowSet_open,character-method}
-\alias{ncdfExprs}
 \alias{ncdfFlowSet,flowFrame-method}
 \alias{ncdfFlowSet,flowSet-method}
 \alias{densityplot,formula,ncdfFlowSet-method}
@@ -96,6 +96,23 @@ Most of the other flowSet methods are not listed here,but they all work as the s
       				}
       
     \item{[,[[}{Subsetting. similar to \code{\link[=[,flowSet-method]{[}},\code{\link[=[[,flowSet-method]{[[}} for flowSet.}
+	\item{[[<-}{replace data with a \code{flowFrame}. 
+	      
+	      \emph{Usage:}
+	      
+	      \code{   ncfs[[thisSample]] <- value}
+	
+	      \code{   ncfs[[thisSample,j = c("SSC-A","FSC-A")], check.names = TRUE, only.exprs = FALSE] <- value }
+	      Note that providing the channel index through \code{j} can speed up writing process since only the specified channels are written.
+	      Also \code{check.names} flag indicates whether the colnames of flowFrame should be matched to ncdfFlowSet, it can be set as FALSE 
+							Thus simply update the first n channels wihtin ncdfFlowSet without matching channel names
+							It is useful in \code{\link[flowWorkspace:parseWorkspace]{parseWorkspace}} where the flowFrame with pre-fixed colnames needs to be written to ncdfFlowSet
+							 where the colnames has not yet ready to be updated in the middle of parsing
+							  
+	      \code{only.exprs} option allows for only updating the exprs data when it is set to TRUE.
+		   otherwise, the parameters and decriptions slot within flowFrame are updated as well.
+	      
+	    }
     
     \item{getIndices}{extract the event indices of one or multiple samples from ncdfFlowSet,return a logical vector.
 				     	
@@ -103,11 +120,11 @@ Most of the other flowSet methods are not listed here,but they all work as the s
 				     	
 				      	\code{   getIndices(ncfs,sampleName)}
 				      }
-    \item{initIndices}{initialize the event indices for the entire ncdfFlowSet with either an NA or TRUE/FALSE logical value
+    \item{initIndices}{initialize the event indices for the entire ncdfFlowSet with NA 
 			    		
 			    		\emph{Usage:}
 				      	
-				      	\code{   initIndices(ncfs,y)}
+				      	\code{   initIndices(ncfs)}
 			    		}
     \item{updateIndices}{update the event indices of the target sample in ncdfFlowSet
 			    		
@@ -150,18 +167,12 @@ Most of the other flowSet methods are not listed here,but they all work as the s
 				     	 Note that ncdfFlowSet object is unrecoverable after cdf is deleted.
 				     	 So this method is usually called when ncdfFlowSet object is no longer in need.
      	 				}
-	\item{ncdfExprs}{Extract or replace the raw data intensities,equivalent to \code{\link{exprs}}.
-					It reads the data matrix from cdf file instead of memory.    
-			     	
-			     	\emph{Usage:}
-			      
-			     	 \code{ncdfExprs(ncfs,sampleName, channel,subByIndice)}
-     	 			}
-    \item{NcdfFlowSetToFlowSet}{convert a subset of ncdfFlowSet to flowSet.
+
+    \item{as.flowSet}{convert a subset of ncdfFlowSet to flowSet.
     
 						  		  \emph{Usage:}
 						      
-						     	 \code{NcdfFlowSetToFlowSet(ncfs,top)}
+						     	 \code{as.flowSet(ncfs,top)}
 						     	 
 						     	 Argument \code{top} specifies the number of samples evenly selected
 						     	 from ncdfFlowSet. 
@@ -206,5 +217,19 @@ Maintainer: Mike Jiang <wjiang2@fhcrc.org>
 \seealso{
 \code{\link{flowSet}},\code{\link{read.ncdfFlowSet}},\code{\link{ncdfFlowList}}
 }
+\examples{
+data(GvHD)
 
+nc1 <- ncdfFlowSet(GvHD[1:2])
+nc2 <- ncdfFlowSet(GvHD[3:4])
+nc3 <- ncdfFlowSet(GvHD[5:6])
+
+##combine two ncdfFlowSets
+nc4 <- rbind2(nc1,nc2)
+
+##combine more than two ncdfFlowSets
+ncfslist <- as(list(nc1,nc2,nc3),"ncdfFlowList")
+nc5 <- rbind2(ncfslist)
+
+}
 \keyword{classes}

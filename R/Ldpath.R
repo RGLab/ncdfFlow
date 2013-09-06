@@ -39,8 +39,9 @@ ncdfFlowLdFlags <- function(static=staticLinking()) {
 #        #}
     } else {					# else for dynamic linking
         flags <- paste("-L", ncdfFlowdir, " -lncdfFlow", sep="") # baseline setting
-        if ((.Platform$OS.type == "unix") &&    # on Linux, we can use rpath to encode path
-            (length(grep("^linux",R.version$os)))) {
+#        if ((.Platform$OS.type == "unix") &&    # on Linux, we can use rpath to encode path
+#            (length(grep("^linux",R.version$os)))) {
+          if (.Platform$OS.type == "unix") {
             flags <- paste(flags, " -Wl,-rpath,", ncdfFlowdir, sep="")
         }
     }

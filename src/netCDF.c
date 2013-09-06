@@ -31,7 +31,7 @@ SEXP createFile(SEXP _fileName, SEXP _X, SEXP _Y, SEXP _Z, SEXP _metaSize,SEXP _
     int m_dimid,m_varid;//metadata
     int compress = LOGICAL(_compress)[0];
     SEXP k = allocVector(LGLSXP,1);
-    size_t chunksize[] = {1, Y, X};
+    size_t chunksize[] = {1, 1, X};
     
     if ((retval = nc_create( translateChar(STRING_ELT(_fileName, 0)), NC_NETCDF4, &ncid)))
       ERR(retval);
@@ -54,14 +54,14 @@ SEXP createFile(SEXP _fileName, SEXP _X, SEXP _Y, SEXP _Z, SEXP _metaSize,SEXP _
     if ((retval = nc_def_var(ncid, "metaData", NC_BYTE, M, &m_dimid, &m_varid)))//metadata
         ERR(retval);
 
-    if ((retval = nc_def_var(ncid, "exprsMat", NC_FLOAT, NDIMS, dimids, &varid)))
+    if ((retval = nc_def_var(ncid, "exprsMat", NC_DOUBLE, NDIMS, dimids, &varid)))
         ERR(retval);
     
     if (( retval = nc_def_var_chunking(ncid, varid, NC_CHUNKED, chunksize)))
         ERR(retval);
-
-    if (( retval = nc_set_var_chunk_cache(ncid, varid, CACHE_SIZE, CACHE_NELEMS, CACHE_PREEMPTION)))
-        ERR(retval);
+    	/*use default cache settings since we are not using it at the moment*/
+//    if (( retval = nc_set_var_chunk_cache(ncid, varid, CACHE_SIZE, CACHE_NELEMS, CACHE_PREEMPTION)))
+//        ERR(retval);
     
     if(compress) {
         if (( retval = nc_def_var_deflate(ncid, varid, 0, 1, DEFLATE_LEVEL)))
@@ -102,10 +102,10 @@ SEXP createFile(SEXP _fileName, SEXP _X, SEXP _Y, SEXP _Z, SEXP _metaSize,SEXP _
 }
 
 
-/*each sample is stored as a data chunk(size=channel x events), which is
+/*each channel  is stored as a data chunk(size= events), which is
 indexed in file and fast to access as a whole unit(slice),so the C API for accessing
-events or channels are not provided due to the inefficient IO.   */
-SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _sample) {
+events  are not provided due to the inefficient IO.   */
+SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sample) {
     //Rprintf("writeSlice\n");
     int retval, ncid, varid, nRow, nCol, sample;
     SEXP Rdim, k = allocVector(LGLSXP,1);
@@ -113,24 +113,33 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _sample) {
     nRow = INTEGER(Rdim)[0];
     nCol = INTEGER(Rdim)[1];
     sample = INTEGER(_sample)[0]-1;  // R to C indexing
-    size_t start[] = {sample, 0, 0};
-    size_t count[] = {1, nCol, nRow};
+
+
     double *mat = REAL(_mat);
+    int * chIndx = INTEGER(_chIndx);
+	int chCount = length(_chIndx);
     
-    //Rprintf("Opening file\n");
+
     if ((retval = nc_open(translateChar(STRING_ELT(_fileName, 0)), NC_WRITE, &ncid)))
         ERR(retval);
     
-    //Rprintf("Retrieving variable\n");
+
     if((retval = nc_inq_varid (ncid, "exprsMat", &varid)))
         ERR(retval);
-    // check if max rows of ncdf file is exceeded at R level
-    //Rprintf("Write variable\n");
-    if((retval = nc_put_vara_double(ncid, varid, start, count, mat)))
-        ERR(retval);
+
+    for(unsigned i=0;i<chCount;i++)
+	{
+		int colStart = chIndx[i]-1;
+		size_t start[] = {sample, colStart, 0};
+		size_t count[] = {1, 1, nRow};
+		double * vec = mat+i*nRow;
+		if((retval = nc_put_vara_double(ncid, varid, start, count, vec)))
+				ERR(retval);
+
+      }
 
     int sampCount;
-    //Rprintf("Get sampleCount attribute\n");
+
     if((retval = nc_get_att_int(ncid, varid, "sampleCount", &sampCount)))
         ERR(retval);
 
@@ -138,17 +147,19 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _sample) {
     if(sample >= sampCount) {
         len = sample;
     }
+
     int *eCount = (int *) R_alloc( sizeof(int), len);
     //Rprintf("Get eventCount attribute\n");
     if((retval = nc_get_att_int(ncid, varid, "eventCount", eCount)))
         ERR(retval);
     eCount[sample] = nRow;
+
+
     //Rprintf("Redefine ncid\n");
-    if((retval = nc_redef(ncid)))
-        ERR(retval);
-    //Rprintf("Writing eventCount\n");
+	if((retval = nc_redef(ncid)))
+		ERR(retval);
     if((retval = nc_put_att_int(ncid, varid, "eventCount", NC_INT, len, eCount)))
-        ERR(retval);
+		ERR(retval);
     //Rprintf("Finished defining ncid\n");
     if((retval = nc_enddef(ncid)))
         ERR(retval);
@@ -161,59 +172,52 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _sample) {
 
 }
 
-SEXP readSlice(SEXP _fileName, SEXP _y, SEXP _sample ) {
-    //Rprintf("readSlice\n");
-    hid_t estack;
-    //estack = H5Eget_current_stack();
-    int retval, ncid, varid, colStart, colEnd, nRow, sample,failcount=0;
+SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sample ) {
+
+    int retval, ncid, varid, nRow;
     SEXP ans, dnms;
-    sample = INTEGER(_sample)[0]-1;  // R to C indexing
-    colStart = INTEGER(_y)[0] -1;
-    colEnd = INTEGER(_y)[1] -1;
-  
-    //Rprintf("ReadSlice: opening\n");
+    int sample = INTEGER(_sample)[0]-1;  // R to C indexing
+    int * chIndx = INTEGER(_chIndx);
+    int chCount = length(_chIndx);
+
+
     if ((retval = nc_open(translateChar(STRING_ELT(_fileName, 0)), NC_NOWRITE,&ncid))){
-        //H5Eprint(estack,stderr);
+
         ERR(retval);
     }
         
     
-    //Rprintf("ReadSlice: get variable\n");
+
     if((retval = nc_inq_varid (ncid, "exprsMat", &varid)))
         ERR(retval);  
 
     int sampCount;
-    //Rprintf("ReadSlice: get sample count\n");
+
     if((retval = nc_get_att_int(ncid, varid, "sampleCount", &sampCount)))
         ERR(retval);
  
     int *eCount = (int *) R_alloc( sizeof(int), sampCount);
-    //Rprintf("ReadSlice: get event count\n");
+
     if((retval = nc_get_att_int(ncid, varid, "eventCount", eCount)))
         ERR(retval);
     nRow = eCount[sample] ;
     
-    size_t start[] = {sample, colStart, 0};
-    size_t count[] = {1, colEnd +1 - colStart, nRow};
-    PROTECT(ans = allocVector(REALSXP, nRow*(colEnd + 1- colStart)));
+    PROTECT(ans = allocVector(REALSXP, nRow*chCount));
     double *mat = REAL(ans);
-    //Rprintf("ReadSlice: reading\n");
-    if((retval = nc_get_vara_double(ncid, varid, start, count, mat)))
-        ERR(retval);
-//    retval = nc_get_vara_double(ncid, varid, start, count, mat);
-//    if(retval!=NC_NOERR)
-//    {
-//    	Rprintf( "Error in readSlice on nc_get_vara_double call: %s\n",
-//    			nc_strerror(retval) );
-//    }
+    for(unsigned i=0;i<chCount;i++){
+    	int colStart = chIndx[i]-1;
+    	size_t start[] = {sample, colStart, 0};
+		size_t count[] = {1, 1, nRow};
+		double * vec = mat+i*nRow;
+		if((retval = nc_get_vara_double(ncid, varid, start, count, vec)))
+			ERR(retval);
+    }
 
-
-    //Rprintf("ReadSlice: closing\n");
     if ((retval = nc_close(ncid)))
         ERR(retval);
     PROTECT(dnms = allocVector(INTSXP, 2));
     INTEGER(dnms)[0] = nRow;
-    INTEGER(dnms)[1]= colEnd + 1 - colStart;
+    INTEGER(dnms)[1]=  chCount;
     setAttrib(ans,R_DimSymbol, dnms);
     UNPROTECT(2);
     return(ans);
