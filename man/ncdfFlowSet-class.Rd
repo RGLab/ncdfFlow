@@ -106,7 +106,7 @@ Most of the other flowSet methods are not listed here,but they all work as the s
 	      Note that providing the channel index through \code{j} can speed up writing process since only the specified channels are written.
 	      Also \code{check.names} flag indicates whether the colnames of flowFrame should be matched to ncdfFlowSet, it can be set as FALSE 
 							Thus simply update the first n channels wihtin ncdfFlowSet without matching channel names
-							It is useful in \code{\link{flowWorkspace:parseWorkspace}} where the flowFrame with pre-fixed colnames needs to be written to ncdfFlowSet
+							It is useful in \code{\link[flowWorkspace:parseWorkspace]{parseWorkspace}} where the flowFrame with pre-fixed colnames needs to be written to ncdfFlowSet
 							 where the colnames has not yet ready to be updated in the middle of parsing
 							  
 	      \code{only.exprs} option allows for only updating the exprs data when it is set to TRUE.
