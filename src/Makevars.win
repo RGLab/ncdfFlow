@@ -1,2 +1,2 @@
-PKG_LIBS += -L$(LIB_NETCDF)$(R_ARCH)/lib -L$(LIB_HDF5)$(R_ARCH)/lib -lnetcdf
+PKG_LIBS += -L$(LIB_NETCDF)$(R_ARCH)/lib -lnetcdf
 PKG_CPPFLAGS += -I$(RHOME)/src/include -I$(LIB_NETCDF)$(R_ARCH)/include 
