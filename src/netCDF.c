@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <netcdf.h>
-#include <hdf5.h>
 #define ERRCODE 2
 
 //#define ERR(e) {printf("Error: %s\n", nc_strerror(e)); exit(ERRCODE);}
