@@ -665,6 +665,33 @@ setMethod("spillover",
 
 
 
-
+## Note that the replacement method also replaces the GUID for each flowFrame
+setReplaceMethod("sampleNames",
+    signature=signature(object="ncdfFlowSet"),
+    definition=function(object, value)
+    {
+#      browser()
+      oldSampleNames <- sampleNames(object)
+      
+      #update pData and flowFrame
+      object <- callNextMethod()
+      
+      #update origSampleVector slot
+      origSampleVector <- object@origSampleVector
+      origSampleVector[match(oldSampleNames, origSampleVector)] <- value
+      object@origSampleVector <- origSampleVector
+      
+   
+      #update indices slot
+      indEnv <- object@indices
+      mapply(oldSampleNames, value, FUN = function(old, new){
+            assign(new, indEnv[[old]], indEnv) # copy from old to enw  
+            eval(substitute(rm(v, envir = indEnv), list(v = old))) # del the old
+            
+          })
+      
+            
+      object
+    })
 
 
