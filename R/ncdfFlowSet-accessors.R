@@ -364,10 +364,16 @@ setMethod("[[",
                 
                 chIndx <- match(localChNames,origChNames)#only fetch the subset of channels
                 
-    			subByIndice<-all(!is.na(x@indices[[sampleName]]))
+                Indice <- x@indices[[sampleName]]
+                if(is.null(Indice))
+                  stop("Invalid sample name '",sampleName, "'! It is not found in 'indices' slot!")
+    			subByIndice <- all(!is.na(Indice))
                 
     			#get sample index
-    			samplePos<-which(x@origSampleVector==sampleName)
+    			samplePos <- which(x@origSampleVector==sampleName)
+                if(length(samplePos) == 0)
+                  stop("Invalid sample name '", sampleName, "'! It is not found in 'origSampleVector' slot!")
+                
     			mat <- .Call(dll$readSlice, x@file, as.integer(chIndx), as.integer(samplePos))
     			if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
     
