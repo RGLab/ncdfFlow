@@ -1,8 +1,8 @@
 
 ## make sure system.file returns an absolute path
-ncdfFlow.system.file <- function(...){
+ncdfFlow.system.file <- function(pkg , ...){
 	
-    tools:::file_path_as_absolute( base:::system.file( ..., package = "ncdfFlow" ) )
+    tools:::file_path_as_absolute( base:::system.file( ..., package = pkg ) )
 }
 
 ## identifies if the default linking on the platform should be static
@@ -14,11 +14,12 @@ staticLinking <- function() {
 
 ## Use R's internal knowledge of path settings to find the lib/ directory
 ## plus optinally an arch-specific directory on system building multi-arch
-ncdfFlowLdPath <- function() {
+ncdfFlowLdPath <- function(pkg) {
+  
     if (nzchar(.Platform$r_arch)) {	## eg amd64, ia64, mips
-        path <- ncdfFlow.system.file("lib",.Platform$r_arch)
+        path <- ncdfFlow.system.file("lib", pkg = pkg, .Platform$r_arch)
     } else {
-        path <- ncdfFlow.system.file("lib")
+        path <- ncdfFlow.system.file("lib", pkg = pkg)
     }
     path
 }
@@ -30,15 +31,15 @@ ncdfFlowLdPath <- function() {
 ## Updated Jan 2010:  We now default to static linking but allow the use
 ##                    of rpath on Linux if static==FALSE has been chosen
 ##                    Note that this is probably being called from LdFlags()
-ncdfFlowLdFlags <- function(static=staticLinking()) {
-    ncdfFlowdir <- ncdfFlowLdPath()
+ncdfFlowLdFlags <- function(static=staticLinking(), pkg = "ncdfFlow") {
+    ncdfFlowdir <- ncdfFlowLdPath(pkg)
     if (static) {                               # static is default on Windows and OS X
-        flags <- paste(ncdfFlowdir, "/libncdfFlow.a", sep="")
+        flags <- paste(ncdfFlowdir, "/lib", pkg,".a", sep="")
 #        #if (.Platform$OS.type=="windows") {
 #        #    flags <- shQuote(flags)
 #        #}
     } else {					# else for dynamic linking
-        flags <- paste("-L", ncdfFlowdir, " -lncdfFlow", sep="") # baseline setting
+        flags <- paste("-L", ncdfFlowdir, " -l", pkg, ",", sep="") # baseline setting
 #        if ((.Platform$OS.type == "unix") &&    # on Linux, we can use rpath to encode path
 #            (length(grep("^linux",R.version$os)))) {
           if (.Platform$OS.type == "unix") {
