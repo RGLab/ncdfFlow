@@ -6,20 +6,8 @@ ifneq (,)
 This makefile requires GNU Make.
 endif
 
-netcdf_basename=@netcdf_basename@
-
-netcdf_cflags=-I$(netcdf_basename)/ -I$(netcdf_basename)/include
-netcdf_src=${wildcard \
-						${netcdf_basename}/liblib/*.c \
-						${netcdf_basename}/libdispatch/*.c \
-						${netcdf_basename}/libsrc/*.c \
-						${netcdf_basename}/libsrc4/*.c \
-				}
-				
-netcdf_objs=${netcdf_src:.c=.o}
-
-PKG_CPPFLAGS=@PKG_CPPFLAGS@ ${netcdf_cflags}
-PKG_LIBS=${netcdf_objs} @PKG_LIBS@ 
+PKG_CPPFLAGS=-I/home/wjiang2/R/x86_64-unknown-linux-gnu-library/3.0/rhdf5/include 
+PKG_LIBS=-L/home/wjiang2/R/x86_64-unknown-linux-gnu-library/3.0/rhdf5/lib -lhdf5ForBioC
 
 USERDIR =	../inst/lib
 USERLIB	=	libncdfFlow$(DYLIB_EXT)
@@ -28,7 +16,7 @@ USERLIBST =	libncdfFlow.a
 
 all: 	$(SHLIB) userLibrary
 
-$(SHLIB): $(OBJECTS) $(netcdf_objs)
+$(SHLIB): $(OBJECTS)
 		
 userLibrary: 	$(USERLIB)
 		-@if test ! -e $(USERDIR)$(R_ARCH); then mkdir -p $(USERDIR)$(R_ARCH); fi
