@@ -9,7 +9,7 @@ herr_t _createFile(const char * fName, unsigned nSample, unsigned nChnl, unsigne
 	herr_t      status;
 
 	/* Create a new file using default properties. */
-	file_id = H5Fcreate("test.h5", H5F_ACC_EXCL, H5P_DEFAULT, H5P_DEFAULT);
+	file_id = H5Fcreate("test.h5", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
 	/* Create the data space for the 3d mat. */
 	dims[0] = nSample;
@@ -20,13 +20,17 @@ herr_t _createFile(const char * fName, unsigned nSample, unsigned nChnl, unsigne
 	/* Create the 3d mat. */
 	dataset_id = H5Dcreate2(file_id, DATASETNAME, H5T_IEEE_F64LE_g, dataspace_id,
 						  H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	//set it to use chunking
+	hsize_t		chunk_dims[3] = {1, 1, nEvt};
+	hid_t dcpl_id = H5Pcreate(H5P_DATASET_CREATE);
+	H5Pset_chunk(dcpl_id, 3, chunk_dims);
 
 	/* Create the data space for the attribute. */
 	dim_attr = nSample;
 	dataspace_attr_id = H5Screate_simple(1, &dim_attr, NULL);
 
 	/* Create a eventCount attribute. */
-	attribute_id = H5Acreate2 (dataset_id, "eventCount", H5T_STD_U32BE, dataspace_attr_id,
+	attribute_id = H5Acreate2 (dataset_id, "eventCount", H5T_STD_U32LE, dataspace_attr_id,
 							 H5P_DEFAULT, H5P_DEFAULT);
 
 	/* Close the attribute. */
