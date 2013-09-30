@@ -88,8 +88,9 @@ herr_t _writeSlice(const char * fName, double * mat, unsigned nEvents, unsigned 
 	 * write subset
 	 */
 	unsigned i;
+	sampleIndx = sampleIndx -1;//convert from R to C indexing
 	for(i = 0; i < chCount; i++){
-		int colStart = chnlIndx[i];
+		int colStart = chnlIndx[i] -1; //convert from R to C indexing
 		offset[0] = sampleIndx;//start from sampleIndx-th sample
 		offset[1] = colStart; //start from colStart-th channel
 		offset[2] = 0; //start from the first event
@@ -142,13 +143,14 @@ herr_t _writeSlice(const char * fName, double * mat, unsigned nEvents, unsigned 
 	 * Close/release resources.
 	 */
 
+	free(eCount);
 	H5Aclose(attrID);
 	H5Dclose(dataset);
 	H5Sclose(dataspace);
 	H5Sclose(memspace);
 	H5Fclose(file);
 
-	free(eCount);
+
 	return status;
 
 }
@@ -164,6 +166,8 @@ herr_t _readSlice(const char * fName, unsigned * chnlIndx, unsigned chCount, uns
 	dataset = H5Dopen(file, DATASETNAME, H5P_DEFAULT);
     dataspace = H5Dget_space(dataset);    /* dataspace handle */
 
+    sampleIndx = sampleIndx -1;//convert from R to C indexing
+
     /*
      * get the total number of events for the current sample
      */
@@ -173,7 +177,7 @@ herr_t _readSlice(const char * fName, unsigned * chnlIndx, unsigned chCount, uns
     attrID = H5Aopen(dataset, "eventCount", H5P_DEFAULT);
     status = H5Aread(attrID, H5T_NATIVE_UINT32, eCount);
     unsigned nEvents = eCount[sampleIndx];
-
+    free(eCount);
     /*
 	 * Define the memory dataspace.
 	 */
@@ -192,7 +196,7 @@ herr_t _readSlice(const char * fName, unsigned * chnlIndx, unsigned chCount, uns
 
 	unsigned i;
 	for(i = 0; i < chCount; i++){
-		int colStart = chnlIndx[i];
+		int colStart = chnlIndx[i] - 1;//convert from R to C indexing
 		offset[0] = sampleIndx;//start from sampleIndx-th sample
 		offset[1] = colStart; //start from colStart-th channel
 		offset[2] = 0; //start from the first event
@@ -237,7 +241,7 @@ herr_t _readSlice(const char * fName, unsigned * chnlIndx, unsigned chCount, uns
 	H5Sclose(memspace);
 	H5Fclose(file);
 
-	free(eCount);
+
 
 	return status;
 }
