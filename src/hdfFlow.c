@@ -87,11 +87,11 @@ herr_t _writeSlice(const char * fName, double * mat, unsigned nEvents, unsigned 
 	 */
 	hsize_t      count[3];              /* size of the hyperslab in the file */
 	hsize_t      offset[3];             /* hyperslab offset in the file */
-	hsize_t      count_in[3];          /* size of the hyperslab in memory */
+	hsize_t      count_in[2];          /* size of the hyperslab in memory */
 	hsize_t      offset_in[2];         /* hyperslab offset in memory */
 
 	/*
-	 * write subset
+	 * write subsets
 	 */
 	unsigned i;
 	sampleIndx = sampleIndx -1;//convert from R to C indexing
@@ -108,25 +108,22 @@ herr_t _writeSlice(const char * fName, double * mat, unsigned nEvents, unsigned 
 
 		status = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, offset, NULL,
 											count, NULL);
-
-
 		/*
 		 * Define memory hyperslab.
 		 */
 		offset_in[0] = i;//start from ith column
 		offset_in[1] = 0;//start from 0th event
 
+
 		count_in[0]  = 1;//one channel
 		count_in[1]  = nEvents; //all events
+
 		status = H5Sselect_hyperslab(memspace, H5S_SELECT_SET, offset_in, NULL,
 				count_in, NULL);
-
 		/*
-		 * Read data from hyperslab in the file into the hyperslab in
-		 * memory .
+		 * write data to hyperslab in the file from memory .
 		 */
-		status = H5Dwrite(dataset, H5T_NATIVE_DOUBLE, memspace, dataspace,
-				 H5P_DEFAULT, mat);
+		status = H5Dwrite(dataset, H5T_NATIVE_DOUBLE, memspace, dataspace, H5P_DEFAULT, mat);
 
 	}
 

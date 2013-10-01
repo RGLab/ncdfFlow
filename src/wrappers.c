@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "hdfFlow.h"
 
-#define ERR(e) {REprintf("hdf Error: %s\n", nc_strerror(e));SEXP k = allocVector(LGLSXP,1); LOGICAL(k)[0]=FALSE;return(k);}
+#define ERR(e) {REprintf("hdf Error: %s\n", HEstring(e));SEXP k = allocVector(LGLSXP,1); LOGICAL(k)[0]=FALSE;return(k);}
 
 
 SEXP createFile(SEXP _fileName, SEXP _X, SEXP _Y, SEXP _Z, SEXP _metaSize,SEXP _compress) {
@@ -16,7 +16,7 @@ SEXP createFile(SEXP _fileName, SEXP _X, SEXP _Y, SEXP _Z, SEXP _metaSize,SEXP _
     int compress = LOGICAL(_compress)[0];
 
     int retval = _createFile(translateChar(STRING_ELT(_fileName, 0)), X, Y, Z);
-    if(retval)
+    if(retval < 0)
       ERR(retval);
 
     return(R_NilValue);
@@ -36,8 +36,8 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sample) {
     int * chIndx = INTEGER(_chIndx);
 	int chCount = length(_chIndx);
     
-
-    if ((retval = _writeSlice(translateChar(STRING_ELT(_fileName, 0)), mat, nRow, chIndx, chCount, sample)))
+	retval = _writeSlice(translateChar(STRING_ELT(_fileName, 0)), mat, nRow, chIndx, chCount, sample);
+	if(retval < 0)
         ERR(retval);
 
     return(R_NilValue);
@@ -55,8 +55,9 @@ SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sample ) {
     PROTECT(ans = allocVector(REALSXP, nRow*chCount));
     double *mat = REAL(ans);
 
-    if ((retval = _readSlice(translateChar(STRING_ELT(_fileName, 0)), chIndx, chCount, sample, mat)))
-        ERR(retval);
+    retval = _readSlice(translateChar(STRING_ELT(_fileName, 0)), chIndx, chCount, sample, mat);
+	if(retval < 0)
+    	ERR(retval);
     
 
     PROTECT(dnms = allocVector(INTSXP, 2));
