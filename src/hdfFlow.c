@@ -12,7 +12,7 @@ herr_t _createFile(const char * fName, unsigned nSample, unsigned nChnl, unsigne
 	herr_t      status;
 
 	/* Create a new file using default properties. */
-	file_id = H5Fcreate("test.h5", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+	file_id = H5Fcreate(fName, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 
 	/* Create the data space for the 3d mat. */
 	dims[0] = nSample;
@@ -159,8 +159,19 @@ herr_t _writeSlice(const char * fName, double * mat, unsigned nEvents, unsigned 
 	return status;
 
 }
-
-herr_t _readSlice(const char * fName, unsigned * chnlIndx, unsigned chCount, unsigned sampleIndx, double * data_out) {
+/*
+ * For the simplicity reason, we allocated data_out outside of routine
+ * when tested in in pure C environment so that we don't have to deal with R C API: allocVector
+ *
+ * But when called from R wrapper, we need to do in inline
+ * because the size of this memory buffer is yet to be determined
+ * by reading total number of events from hdf file. (And we don't want to open
+ * hdf file twice)
+ *
+ *
+ */
+herr_t _readSlice(const char * fName, unsigned * chnlIndx, unsigned chCount, unsigned sampleIndx, double * data_out)
+{
 	/*
 	 * Open the file and the dataset.
 	 */
@@ -186,8 +197,8 @@ herr_t _readSlice(const char * fName, unsigned * chnlIndx, unsigned chCount, uns
 	//define memory space(single-element space) for ecount
 	hsize_t dimsm_ecount = 1;
 	hid_t memspace_ecount = H5Screate_simple(1, &dimsm_ecount,NULL);
-	status = H5Dread(dataset_ecountID, H5T_NATIVE_UINT32,memspace_ecount ,dataspace_ecount, H5P_DEFAULT, &nEvents);
-
+	status = H5Dread(dataset_ecountID, H5T_NATIVE_UINT32
+						,memspace_ecount ,dataspace_ecount, H5P_DEFAULT, &nEvents);
 
     /*
 	 * Define the memory dataspace.

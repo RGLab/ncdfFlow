@@ -1,46 +1,10 @@
-#  GNUMakefile
- 
-# Just a snippet to stop executing under other make(1) commands
-# that won't understand these lines
-ifneq (,)
-This makefile requires GNU Make.
-endif
-
 PKG_CPPFLAGS=-I/home/wjiang2/R/x86_64-unknown-linux-gnu-library/3.0/rhdf5/include 
-PKG_LIBS=-L/home/wjiang2/R/x86_64-unknown-linux-gnu-library/3.0/rhdf5/lib -lhdf5ForBioC
-
-USERDIR =	../inst/lib
-USERLIB	=	libncdfFlow$(DYLIB_EXT)
-USERLIBST =	libncdfFlow.a
+PKG_LIBS=-L/home/wjiang2/R/x86_64-unknown-linux-gnu-library/3.0/rhdf5/lib -Wl,-rpath,/home/wjiang2/R/x86_64-unknown-linux-gnu-library/3.0/rhdf5/lib -lhdf5ForBioC
 
 
-all: 	$(SHLIB) userLibrary
 
-$(SHLIB): $(OBJECTS)
-		
-userLibrary: 	$(USERLIB)
-		-@if test ! -e $(USERDIR)$(R_ARCH); then mkdir -p $(USERDIR)$(R_ARCH); fi
-		cp $(USERLIB) $(USERDIR)$(R_ARCH)
-		rm $(USERLIB)
 
-#simply copy the SHLIB instead of rebuilding it
-#make sure to insert the full path of lib since mac has problem to find it at run time
-$(USERLIB):$(SHLIB)
-	cp $(SHLIB) $(USERLIB) 
-#note that $ALL_LIBS contains $(netcdf_objs) already
-		@if test -e "/usr/bin/install_name_tool"; then /usr/bin/install_name_tool -id $(R_PACKAGE_DIR)/lib$(R_ARCH)/$(USERLIB) $(USERLIB); fi
 
-#static lib doesn't work since it misses the info of hdf5
-#$(USERLIBST): 	$(OBJECTS) $(netcdf_objs)
-#		@echo target $@
-#		$(AR) rcs $(USERLIBST) $(OBJECTS) $(netcdf_objs)
-#		@if test -n "$(RANLIB)"; then $(RANLIB) $(USERLIBST); fi
-
-.PHONY: 	all clean userLibrary
-
-clean:
-	@echo $(OBJECTS)
-		rm -f $(OBJECTS) $(netcdf_objs) $(SHLIB) $(USERLIB) $(USERLIBST)
 
 
 

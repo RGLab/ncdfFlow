@@ -1,6 +1,5 @@
-#include <R.h>
-#include <R_ext/Rdynload.h>
-#include "ncdfFlow.h"
+#include "wrappers.h"
+
 static const R_CallMethodDef CallEntries[] = {
     {"ncdf_bitarray_set", (DL_FUNC)&ncdf_bitarray_set, 2},
     {"ncdf_bitarray_getSetBitPos", (DL_FUNC)&ncdf_bitarray_getSetBitPos, 1},
