@@ -1,6 +1,7 @@
 dll=useDynLib("ncdfFlow",.registration=TRUE)
 
-#Imports: Biobase, flowCore, flowViz, methods
+import(zlibbioc) #for loading hdf lib (comes from rhdf5 correctly
+
 
 importClassesFrom(Biobase, AnnotatedDataFrame)
 

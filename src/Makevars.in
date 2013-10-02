@@ -1,5 +1,3 @@
-#PKG_CPPFLAGS=-I/home/wjiang2/R/x86_64-unknown-linux-gnu-library/3.0/rhdf5/include 
-#PKG_LIBS=-L/home/wjiang2/R/x86_64-unknown-linux-gnu-library/3.0/rhdf5/lib -Wl,-rpath,/home/wjiang2/R/x86_64-unknown-linux-gnu-library/3.0/rhdf5/lib -lhdf5ForBioC
 PKG_CPPFLAGS=@PKG_CPPFLAGS@
 PKG_LIBS=@PKG_LIBS@
 
