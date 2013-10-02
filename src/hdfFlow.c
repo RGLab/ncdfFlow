@@ -20,13 +20,16 @@ herr_t _createFile(const char * fName, unsigned nSample, unsigned nChnl, unsigne
 	dims[2] = nEvt;
 	dataspace_id = H5Screate_simple(3, dims, NULL);
 
-	/* Create the 3d mat. */
-	dataset_id = H5Dcreate2(file_id, DATASETNAME, H5T_IEEE_F64LE_g, dataspace_id,
-						  H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	hid_t dcpl_id = H5Pcreate(H5P_DATASET_CREATE);
+
 	//set it to use chunking
 	hsize_t		chunk_dims[3] = {1, 1, nEvt};
-	hid_t dcpl_id = H5Pcreate(H5P_DATASET_CREATE);
 	H5Pset_chunk(dcpl_id, 3, chunk_dims);
+
+	/* Create the 3d mat. */
+	dataset_id = H5Dcreate2(file_id, DATASETNAME, H5T_IEEE_F64LE_g, dataspace_id,
+						  H5P_DEFAULT, dcpl_id, H5P_DEFAULT);
+
 
 	/* Create the data space for the attribute. */
 	dim_attr = nSample;
