@@ -6,7 +6,9 @@ void ERR(int e){
 //	errmsg = HEstring(e);
 	REprintf("hdf Error: %s\n", errmsg);
 }
-
+/*
+ * metaSize and compress are currently not used
+ */
 SEXP createFile(SEXP _fileName, SEXP _nEvent, SEXP _nChannel, SEXP _nSample, SEXP _metaSize,SEXP _compress) {
 
 	SEXP k = allocVector(LGLSXP,1); //create logical scalar for return value
