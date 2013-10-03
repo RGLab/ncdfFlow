@@ -5,9 +5,12 @@
  *
  * Thus use dataset instead of attribute to store events count
  * because we want to avoid dynamically allocating 1d array for it
+ *
+ * In order to keep it back-compatible, we have to stick to the attribute for eCount
  */
 herr_t _createFile(const char * fName, unsigned nSample, unsigned nChnl, unsigned nEvt){
-	hid_t       file_id, dataset_id, dataspace_id, dataspace_ecount_id,dataset_ecount_id;  /* identifiers */
+//	hid_t       file_id, dataset_id, dataspace_id, dataspace_ecount_id,dataset_ecount_id;  /* identifiers */
+	hid_t       file_id, dataset_id, dataspace_id, dataspace_attr_id, attribute_id;  /* identifiers */
 	hsize_t     dims[3], dim_attr;
 	herr_t      status;
 
@@ -33,24 +36,29 @@ herr_t _createFile(const char * fName, unsigned nSample, unsigned nChnl, unsigne
 
 	/* Create the data space for the attribute. */
 	dim_attr = nSample;
-	dataspace_ecount_id = H5Screate_simple(1, &dim_attr, NULL);
-
-	/* Create the 1d ds for eventCount */
-	dataset_ecount_id = H5Dcreate2(file_id, "/eventCount", H5T_STD_U32LE, dataspace_ecount_id,
-							  H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	dataspace_attr_id = H5Screate_simple(1, &dim_attr, NULL);
+	attribute_id = H5Acreate2 (dataset_id, "eventCount", H5T_STD_U32LE, dataspace_attr_id,
+	               H5P_DEFAULT, H5P_DEFAULT);
+//	dataspace_ecount_id = H5Screate_simple(1, &dim_attr, NULL);
+//
+//	/* Create the 1d ds for eventCount */
+//	dataset_ecount_id = H5Dcreate2(file_id, "/eventCount", H5T_STD_U32LE, dataspace_ecount_id,
+//							  H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
 
 
 
 	/* End access to the dataset and release resources used by it. */
 	status = H5Dclose(dataset_id);
-	status = H5Dclose(dataset_ecount_id);
+	status = H5Aclose(attribute_id);
+//	status = H5Dclose(dataset_ecount_id);
 
 	H5Pclose(dcpl_id);
 
 	/* Terminate access to the data space. */
 	status = H5Sclose(dataspace_id);
-	status = H5Sclose(dataspace_ecount_id);
+	status = H5Sclose(dataspace_attr_id);
+//	status = H5Sclose(dataspace_ecount_id);
 
 	/* Close the file. */
 	status = H5Fclose(file_id);
@@ -70,7 +78,7 @@ herr_t _writeSlice(const char * fName, double * mat, unsigned nEvents, unsigned 
 	 * Open the file and the dataset.
 	 */
 	hid_t  file, dataset,dataspace, memspace;         /* handles */
-
+	hid_t attrID;
 	herr_t      status;
 	file = H5Fopen(fName, H5F_ACC_RDWR, H5P_DEFAULT);//open file
 	dataset = H5Dopen(file, DATASETNAME, H5P_DEFAULT);//open dataset
@@ -131,31 +139,51 @@ herr_t _writeSlice(const char * fName, double * mat, unsigned nEvents, unsigned 
 	}
 
 
-	/*
-	 * update the eCount for current sample
-	 */
-	hid_t dataset_ecountID = H5Dopen(file, "/eventCount", H5P_DEFAULT);//open ecount ds
-	hid_t dataspace_ecount = H5Dget_space(dataset_ecountID); //get ds space for ecount
-	//select single element slab from dataset
-	hsize_t off_ecount = sampleIndx;
-	hsize_t count_ecount =1 ;
-	status = H5Sselect_hyperslab(dataspace_ecount, H5S_SELECT_SET, &off_ecount, NULL, &count_ecount, NULL);
-	//define memory space(single-element space) for ecount
-	hsize_t dimsm_ecount = 1;
-	hid_t memspace_ecount = H5Screate_simple(1, &dimsm_ecount,NULL);
-	status = H5Dwrite(dataset_ecountID, H5T_NATIVE_UINT32,memspace_ecount ,dataspace_ecount, H5P_DEFAULT, &nEvents);
+//	/*
+//	 * update the eCount for current sample
+//	 */
+//	hid_t dataset_ecountID = H5Dopen(file, "/eventCount", H5P_DEFAULT);//open ecount ds
+//	hid_t dataspace_ecount = H5Dget_space(dataset_ecountID); //get ds space for ecount
+//	//select single element slab from dataset
+//	hsize_t off_ecount = sampleIndx;
+//	hsize_t count_ecount =1 ;
+//	status = H5Sselect_hyperslab(dataspace_ecount, H5S_SELECT_SET, &off_ecount, NULL, &count_ecount, NULL);
+//	//define memory space(single-element space) for ecount
+//	hsize_t dimsm_ecount = 1;
+//	hid_t memspace_ecount = H5Screate_simple(1, &dimsm_ecount,NULL);
+//	status = H5Dwrite(dataset_ecountID, H5T_NATIVE_UINT32,memspace_ecount ,dataspace_ecount, H5P_DEFAULT, &nEvents);
+
+	 /*
+	  * get eCount attribute
+	   */
+	  hsize_t dims[3];
+	  status  = H5Sget_simple_extent_dims(dataspace, dims, NULL); //get dimensions of datset
+	  unsigned nSample = dims[0];//get total number of samples
+	  unsigned * eCount = (unsigned *) R_alloc(sizeof(unsigned), nSample);
+	  attrID = H5Aopen(dataset, "eventCount", H5P_DEFAULT);
+	  status = H5Aread(attrID, H5T_NATIVE_UINT32, eCount);
+	  //update the eCount for current sample
+	  eCount[sampleIndx] = nEvents;
+	  /*
+	   * write back to hdf
+	   */
+	  status = H5Awrite(attrID, H5T_NATIVE_UINT32, eCount);
+
+//	  free(eCount);
+	  H5Aclose(attrID);
+
 
 	/*
 	 * Close/release resources.
 	 */
 
 
-	H5Dclose(dataset_ecountID);
+//	H5Dclose(dataset_ecountID);
 	H5Dclose(dataset);
-	H5Sclose(dataspace_ecount);
+//	H5Sclose(dataspace_ecount);
 	H5Sclose(dataspace);
 	H5Sclose(memspace);
-	H5Sclose(memspace_ecount);
+//	H5Sclose(memspace_ecount);
 	H5Fclose(file);
 
 
@@ -190,18 +218,32 @@ herr_t _readSlice(const char * fName, unsigned * chnlIndx, unsigned chCount, uns
     /*
      * get the total number of events for the current sample
      */
-    unsigned nEvents;
-    hid_t dataset_ecountID = H5Dopen(file, "/eventCount", H5P_DEFAULT);//open ecount ds
-	hid_t dataspace_ecount = H5Dget_space(dataset_ecountID); //get ds space for ecount
-	//select single element slab from dataset
-	hsize_t off_ecount = sampleIndx;
-	hsize_t count_ecount = 1 ;
-	status = H5Sselect_hyperslab(dataspace_ecount, H5S_SELECT_SET, &off_ecount, NULL, &count_ecount, NULL);
-	//define memory space(single-element space) for ecount
-	hsize_t dimsm_ecount = 1;
-	hid_t memspace_ecount = H5Screate_simple(1, &dimsm_ecount,NULL);
-	status = H5Dread(dataset_ecountID, H5T_NATIVE_UINT32
-						,memspace_ecount ,dataspace_ecount, H5P_DEFAULT, &nEvents);
+//    unsigned nEvents;
+//    hid_t dataset_ecountID = H5Dopen(file, "/eventCount", H5P_DEFAULT);//open ecount ds
+//	hid_t dataspace_ecount = H5Dget_space(dataset_ecountID); //get ds space for ecount
+//	//select single element slab from dataset
+//	hsize_t off_ecount = sampleIndx;
+//	hsize_t count_ecount = 1 ;
+//	status = H5Sselect_hyperslab(dataspace_ecount, H5S_SELECT_SET, &off_ecount, NULL, &count_ecount, NULL);
+//	//define memory space(single-element space) for ecount
+//	hsize_t dimsm_ecount = 1;
+//	hid_t memspace_ecount = H5Screate_simple(1, &dimsm_ecount,NULL);
+//	status = H5Dread(dataset_ecountID, H5T_NATIVE_UINT32
+//						,memspace_ecount ,dataspace_ecount, H5P_DEFAULT, &nEvents);
+
+    /*
+	 * get the total number of events for the current sample
+	 */
+   hsize_t dims[3];
+   hid_t attrID;
+   status  = H5Sget_simple_extent_dims(dataspace, dims, NULL); //get dimensions of datset
+   unsigned nSample = dims[0];//get total number of samples
+   unsigned * eCount = (unsigned *) malloc(nSample * sizeof(unsigned));
+   attrID = H5Aopen(dataset, "eventCount", H5P_DEFAULT);
+   status = H5Aread(attrID, H5T_NATIVE_UINT32, eCount);
+   unsigned nEvents = eCount[sampleIndx];
+   free(eCount);
+   H5Aclose(attrID);
 
     /*
 	 * Define the memory dataspace.
@@ -260,12 +302,12 @@ herr_t _readSlice(const char * fName, unsigned * chnlIndx, unsigned chCount, uns
 	 * Close/release resources.
 	 */
 
-	H5Dclose(dataset_ecountID);
-	H5Sclose(dataspace_ecount);
+//	H5Dclose(dataset_ecountID);
+//	H5Sclose(dataspace_ecount);
 	H5Dclose(dataset);
 	H5Sclose(dataspace);
 	H5Sclose(memspace);
-	H5Sclose(memspace_ecount);
+//	H5Sclose(memspace_ecount);
 	H5Fclose(file);
 
 

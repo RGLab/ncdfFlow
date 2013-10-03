@@ -90,21 +90,35 @@ SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sample ) {
 
 	sampleIndx = sampleIndx -1;//convert from R to C indexing
 
+//	/*
+//	 * get the total number of events for the current sample
+//	 */
+//	unsigned nEvents;
+//	hid_t dataset_ecountID = H5Dopen(file, "/eventCount", H5P_DEFAULT);//open ecount ds
+//	hid_t dataspace_ecount = H5Dget_space(dataset_ecountID); //get ds space for ecount
+//	//select single element slab from dataset
+//	hsize_t off_ecount = sampleIndx;
+//	hsize_t count_ecount = 1 ;
+//	status = H5Sselect_hyperslab(dataspace_ecount, H5S_SELECT_SET, &off_ecount, NULL, &count_ecount, NULL);
+//	//define memory space(single-element space) for ecount
+//	hsize_t dimsm_ecount = 1;
+//	hid_t memspace_ecount = H5Screate_simple(1, &dimsm_ecount,NULL);
+//	status = H5Dread(dataset_ecountID, H5T_NATIVE_UINT32
+//						,memspace_ecount ,dataspace_ecount, H5P_DEFAULT, &nEvents);
+
 	/*
 	 * get the total number of events for the current sample
 	 */
-	unsigned nEvents;
-	hid_t dataset_ecountID = H5Dopen(file, "/eventCount", H5P_DEFAULT);//open ecount ds
-	hid_t dataspace_ecount = H5Dget_space(dataset_ecountID); //get ds space for ecount
-	//select single element slab from dataset
-	hsize_t off_ecount = sampleIndx;
-	hsize_t count_ecount = 1 ;
-	status = H5Sselect_hyperslab(dataspace_ecount, H5S_SELECT_SET, &off_ecount, NULL, &count_ecount, NULL);
-	//define memory space(single-element space) for ecount
-	hsize_t dimsm_ecount = 1;
-	hid_t memspace_ecount = H5Screate_simple(1, &dimsm_ecount,NULL);
-	status = H5Dread(dataset_ecountID, H5T_NATIVE_UINT32
-						,memspace_ecount ,dataspace_ecount, H5P_DEFAULT, &nEvents);
+	hsize_t dims[3];
+	hid_t attrID;
+	status  = H5Sget_simple_extent_dims(dataspace, dims, NULL); //get dimensions of datset
+	unsigned nSample = dims[0];//get total number of samples
+	unsigned * eCount = (unsigned *) R_alloc(sizeof(unsigned), nSample);
+	attrID = H5Aopen(dataset, "eventCount", H5P_DEFAULT);
+	status = H5Aread(attrID, H5T_NATIVE_UINT32, eCount);
+	unsigned nEvents = eCount[sampleIndx];
+//	free(eCount);
+	H5Aclose(attrID);
 
 	/*
 	 * these two lines is the reason for the _readSlice to be inline code
@@ -169,12 +183,12 @@ SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sample ) {
 	 * Close/release resources.
 	 */
 
-	H5Dclose(dataset_ecountID);
-	H5Sclose(dataspace_ecount);
+//	H5Dclose(dataset_ecountID);
+//	H5Sclose(dataspace_ecount);
 	H5Dclose(dataset);
 	H5Sclose(dataspace);
 	H5Sclose(memspace);
-	H5Sclose(memspace_ecount);
+//	H5Sclose(memspace_ecount);
 	H5Fclose(file);
 
 
