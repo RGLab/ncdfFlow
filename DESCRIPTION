@@ -7,7 +7,7 @@ Maintainer: M. Jiang <wjiang2@fhcrc.org>
 Depends: R (>= 2.14.0), flowCore (>= 1.25.9), flowViz (>= 1.25.7)
 Imports: Biobase,flowCore,flowViz (>= 1.23.1),methods,zlibbioc
 License: Artistic-2.0
-SystemRequirements: netcdf 4.0.1, hdf5
+SystemRequirements: hdf5 (>= 1.8.0)
 biocViews: FlowCytometry
 Collate: AllGeneric.R
          AllClasses.R

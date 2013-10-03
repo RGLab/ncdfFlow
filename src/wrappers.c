@@ -85,7 +85,7 @@ SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sample ) {
 	hsize_t 	dimsm[2]; //dimenstions
 	herr_t      status;
 	file = H5Fopen(fName, H5F_ACC_RDONLY, H5P_DEFAULT);
-	dataset = H5Dopen(file, DATASETNAME, H5P_DEFAULT);
+	dataset = H5Dopen2(file, DATASETNAME, H5P_DEFAULT);
 	dataspace = H5Dget_space(dataset);    /* dataspace handle */
 
 	sampleIndx = sampleIndx -1;//convert from R to C indexing
@@ -94,7 +94,7 @@ SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sample ) {
 //	 * get the total number of events for the current sample
 //	 */
 //	unsigned nEvents;
-//	hid_t dataset_ecountID = H5Dopen(file, "/eventCount", H5P_DEFAULT);//open ecount ds
+//	hid_t dataset_ecountID = H5Dopen2(file, "/eventCount", H5P_DEFAULT);//open ecount ds
 //	hid_t dataspace_ecount = H5Dget_space(dataset_ecountID); //get ds space for ecount
 //	//select single element slab from dataset
 //	hsize_t off_ecount = sampleIndx;
