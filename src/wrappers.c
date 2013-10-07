@@ -113,11 +113,13 @@ SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sample ) {
 	hid_t attrID;
 	status  = H5Sget_simple_extent_dims(dataspace, dims, NULL); //get dimensions of datset
 	unsigned nSample = dims[0];//get total number of samples
-	unsigned * eCount = (unsigned *) R_alloc(sizeof(unsigned), nSample);
+	if(sampleIndx >= nSample)
+		error("readSlice error!sample index exceeds the boundary.");
+	unsigned * eCount = (unsigned *) malloc(sizeof(unsigned) * nSample);
 	attrID = H5Aopen(dataset, "eventCount", H5P_DEFAULT);
 	status = H5Aread(attrID, H5T_NATIVE_UINT32, eCount);
 	unsigned nEvents = eCount[sampleIndx];
-//	free(eCount);
+	free(eCount);
 	H5Aclose(attrID);
 
 	/*

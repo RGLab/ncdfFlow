@@ -159,7 +159,9 @@ herr_t _writeSlice(const char * fName, double * mat, unsigned nEvents, unsigned 
 	  hsize_t dims[3];
 	  status  = H5Sget_simple_extent_dims(dataspace, dims, NULL); //get dimensions of datset
 	  unsigned nSample = dims[0];//get total number of samples
-	  unsigned * eCount = (unsigned *) R_alloc(sizeof(unsigned), nSample);
+	  if(sampleIndx >= nSample)
+	  		error("writeSlice error!sample index exceeds the boundary.");
+	  unsigned * eCount = (unsigned *) malloc(sizeof(unsigned) * nSample);
 	  attrID = H5Aopen(dataset, "eventCount", H5P_DEFAULT);
 	  status = H5Aread(attrID, H5T_NATIVE_UINT32, eCount);
 	  //update the eCount for current sample
@@ -169,7 +171,7 @@ herr_t _writeSlice(const char * fName, double * mat, unsigned nEvents, unsigned 
 	   */
 	  status = H5Awrite(attrID, H5T_NATIVE_UINT32, eCount);
 
-//	  free(eCount);
+	  free(eCount);
 	  H5Aclose(attrID);
 
 
