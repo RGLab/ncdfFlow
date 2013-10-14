@@ -1,0 +1,2 @@
+PKG_LIBS += -L$(LIB_NETCDF)$(R_ARCH)/lib -lnetcdf
+PKG_CPPFLAGS += -I$(RHOME)/src/include -I$(LIB_NETCDF)$(R_ARCH)/include 
