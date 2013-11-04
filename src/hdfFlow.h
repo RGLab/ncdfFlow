@@ -1,4 +1,5 @@
 #include "hdf5.h"
+#include <R.h>
 #include <stdlib.h>
 #define DATASETNAME "/exprsMat"
 
