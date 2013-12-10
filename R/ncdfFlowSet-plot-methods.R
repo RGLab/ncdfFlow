@@ -38,3 +38,18 @@ setMethod("xyplot",
           thisTrellisObj
 		})
 
+setMethod("xyplot",
+    signature=signature(x="formula",
+        data="ncdfFlowList"),
+    definition=function(x, data, ...)
+    {
+      selectMethod("xyplot", signature = c("formula", "ncdfFlowSet"))(x, data, ...)
+    })
+
+setMethod("densityplot",
+    signature(x = "formula", data = "ncdfFlowList"),
+    function(x, data, ...)
+    {
+      
+      selectMethod("densityplot", signature = c("formula", "ncdfFlowSet"))(x, data, ...)
+    })

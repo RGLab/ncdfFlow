@@ -45,12 +45,12 @@ qGate <- quadGate(filterId="qg", "FSC-H"=200, "SSC-H"=400)
 fr<-filter(nc1,qGate)
 ncList<-split(nc1,fr)
 ncList 
-nc1[1]#each ncdfFlowSet in the ncdfFlowList share the same cdf file with the original nc1 
+nc1[1]#each ncdfFlowSet in the list share the same cdf file with the original nc1 
 nc1[[1]]
 ncList[[2]][[1]]
 ncList[[1]][[1]]
 
-##create the new cdf file in ncdfFlowList object thus seperate its data source from the original one
+##create the new cdf file to detach from its data source
 ncList<-split(nc1,fr,isNew=TRUE)
 ncList[1]
 
@@ -58,9 +58,25 @@ ncList[1]
 ## split the ncdfFlowSet by a factor
 ncList<-split(nc1[1:3], as.factor(c(1,1,2)))
 ncList
-ncList[1]
-ncList[[1]][[1]]
+ncList <- as(ncList, "ncdfFlowList")
 summary(ncList[[1]])
+sampleNames(ncList)
+ncList[[1]]
+ncList[, 1:2][[1]]
+ncList[["s5a01"]]
+ncList["s5a01"]
+ncList[c(1,3)][[2]]
+ncList[c("s5a01","s5a03"), j= c("FSC-H", "SSC-H")][[1]]
+sampleNames(ncList[c(3,1)])
+colnames(ncList)
+length(ncList)
+
+pData(ncList)
+phenoData(ncList)
+pData(ncList)$test <- 1
+pData(ncList)
+xyplot(`FSC-H`~`SSC-H`|Visit, ncList)
+densityplot(~`SSC-H`, ncList)
 
 }
 \keyword{classes}

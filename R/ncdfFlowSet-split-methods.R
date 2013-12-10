@@ -115,7 +115,7 @@ setMethod("split",
 			}
 #			browser()
 #			res<-as(finalRes,"ncdfFlowList")
-			return(res)
+			return(finalRes)
 		})
 
 ## Split by frames of flowSet according to a factor, character or numeric.

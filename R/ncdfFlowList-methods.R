@@ -165,7 +165,11 @@ setMethod("split", signature=signature(x="ncdfFlowList", f="character"), definit
       selectMethod("split", signature = c("ncdfFlowSet", "character"))(x, f, ...)
     })
 
-
+setMethod("phenoData","ncdfFlowList",function(object){
+      res <- phenoData(object@data[[1]])
+      pData(res) <- pData(object)
+      res
+    })
 #' @aliases
 #' pData,ncdfFlowList-method
 #' pData<-,ncdfFlowList,data.frame-method
@@ -180,7 +184,7 @@ setMethod("pData","ncdfFlowList",function(object){
     })
 
 setReplaceMethod("pData",c("ncdfFlowList","data.frame"),function(object,value){
-      browser()
+      
       if(!.isValidSamples(rownames(value),object))
         stop("The sample names in data.frame are not consistent with the ",class(x), "!")
       
