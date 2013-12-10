@@ -114,7 +114,7 @@ setMethod("split",
 						"population identifier produced by splitting"
 			}
 #			browser()
-			res<-as(finalRes,"ncdfFlowList")
+#			res<-as(finalRes,"ncdfFlowList")
 			return(res)
 		})
 
@@ -141,13 +141,13 @@ setMethod("split",
 					ncfs<-clone.ncdfFlowSet(ncfs,isEmpty=FALSE,isNew=TRUE)
 				res[[g]] <-ncfs
 				
-				phenoData(res[[g]])$split <- levels(f)[g]
-				varMetadata(res[[g]])["split", "labelDescription"] <-
-						"Split"
+#				phenoData(res[[g]])$split <- levels(f)[g]
+#				varMetadata(res[[g]])["split", "labelDescription"] <-
+#						"Split"
 			}
 			names(res) <- names(gind)
-#			res<-ncdfFlowList(res)
-			res<-as(res,"ncdfFlowList")
+
+#			res<-as(res,"ncdfFlowList")
 			
 			return(res)
 		})
