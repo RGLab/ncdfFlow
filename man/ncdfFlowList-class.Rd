@@ -63,10 +63,10 @@ summary(ncList[[1]])
 sampleNames(ncList)
 ncList[[1]]
 ncList[, 1:2][[1]]
-ncList[["s5a01"]]
-ncList["s5a01"]
+ncList[["s6a01"]]
+ncList["s6a01"]
 ncList[c(1,3)][[2]]
-ncList[c("s5a01","s5a03"), j= c("FSC-H", "SSC-H")][[1]]
+ncList[c("s6a01","s6a03"), j= c("FSC-H", "SSC-H")][[1]]
 sampleNames(ncList[c(3,1)])
 colnames(ncList)
 length(ncList)

@@ -330,6 +330,9 @@ setReplaceMethod("colnames",
 #' @param i a \code{numeric} or \code{character} used as sample index
 #' @param j a \code{numeric} or \code{character} used as channel index
 #' @param use.exprs a \code{logical} scalar indicating whether to read the actual data from cdf
+#' @export 
+#' @rdname subsetting-methods
+#' @aliases [[,ncdfFlowSet,ANY-method
 setMethod("[[",
 		signature=signature(x="ncdfFlowSet"),
 		definition=function(x, i, j, use.exprs = TRUE, ...)
@@ -390,7 +393,8 @@ setMethod("[[",
 	})
 
 
-#' write the flow data from a \code{flowFrame} to \code{ncdfFlowSet} 
+#' write the flow data from a \code{flowFrame} to \code{ncdfFlowSet}
+#'  
 #' flowFrame can have less channels than ncdfFlowSet,which is used for partial updating(useful for \code{normalization}) 
 #' 
 #' @param x a \code{ncdfFlowSet}
@@ -403,8 +407,8 @@ setMethod("[[",
 #' where the colnames has not yet ready to be updated in the middle of parsing
 #' @param only.exprs a \code{logical} scalar When TRUE, it will only update the exprs data
 #' othewise, the parameters and decriptions slot are updated as well. 
-#'    
-
+#' @rdname subsetting-methods
+#' @aliases [[<-,ncdfFlowSet,ANY,ANY,flowFrame-method
 setReplaceMethod("[[",
 		signature=signature(x="ncdfFlowSet",value="flowFrame"),
 		definition=function(x, i, j = "missing", check.names = TRUE, only.exprs = FALSE,..., value)
