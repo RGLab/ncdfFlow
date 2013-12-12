@@ -42,7 +42,15 @@ setMethod("fsApply",
     {
       selectMethod("fsApply", signature = c("flowSet"))(x, FUN, ..., simplify = simplify, use.exprs = use.exprs)
       })
+  
 
+setMethod("filter",
+    signature=signature(x="ncdfFlowList",
+        filter="filter"),
+    definition=function(x, filter, method = "missing", sides = "missing", circular = "missing", init = "missing")
+    {
+      selectMethod("filter", signature = c("flowSet", "filter"))(x, filter)
+    })
 
 #' @rdname ncdfFlowSet-class
 setMethod("[[",c(x="ncdfFlowList",i="numeric"),function(x,i,j, ...){

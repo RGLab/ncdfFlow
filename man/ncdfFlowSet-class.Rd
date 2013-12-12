@@ -33,6 +33,8 @@
 \alias{Subset}
 \alias{Subset,ncdfFlowSet,filter-method}
 \alias{Subset,ncdfFlowSet,filterResultList-method}
+\alias{Subset,ncdfFlowList,filter-method}
+\alias{Subset,ncdfFlowList,filterResultList-method}
 \alias{Subset,ncdfFlowSet,list-method}
 \alias{transform,ncdfFlowSet-method}
 \alias{updateIndices}
