@@ -116,13 +116,13 @@ setMethod("rbind2",
 #			nclist<-x@datalist
 			nclist<-x
 
-			sn <-unlist(lapply(nclist, sampleNames),use.names=F)
+			sn <-unlist(lapply(nclist, sampleNames, level = 1),use.names=F)
 			isDuplicated<-duplicated(sn)
 			if(any(isDuplicated))
 				stop("duplicated samples:",sn[isDuplicated])
 			
 			
-			pdlist <- lapply(nclist,phenoData)
+			pdlist <- lapply(nclist,phenoData, level = 1)
 			
 			
 			varLabelList<-lapply(pdlist,varLabels)
@@ -133,7 +133,7 @@ setMethod("rbind2",
 				stop("The phenoData of the ncdfFlowSets don't match.",
 						call.=FALSE)
 			
-			collist <- lapply(nclist,colnames)
+			collist <- lapply(nclist,colnames, level = 1)
 			isDuplicated<-duplicated(collist)
 			isSame<-isDuplicated[-1]
 			if(!all(isSame))
@@ -161,7 +161,7 @@ setMethod("rbind2",
   									
   								lapply(ls(oldFrames),function(curSample)assign(curSample, NA, env=indiceEnv))
   								
-  							})
+  							}, level = 1)
   #			browser()
   			pdataList<-lapply(pdlist,pData)
   			newPd<-AnnotatedDataFrame(do.call(base::rbind,pdataList))
@@ -172,7 +172,7 @@ setMethod("rbind2",
   					,file = newNcFile
   					,colnames = collist[[1]] 
   					,frames = frameEnv
-  					,maxEvents=max(unlist(lapply(nclist,function(ncfs)ncfs@maxEvents)))
+  					,maxEvents=max(unlist(lapply(nclist,function(ncfs)ncfs@maxEvents, level = 1)))
   					,flowSetId = ""
   					,phenoData=newPd
   					,indices=indiceEnv
@@ -196,7 +196,7 @@ setMethod("rbind2",
     			
     			
     			#add frames to env and ncdf file
-    			for(nc in nclist)
+    			for(nc in nclist@data)
     			{
     			
     				for(curSample in sampleNames(nc))
