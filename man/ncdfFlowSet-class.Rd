@@ -33,8 +33,6 @@
 \alias{Subset}
 \alias{Subset,ncdfFlowSet,filter-method}
 \alias{Subset,ncdfFlowSet,filterResultList-method}
-\alias{Subset,ncdfFlowList,filter-method}
-\alias{Subset,ncdfFlowList,filterResultList-method}
 \alias{Subset,ncdfFlowSet,list-method}
 \alias{transform,ncdfFlowSet-method}
 \alias{updateIndices}
@@ -45,6 +43,7 @@
 \alias{ncdfFlowSet,flowSet-method}
 \alias{densityplot,formula,ncdfFlowSet-method}
 \alias{xyplot,formula,ncdfFlowSet-method}
+
 
 \title{'ncdfFlowSet': a class for storing flow cytometry raw data in netCDF format}
 \description{

@@ -16,8 +16,8 @@
 
 #' @param \code{ncdfFlowList} object
 #' @param FUN \code{function} to apply
-#' @param level \code{numeric}. When \code{X} is a \code{ncdfFlowList}, \code{level} 2 (default value)
-#' \code{FUN} is applied to each element of list in \code{data} slot. When it is set to 1, \code{FUN} is applied to each list stored in \code{data} slot.  
+#' @param level \code{numeric}. It controls whether loop at `ncdfFlowSet` level or `sample` level. 
+#' when level = 2 (default value),\code{FUN} is applied to each sample. When level = 1, \code{FUN} is applied to each object stored in \code{data} slot.  
 #' 
 #' @rdname lapply-methods
 #' @export 

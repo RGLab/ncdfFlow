@@ -5,6 +5,22 @@
 \alias{show,ncdfFlowList-method}
 \alias{rbind2,ncdfFlowList-method}
 \alias{rbind2,ncdfFlowList,ANY-method}
+\alias{split,ncdfFlowList,factor-method}
+\alias{split,ncdfFlowList,character-method}
+\alias{sampleNames,ncdfFlowList-method}
+\alias{phenoData,ncdfFlowList-method}
+\alias{pData,ncdfFlowList-method}
+\alias{pData<-,ncdfFlowList-method}
+\alias{length,ncdfFlowList-method}
+\alias{Subset,ncdfFlowList,filter-method}
+\alias{Subset,ncdfFlowList,filterResultList-method}
+\alias{densityplot,formula,ncdfFlowList-method}
+\alias{xyplot,formula,ncdfFlowList-method}
+\alias{[[,ncdfFlowList,character-method}
+\alias{[[,ncdfFlowList,logical-method}
+\alias{[[,ncdfFlowList,numeric-method}
+\alias{colnames,ncdfFlowList-method}
+\alias{[,ncdfFlowList,ANY-method}
 
 \title{'ncdfFlowList': a class that stores multiple ncdfFlowSet objects}
 \description{
@@ -20,6 +36,8 @@ as("ncdfFlowList",nclist = .... #a list of ncdfFlowSet objects)
  	
     \item{show}{display object summary.}
      \item{rbind2}{combine a list of ncdfFlowSets into one.}
+     \item{lapply}{The argument 'level' controls whether loop at `ncdfFlowSet` level or `sample` level. when level = 2 (default value)
+					\code{FUN} is applied to each sample. When level = 1, \code{FUN} is applied to each object stored in \code{data} slot.}
      }
     
 }
