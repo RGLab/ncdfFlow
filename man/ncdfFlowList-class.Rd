@@ -10,8 +10,9 @@
 \alias{sampleNames,ncdfFlowList-method}
 \alias{phenoData,ncdfFlowList-method}
 \alias{pData,ncdfFlowList-method}
-\alias{pData<-,ncdfFlowList-method}
+\alias{pData<-,ncdfFlowList,data.frame-method}
 \alias{length,ncdfFlowList-method}
+\alias{lapply,ncdfFlowList-method}
 \alias{Subset,ncdfFlowList,filter-method}
 \alias{Subset,ncdfFlowList,filterResultList-method}
 \alias{densityplot,formula,ncdfFlowList-method}
