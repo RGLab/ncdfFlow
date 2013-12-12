@@ -36,3 +36,7 @@ setAs(from = "list", to = "ncdfFlowList", def = function(from){
       
       new("ncdfFlowList", data = from, samples = unname(unlist(lapply(from, sampleNames))))
     })
+setAs(from = "ncdfFlowList", to = "flowFrame", def = function(from){
+      selectMethod("coerce", signature = c("flowSet", "flowFrame"))(from)      
+
+    })

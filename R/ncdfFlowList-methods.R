@@ -34,6 +34,14 @@ setMethod("lapply","ncdfFlowList",function(X,FUN, level = 2,...){
             }, simplify = FALSE, ...)
       }
     })
+#it is not exposed to user to avoid its potential huge memory usage
+setMethod("fsApply",
+    signature=signature(x="ncdfFlowList",
+        FUN="ANY"),
+    definition=function(x,FUN,..., simplify = TRUE, use.exprs=FALSE)
+    {
+      selectMethod("fsApply", signature = c("flowSet"))(x, FUN, ..., simplify = simplify, use.exprs = use.exprs)
+      })
 
 
 #' @rdname ncdfFlowSet-class
