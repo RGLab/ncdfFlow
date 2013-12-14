@@ -26,9 +26,17 @@ setClass("ncdfFlowSet",
 		)
 		
 
+setClass("ncdfFlowList"
+    ,representation=representation(
+        data = "list"
+        ,samples="character" #this determine the order of samples exposed to user
+    ))
 
+setAs(from = "list", to = "ncdfFlowList", def = function(from){
+      
+      new("ncdfFlowList", data = from, samples = unname(unlist(lapply(from, sampleNames))))
+    })
+setAs(from = "ncdfFlowList", to = "flowFrame", def = function(from){
+      selectMethod("coerce", signature = c("flowSet", "flowFrame"))(from)      
 
-
-#this class exists for the purpose of method dispatching (e.g. rbind2)
-setClass("ncdfFlowList",contains="list")
-
+    })

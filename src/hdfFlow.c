@@ -30,7 +30,7 @@ herr_t _createFile(const char * fName, unsigned nSample, unsigned nChnl, unsigne
 	H5Pset_chunk(dcpl_id, 3, chunk_dims);
 
 	/* Create the 3d mat. */
-	dataset_id = H5Dcreate2(file_id, DATASETNAME, H5T_IEEE_F64LE_g, dataspace_id,
+	dataset_id = H5Dcreate2(file_id, DATASETNAME, H5T_IEEE_F32LE_g, dataspace_id,
 						  H5P_DEFAULT, dcpl_id, H5P_DEFAULT);
 
 

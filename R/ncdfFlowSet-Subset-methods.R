@@ -1,10 +1,3 @@
-# TODO: Add comment
-# 
-# Author: mike
-###############################################################################
-
-
-
 
 
 ###"select" is channel 
@@ -40,7 +33,29 @@ setMethod("Subset",
 				ncfs@colnames<-select
 			ncfs
 		})
-
+    
+setMethod("Subset",
+    signature=signature(x="ncdfFlowList",
+        subset="filterResultList"),
+    definition=function(x, subset, select, ...)
+    {
+      
+#      browser()
+      if(missing(select))select <- NULL
+      
+      res <- lapply(x, function(fs){
+            
+            this_subset <- subset[sampleNames(fs)]
+            if(is.null(select))
+              Subset(fs,this_subset, ...)
+            else
+              Subset(fs, this_subset, select, ...)
+          },level = 1)
+      res <- as(res, "ncdfFlowList")
+      res@samples <- x@samples
+      res
+    })    
+    
 ###"select" is channel 
 setMethod("Subset",
 		signature=signature(x="ncdfFlowSet",
@@ -50,7 +65,15 @@ setMethod("Subset",
 			fr <- filter(x,subset)
 			Subset(x,fr,...)
 		})
-
+setMethod("Subset",
+    signature=signature(x="ncdfFlowList",
+        subset="filter"),
+    definition=function(x, subset, ...)
+    {
+      selectMethod("Subset", signature = c("ncdfFlowSet", "filter"))(x, subset, ...)
+      
+    })
+    
 			
 
 setMethod("Subset",
