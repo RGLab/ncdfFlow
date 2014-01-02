@@ -23,7 +23,7 @@ setMethod("xyplot",
 		definition=function(x, data, ...)
 		{
           #construct lattice object
-          thisTrellisObj <- flowViz:::.xyplot.flowSet(x, data, ...)
+          thisTrellisObj <- flowViz:::.xyplot.flowSet(x, data, type = "xyplot", ...)
           
           #subset data on channels
           channel.x.name <- thisTrellisObj[["panel.args.common"]][["channel.x.name"]]
