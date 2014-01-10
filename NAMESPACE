@@ -1,6 +1,7 @@
 dll=useDynLib("ncdfFlow",.registration=TRUE)
 
-#Imports: Biobase, flowCore, flowViz, methods
+import(zlibbioc) #for loading hdf lib (comes from rhdf5 correctly
+
 
 importClassesFrom(Biobase, AnnotatedDataFrame)
 
@@ -39,4 +40,5 @@ export(ncfsUnlink,clone.ncdfFlowSet,read.ncdfFlowSet,NcdfFlowSetToFlowSet,as.flo
 exportMethods("show","[[","[","[[<-","colnames","parameters","compensate","rbind2",
 				"transform","ncfsApply","Subset","split","getIndices","updateIndices"
 				,"initIndices","ncdfFlowSet","ncdfFlowSet_sync","ncdfFlowSet_open","addFrame"
-				,"xyplot","densityplot","colnames<-")
+				,"xyplot","densityplot","colnames<-"
+				, "lapply", "pData" ,"pData<-", "phenoData","length", "sampleNames")

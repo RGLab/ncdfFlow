@@ -330,6 +330,9 @@ setReplaceMethod("colnames",
 #' @param i a \code{numeric} or \code{character} used as sample index
 #' @param j a \code{numeric} or \code{character} used as channel index
 #' @param use.exprs a \code{logical} scalar indicating whether to read the actual data from cdf
+#' @export 
+#' @rdname subsetting-methods
+#' @aliases [[,ncdfFlowSet,ANY-method
 setMethod("[[",
 		signature=signature(x="ncdfFlowSet"),
 		definition=function(x, i, j, use.exprs = TRUE, ...)
@@ -364,10 +367,16 @@ setMethod("[[",
                 
                 chIndx <- match(localChNames,origChNames)#only fetch the subset of channels
                 
-    			subByIndice<-all(!is.na(x@indices[[sampleName]]))
+                Indice <- x@indices[[sampleName]]
+                if(is.null(Indice))
+                  stop("Invalid sample name '",sampleName, "'! It is not found in 'indices' slot!")
+    			subByIndice <- all(!is.na(Indice))
                 
     			#get sample index
-    			samplePos<-which(x@origSampleVector==sampleName)
+    			samplePos <- which(x@origSampleVector==sampleName)
+                if(length(samplePos) == 0)
+                  stop("Invalid sample name '", sampleName, "'! It is not found in 'origSampleVector' slot!")
+                
     			mat <- .Call(dll$readSlice, x@file, as.integer(chIndx), as.integer(samplePos))
     			if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
     
@@ -384,7 +393,8 @@ setMethod("[[",
 	})
 
 
-#' write the flow data from a \code{flowFrame} to \code{ncdfFlowSet} 
+#' write the flow data from a \code{flowFrame} to \code{ncdfFlowSet}
+#'  
 #' flowFrame can have less channels than ncdfFlowSet,which is used for partial updating(useful for \code{normalization}) 
 #' 
 #' @param x a \code{ncdfFlowSet}
@@ -397,8 +407,8 @@ setMethod("[[",
 #' where the colnames has not yet ready to be updated in the middle of parsing
 #' @param only.exprs a \code{logical} scalar When TRUE, it will only update the exprs data
 #' othewise, the parameters and decriptions slot are updated as well. 
-#'    
-
+#' @rdname subsetting-methods
+#' @aliases [[<-,ncdfFlowSet,ANY,ANY,flowFrame-method
 setReplaceMethod("[[",
 		signature=signature(x="ncdfFlowSet",value="flowFrame"),
 		definition=function(x, i, j = "missing", check.names = TRUE, only.exprs = FALSE,..., value)
@@ -659,6 +669,33 @@ setMethod("spillover",
 
 
 
-
+## Note that the replacement method also replaces the GUID for each flowFrame
+setReplaceMethod("sampleNames",
+    signature=signature(object="ncdfFlowSet"),
+    definition=function(object, value)
+    {
+#      browser()
+      oldSampleNames <- sampleNames(object)
+      
+      #update pData and flowFrame
+      object <- callNextMethod()
+      
+      #update origSampleVector slot
+      origSampleVector <- object@origSampleVector
+      origSampleVector[match(oldSampleNames, origSampleVector)] <- value
+      object@origSampleVector <- origSampleVector
+      
+   
+      #update indices slot
+      indEnv <- object@indices
+      mapply(oldSampleNames, value, FUN = function(old, new){
+            assign(new, indEnv[[old]], indEnv) # copy from old to enw  
+            eval(substitute(rm(v, envir = indEnv), list(v = old))) # del the old
+            
+          })
+      
+            
+      object
+    })
 
 

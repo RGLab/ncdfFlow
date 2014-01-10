@@ -44,6 +44,7 @@
 \alias{densityplot,formula,ncdfFlowSet-method}
 \alias{xyplot,formula,ncdfFlowSet-method}
 
+
 \title{'ncdfFlowSet': a class for storing flow cytometry raw data in netCDF format}
 \description{
 This class is a subclass of

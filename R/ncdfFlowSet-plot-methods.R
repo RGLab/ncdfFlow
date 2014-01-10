@@ -23,7 +23,7 @@ setMethod("xyplot",
 		definition=function(x, data, ...)
 		{
           #construct lattice object
-          thisTrellisObj <- flowViz:::.xyplot.flowSet(x, data, ...)
+          thisTrellisObj <- flowViz:::.xyplot.flowSet(x, data, type = "xyplot", ...)
           
           #subset data on channels
           channel.x.name <- thisTrellisObj[["panel.args.common"]][["channel.x.name"]]
@@ -38,3 +38,18 @@ setMethod("xyplot",
           thisTrellisObj
 		})
 
+setMethod("xyplot",
+    signature=signature(x="formula",
+        data="ncdfFlowList"),
+    definition=function(x, data, ...)
+    {
+      selectMethod("xyplot", signature = c("formula", "ncdfFlowSet"))(x, data, ...)
+    })
+
+setMethod("densityplot",
+    signature(x = "formula", data = "ncdfFlowList"),
+    function(x, data, ...)
+    {
+      
+      selectMethod("densityplot", signature = c("formula", "ncdfFlowSet"))(x, data, ...)
+    })
