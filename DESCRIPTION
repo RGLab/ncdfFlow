@@ -11,7 +11,7 @@ Depends:
     flowCore (>= 1.28.20),
     flowViz (>= 1.26.01)
 Imports:
-    Biobase,flowCore,flowViz (>= 1.27.11),methods,zlibbioc
+    Biobase,flowCore,flowViz,methods,zlibbioc
 License: Artistic-2.0
 SystemRequirements: hdf5 (>= 1.8.0)
 biocViews: FlowCytometry
