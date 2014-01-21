@@ -172,8 +172,8 @@ read.ncdfFlowSet <- function(files = NULL
 	}
 	
 	if(!missing(phenoData)){
-		guids <- sampleNames(pd)
 		pd<-phenoData
+		guids <- sampleNames(pd)
 	}else{
 		guids <- basename(files)
 #		
