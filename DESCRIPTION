@@ -8,10 +8,10 @@ Description: Provides netCDF storage based methods and functions for
 Maintainer: Mike Jiang <wjiang2@fhcrc.org>
 Depends:
     R (>= 2.14.0),
-    flowCore (>= 1.25.9),
-    flowViz (>= 1.27.13)
+    flowCore,
+    flowViz
 Imports:
-    Biobase,flowCore,flowViz (>= 1.27.11),methods,zlibbioc
+    Biobase,flowCore,flowViz,methods,zlibbioc
 License: Artistic-2.0
 SystemRequirements: hdf5 (>= 1.8.0)
 biocViews: FlowCytometry
