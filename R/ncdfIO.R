@@ -221,11 +221,14 @@ read.ncdfFlowSet <- function(files = NULL
 	#############################################################
 	if(isWriteSlice)
 	{
+        #escape all the meta characters within channal names
+        colPattern <- .escapeMeta(chnls_common)
+        colPattern <- paste(colPattern,collapse="|")
 		lapply(seq_len(nFile), function(i, verbose)
 				{
 					curFile<-files[i]
                     this_fr <- read.FCS(curFile
-                        ,column.pattern=paste(chnls_common,collapse="|")
+                        ,column.pattern = colPattern
                         ,...)
                     #we need to reorder columns in order to make them identical across samples
                     this_fr <- this_fr[,chnls_common]
@@ -242,7 +245,20 @@ read.ncdfFlowSet <- function(files = NULL
 	message("done!")
 	return(ncfs)
 }
-
+#' escape some special character for a given character vector
+#' 
+#' @param metaCharacters \code{character} vector specifying the special characters to escape, default is all the mete characters defined in regexprs
+#' @param x \code{character} vector the original character vector that contains the special characters
+#' @return the modified character vector by padding "\\" before all the special characters 
+.escapeMeta <- function(x, metaCharacters = c("\\", "|", "(", ")", "[", "{", "^", "$", "*", "+", "?", ".")){
+  
+  #pad the \\ before each meta character
+  metaCharacters <- paste(sapply(metaCharacters, function(thisMeta)paste0("\\", thisMeta)), collapse = "")
+  #wrap into parenthesized pattern 
+  metaCharacters <- paste0("([",metaCharacters, "])")
+  #escape all the meta characters
+  gsub(metaCharacters, "\\\\\\1", x)
+}
 ##################################################################
 #this function is to be deprecated due to its copy of the entire cdf repository
 #if isEmpty is set as FAlSE,then simply copy the orginal cdf file including the data
