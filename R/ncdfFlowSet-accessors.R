@@ -174,7 +174,7 @@ setMethod("ncdfFlowSet_sync",
 				}
 			}
 			
-			print(paste("ncdfFlowSet saved in", x@file))
+			message(paste("ncdfFlowSet saved in", x@file))
 
 				
 		})
