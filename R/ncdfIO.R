@@ -86,7 +86,7 @@ read.ncdfFlowSet <- function(files = NULL
 	files<-files[fileInd]
 	if(length(files)==0)
 	{
-		print("No file is found!")
+		message("No file is found!")
 		return(NULL)
 	}
 		
@@ -383,7 +383,7 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 		{
 			for(i in sampleNames(orig))
 			{
-				print(paste("copying data slice:",i))
+				message("copying data slice:",i)
 				ncfs[[i]] <- orig[[i]]
 				
 			}
