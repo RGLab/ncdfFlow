@@ -355,8 +355,8 @@ setMethod("[[",
                   stop("subscript out of bounds")
               }
              
-              
-              pData(fr@parameters) <- pData(fr@parameters)[j,]
+              #we don't update description slot(i.e. keywords) as flowCore does 
+              fr@parameters <- fr@parameters[j, , drop = FALSE]
               localChNames <- localChNames[j]
             }
              
@@ -377,11 +377,8 @@ setMethod("[[",
                 if(length(samplePos) == 0)
                   stop("Invalid sample name '", sampleName, "'! It is not found in 'origSampleVector' slot!")
                 
-    			mat <- .Call(dll$readSlice, x@file, as.integer(chIndx), as.integer(samplePos))
+    			mat <- .Call(dll$readSlice, x@file, as.integer(chIndx), as.integer(samplePos), localChNames)
     			if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
-    
-    			##append colnames to matrix
-    			colnames(mat) <- localChNames
     			
     			#subset data by indices if neccessary	
     			if(subByIndice&&nrow(mat)>0)

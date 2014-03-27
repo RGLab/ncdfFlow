@@ -58,7 +58,7 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sample) {
 
 }
 
-SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sample ) {
+SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sample, SEXP _colnames) {
 
 
 	SEXP k = allocVector(LGLSXP,1);//create logical scalar for return value
@@ -207,7 +207,16 @@ SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sample ) {
     INTEGER(dnms)[0] = nEvents;
     INTEGER(dnms)[1]=  chCount;
     setAttrib(ans,R_DimSymbol, dnms);
-    UNPROTECT(2);//another PROTECT statement is within _readSlice call
+    /*
+     * attach column names
+     */
+    SEXP dimnames;
+//    const char * fName = translateChar(STRING_ELT(_colnames, 0));
+    PROTECT(dimnames = allocVector(VECSXP, 2));
+//    VECTOR(dimnames)[0] = getAttrib(x, R_NamesSymbol);
+    SET_VECTOR_ELT(dimnames ,1, _colnames);
+    setAttrib(ans, R_DimNamesSymbol, dimnames);
+    UNPROTECT(3);//another PROTECT statement is within _readSlice call
     return(ans);
 }
 
