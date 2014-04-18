@@ -27,7 +27,8 @@ as.flowSet <- function(from,top)
       return(fs)
     }
     
-#create ncdfFlowSet from flowFrame
+#' create ncdfFlowSet from flowFrame (not supported)
+#' @rdname read.ncdfFlowSet 
 setMethod("ncdfFlowSet",
 			signature=(x="flowFrame"),
 			definition=function(x,ncdfFile){
@@ -36,7 +37,18 @@ setMethod("ncdfFlowSet",
 		}
 )
 
-#create ncdfFlowSet from flowSet
+#' create ncdfFlowSet from flowSet
+#' 
+#' Normally the \code{ncdfFlowSet} is constructed by loading raw FCS files using \code{read.ncdfFlowSet}.
+#' In case there is a legacy \code{flowSet} object, we can convert it to \code{ncdfFlowSet} with this constructor.
+#'
+#' @param x \code{flowSet}
+#' @param ncdfFile \code{character} specifies the file name of cdf file
+#' @rdname read.ncdfFlowSet
+#' @examples 
+#' data(GvHD)
+#' fs <- GvHD[1:2]
+#' ncfs <- ncdfFlowSet(fs)
 setMethod("ncdfFlowSet",
 		signature=(x="flowSet"),
 		definition=function(x,ncdfFile){		
@@ -97,15 +109,12 @@ setMethod("ncfsUnlink",
 )
 
 
-
-
-
 				
 setMethod("getIndices",
 		signature=signature(obj="ncdfFlowSet",y="character"), 
 		definition=function(obj,y,...)
 		{
-#			
+		
 			ret<-get(y,obj@indices)
 			if(all(!is.na(ret)))
 				ret<-.getBitStatus(ret)
