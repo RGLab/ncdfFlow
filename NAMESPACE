@@ -35,10 +35,10 @@ importFrom(methods, as, is, new)
 
 exportClasses(ncdfFlowSet,ncdfFlowList)
 
-export(ncfsUnlink,clone.ncdfFlowSet,read.ncdfFlowSet,NcdfFlowSetToFlowSet,as.flowSet)
+export(ncfsUnlink,clone.ncdfFlowSet,read.ncdfFlowSet,as.flowSet)
 
 exportMethods("show","[[","[","[[<-","colnames","parameters","compensate","rbind2",
 				"transform","ncfsApply","Subset","split","getIndices","updateIndices"
-				,"initIndices","ncdfFlowSet","ncdfFlowSet_sync","ncdfFlowSet_open","addFrame"
+				,"initIndices","ncdfFlowSet"
 				,"xyplot","densityplot","colnames<-"
 				, "lapply", "pData" ,"pData<-", "phenoData","length", "sampleNames")

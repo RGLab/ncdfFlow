@@ -1,56 +1,18 @@
-## ==========================================================================
-## ncdfFlowSets store the expr matrices to ncdf files and keep meta data in memory
-## ==========================================================================
-#deFunct
-setMethod("addFrame",
-		signature=c(ncfs="ncdfFlowSet",data="flowFrame"),
-		definition=function(ncfs,data,sampleName){
-			.Defunct("[[<-")
-#			
-			#write to ncdf
-			#Since we don't update the indices, we have to make sure we update the correct subset
-			ind<-ncdfFlow::getIndices(ncfs,sampleName)
-			ddim<-dim(data)
-			
-#			
-			
-			#sdim is either size subset or full size
-            
-			sdim<-dim(origData)
-			#if indice is defined,update the subset defined by indices
-			if(!any(is.na(ind))){
-				updateIndices(ncfs,sampleName,NA)
-                slice <- ncfs[[sampleName]]	
-				tmp<-exprs(slice)
-				tmp[ind,]<-exprs(data)
-				exprs(slice)<-tmp
-				parameters(slice)<-parameters(data)
-				description(slice)<-description(data)
-				data<-slice
-			}
-			#checks if sample dimensions matches data dimensions
-			#does data size match ncdf file size?
-			if(all(sdim==ddim)){
-				.writeSlice(ncfs,data,sampleName)
-				#No? Then check if we are doing a full replacement. Does data size match full ncdf size (length(ind))
-			}else if((ddim[1]==length(ind)&ddim[2]==sdim[2])){
-				#warn that we are replacing the full size data
-				warning("ncdfFlowSet size ",length(ind),", view size ",dim(slice)[1]," data size ",ddim[1])
-				.writeSlice(ncfs,data,sampleName)
-			}else if(sdim[1]==0)##when source event is empty then add the frame
-			{
-				.writeSlice(ncfs,data,sampleName)
-			}
-			#replace the indices
-			updateIndices(ncfs,sampleName,ind);
-
-	
-			##update all other slots to keep the whole flowFrame consistent
-			eval(parse(text=paste("ncfs@frames$'",sampleName,"'@parameters<-parameters(data)",sep="")))
-			eval(parse(text=paste("ncfs@frames$'",sampleName,"'@description<-description(data)",sep="")))
-			
-		})
-
+#' convert from a \code{ncdfFlowSet} to a \code{flowSet}
+#' 
+#' The main purpose of this API is to convert the archived data (stored in \code{ncdfFlowSet}) to \code{flowSet}
+#' when the speed is more concerned than memory effieciency. 
+#' Although \code{ncdfFlowSet} is designed to minimize the disk-IO cost, so usually it is not necessary to do such coersion.  
+#'  
+#' @param from a \code{ncdfFlowSet}
+#' @param top \code{integer} specifies a certain number of samples are randomly selected for the coersion.
+#'                            If this argument is missing, then coerce all the samples within the \code{ncdfFlowSet}.
+#'                            It is to be used with caution because it can incur the huge memory consumption given  the \code{flowSet} is all-in-memory data structure.    
+#' @export 
+#' @examples 
+#' data(GvHD)
+#' nc1 <- ncdfFlowSet(GvHD[1:4])
+#' fs <- as.flowSet(nc1)
 as.flowSet <- function(from,top)
     {
       if(!missing(top))
@@ -65,22 +27,6 @@ as.flowSet <- function(from,top)
       return(fs)
     }
     
-setMethod("NcdfFlowSetToFlowSet",
-		signature=(x="ncdfFlowSet"),
-		definition=function(x,top){
-			.Defunct("as.flowSet")
-            
-			if(!missing(top))
-			{
-				indice<-round(seq(from=1,to=length(x),length.out=top))
-				x<-x[indice]
-			}
-			frs <- structure(lapply(sampleNames(x),function(n)x[[n]])
-					,names=sampleNames(x))
-			fs<-as(frs,"flowSet")
-			fs@phenoData<-x@phenoData
-			return(fs)
-		})
 #create ncdfFlowSet from flowFrame
 setMethod("ncdfFlowSet",
 			signature=(x="flowFrame"),
@@ -89,20 +35,6 @@ setMethod("ncdfFlowSet",
 
 		}
 )
-
-#load ncdfFlowSet from previous saved ncdf file
-setMethod("ncdfFlowSet_open",
-		signature=(x="character"),
-		definition=function(x){
-          .Deprecated()
-			ret<-.Call(dll$readMeta, x)
-			if(!is.raw(ret)&&!ret)stop()
-			if(length(ret)==0)
-			{
-				warning("Loading Error:no metadata available!")
-			}else
-				unserialize(ret)
-		})
 
 #create ncdfFlowSet from flowSet
 setMethod("ncdfFlowSet",
@@ -155,33 +87,6 @@ setMethod("ncdfFlowSet",
 
 			ncfs
 		})
-#save ncdfFlowSet object to ncdf file
-setMethod("ncdfFlowSet_sync",
-		signature=(x="ncdfFlowSet"),
-		definition=function(x,...){
-          .Deprecated()
-			toWrite<-serialize(x,NULL)
-#			
-			.Call(dll$writeMeta, x@file, toWrite , as.integer(1),as.integer(length(toWrite)))
-			
-			path<-list(...)$path
-			if(!is.null(path))
-			{
-				if(!identical(dirname(x@file),path))
-				{
-					file.copy(x@file,path,overwrite=TRUE)
-					x@file<-file.path(path,x@file)
-				}
-			}
-			
-			message(paste("ncdfFlowSet saved in", x@file))
-
-				
-		})
-
-
-
-
 
 setMethod("ncfsUnlink",
 		signature=signature(x="ncdfFlowSet"),

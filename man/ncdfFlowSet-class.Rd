@@ -11,10 +11,6 @@
 \alias{getIndices,ncdfFlowSet,character-method}
 \alias{initIndices}
 \alias{initIndices,ncdfFlowSet-method}
-\alias{ncdfFlowSet_sync}
-\alias{ncdfFlowSet_sync,ncdfFlowSet-method}
-\alias{NcdfFlowSetToFlowSet}
-\alias{NcdfFlowSetToFlowSet,ncdfFlowSet-method}
 \alias{as.flowSet}
 \alias{ncfsApply}
 \alias{ncfsApply,ncdfFlowSet-method}
@@ -37,8 +33,6 @@
 \alias{transform,ncdfFlowSet-method}
 \alias{updateIndices}
 \alias{updateIndices,ncdfFlowSet,character,logical-method}
-\alias{ncdfFlowSet_open}
-\alias{ncdfFlowSet_open,character-method}
 \alias{ncdfFlowSet,flowFrame-method}
 \alias{ncdfFlowSet,flowSet-method}
 \alias{densityplot,formula,ncdfFlowSet-method}
@@ -89,13 +83,6 @@ Class \code{"\linkS4class{flowSet}"}, directly.
 \section{Methods}{
 Most of the other flowSet methods are not listed here,but they all work as the same due to its inheritance from flowSet.Please see for more \code{\link{flowSet}}details for these methods.
   \describe{
-    \item{addFrame}{add or replace the flowFrame in ncdfFlowSet.See \code{\link{addFrame}} for more details
-		
-				     \emph{Usage:}
-		
-				      \code{   addFrame(ncfs,data,sampleName)}
-      				}
-      
     \item{[,[[}{Subsetting. similar to \code{\link[=[,flowSet-method]{[}},\code{\link[=[[,flowSet-method]{[[}} for flowSet.}
 	\item{[[<-}{replace data with a \code{flowFrame}. 
 	      
@@ -133,18 +120,7 @@ Most of the other flowSet methods are not listed here,but they all work as the s
 			    	  	
 			    	  	\code{   updateIndices(ncfs,sampleName,y)}	
 			    	}
-    \item{ncdfFlowSet_open}{(Deprecated!)load the ncdfFlowSet object from the cdf file,return a ncdfFlowSet object
-    						
-					    	\emph{Usage:}
-					      
-					     	 \code{   ncdfFlowSet_open(filename)}
-     	 
-					     	Note that in order to successfully recover the 
-					     	entire ncdfFlowSet object,the phenoData has to be already saved 
-					     	in cdf either by explicitly calling \code{\link{ncdfFlowSet_sync}}
-							or setting \code{isSaveMeta} as TRUE when ncdfFlowSet is 
-							created by \code{link{read.ncdfFlowSet}} or \code{link{clone.ncdfFlowSet}}
-     	 					}
+    
     \item{ncdfFlowSet}{create ncdfFlowSet from a flowSet object 
     						
 					    	\emph{Usage:}
@@ -152,12 +128,6 @@ Most of the other flowSet methods are not listed here,but they all work as the s
 					     	 \code{   ncdfFlowSet(fs1)}
      	 
 					     	Note that only flowSet can be coerced to ncdfFlowSet,attempt to apply this method to flowFrame will get an error message.
-     	 					}
-    \item{ncdfFlowSet_sync}{(Deprecated!)save phenoData to cdf file.
-    						
-    						\emph{Usage:}
-      
-     						 \code{   ncdfFlowSet_sync(filename)}
      	 					}
     \item{ncfsUnlink}{delete the netCDF file associated with the ncdfFlowSet object
 					   	 
@@ -231,6 +201,18 @@ nc4 <- rbind2(nc1,nc2)
 ##combine more than two ncdfFlowSets
 ncfslist <- as(list(nc1,nc2,nc3),"ncdfFlowList")
 nc5 <- rbind2(ncfslist)
+
+path<-system.file("extdata","compdata","data",package="flowCore")
+files<-list.files(path,full.names=TRUE)[1:3]
+
+##create empty ncdfFlowSet from fcs 
+nc1  <- read.ncdfFlowSet(files=files,ncdfFile="ncfsTest.nc",flowSetId="fs1",isWriteSlice= FALSE)
+fs1<-read.flowSet(files);
+#add the actual data slices afterwards
+nc1[[1]] <- fs1[[1]]
+nc1[[1]]##show the added flowFrame
+nc1[[2]]##show empty flowFrame
+
 
 }
 \keyword{classes}

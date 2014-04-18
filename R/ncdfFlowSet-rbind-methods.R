@@ -80,10 +80,6 @@ setMethod("rbind2",
 			{
 				ncfs[[i]] <- y[[i]]
 			}				
-			#Comment out sync for metadata
-			#ncdfFlowSet_sync(ncfs)
-			
-			
 			
 			
 			return(ncfs)
@@ -206,9 +202,6 @@ setMethod("rbind2",
     			}
 	
           }				
-			#Comment out sync for metadata
-			#ncdfFlowSet_sync(ncfs)
-			
 			
 			return(ncfs)
 		})

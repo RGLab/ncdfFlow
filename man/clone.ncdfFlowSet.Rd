@@ -7,8 +7,7 @@ Clone a ncdfFlowSet
 Create a new ncdfFlowSet object from an existing one
 }
 \usage{
-clone.ncdfFlowSet(ncfs,ncdfFile=NULL,isEmpty=TRUE,
-		isNew=TRUE,isSaveMeta=FALSE)
+clone.ncdfFlowSet(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE)
 }
 \arguments{
   
@@ -25,9 +24,7 @@ clone.ncdfFlowSet(ncfs,ncdfFile=NULL,isEmpty=TRUE,
   \item{isEmpty}{A logical scalar indicating whether the raw data should also be copied.if FALSE,
   				an empty cdf file is created with the same dimensions (sample*events*channels) as the orignial one. }
   
-  \item{isSaveMeta}{A logical scalar indicating whether the meta data other than raw data should be saved in cdf.
-  					It should be set as TRUE if the entire ncdfFlowSet is going to be loaded by \code{\link{ncdfFlowSet_open,character-method}}.
-  					}
+  
 }
 
 \value{
@@ -52,7 +49,7 @@ path<-system.file("extdata","compdata","data",package="flowCore")
 files<-list.files(path,full.names=TRUE)[1:3]
 
 #create ncdfFlowSet from fcs
-nc1  <- read.ncdfFlowSet(isSaveMeta=FALSE,files=files,ncdfFile="ncfsTest.nc",flowSetId="fs1",isWriteSlice= TRUE)
+nc1  <- read.ncdfFlowSet(files=files,ncdfFile="ncfsTest.nc",flowSetId="fs1",isWriteSlice= TRUE)
 
 
 ##clone the ncdfFlowSet object,by default the actual raw data is not added

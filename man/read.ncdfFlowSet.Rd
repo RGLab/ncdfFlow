@@ -8,7 +8,7 @@ read FCS files from the disk and load them into a ncdfFlowSet object
 }
 \usage{
 read.ncdfFlowSet(files = NULL,ncdfFile,flowSetId,
-	isWriteSlice=TRUE,isSaveMeta=FALSE,phenoData,channels=NULL,...) 
+	isWriteSlice=TRUE,phenoData,channels=NULL,...) 
 }
 \arguments{
   
@@ -25,9 +25,6 @@ read.ncdfFlowSet(files = NULL,ncdfFile,flowSetId,
   \item{isWriteSlice}{A logical scalar indicating whether the raw data should also be copied.if FALSE,
   				an empty cdf file is created with the dimensions (sample*events*channels) supplied by raw FCS files. }
   
-  \item{isSaveMeta}{A logical scalar indicating whether the meta data other than raw data should be saved in cdf.
-  					It should be set as TRUE if the entire ncdfFlowSet is going to be loaded by \code{\link{ncdfFlowSet_open,character-method}}.
-  					}
   \item{phenoData}{An object of \code{AnnotatedDataFrame} providing a way to manually set the phenotyoic data for the whole data set in ncdfFlowSet.}
   
   \item{channels}{ A character vector specifying which channels to extract from FCS files.
@@ -62,7 +59,7 @@ path<-system.file("extdata","compdata","data",package="flowCore")
 files<-list.files(path,full.names=TRUE)[1:3]
 
 #create ncdfFlowSet from fcs with the actual raw data written in cdf
-nc1  <- read.ncdfFlowSet(isSaveMeta=FALSE,files=files,ncdfFile="ncfsTest.nc",flowSetId="fs1",isWriteSlice= TRUE)
+nc1  <- read.ncdfFlowSet(files=files,ncdfFile="ncfsTest.nc",flowSetId="fs1",isWriteSlice= TRUE)
 nc1
 nc1[[1]]
 ncfsUnlink(nc1)
