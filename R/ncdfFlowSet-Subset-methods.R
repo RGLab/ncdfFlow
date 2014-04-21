@@ -1,6 +1,6 @@
-
-
-###"select" is channel 
+#' @rdname ncdfFlowSet-class
+#' @export 
+#' @importClassesFrom flowCore filterResultList
 setMethod("Subset",
 		signature=signature(x="ncdfFlowSet",
 				subset="filterResultList"),
@@ -33,7 +33,7 @@ setMethod("Subset",
 				ncfs@colnames<-select
 			ncfs
 		})
-    
+#' @rdname ncdfFlowList-class    
 setMethod("Subset",
     signature=signature(x="ncdfFlowList",
         subset="filterResultList"),
@@ -56,7 +56,7 @@ setMethod("Subset",
       res
     })    
     
-###"select" is channel 
+#' @rdname ncdfFlowSet-class 
 setMethod("Subset",
 		signature=signature(x="ncdfFlowSet",
 				subset="filter"),
@@ -65,6 +65,9 @@ setMethod("Subset",
 			fr <- filter(x,subset)
 			Subset(x,fr,...)
 		})
+    
+#' @rdname ncdfFlowList-class    
+#' @importClassesFrom flowCore filter
 setMethod("Subset",
     signature=signature(x="ncdfFlowList",
         subset="filter"),
@@ -75,7 +78,7 @@ setMethod("Subset",
     })
     
 			
-
+#' @rdname ncdfFlowSet-class
 setMethod("Subset",
 		signature=signature(x="ncdfFlowSet",
 				subset="list"),

@@ -27,12 +27,51 @@
 #' @keywords package
 NULL
 
-#' 'ncdfFlowSet': a class for storing flow cytometry raw data in HDF5 format
+#' @import zlibbioc 
+NULL
+
+#' @useDynLib "ncdfFlow",.registration=TRUE, .fixes = "C_ncdfFlow_"
+
+NULL
+
+
+#' a class for storing flow cytometry raw data in HDF5 format
 #' 
 #' This class is a subclass of
 #'   \code{\link{flowSet}}. It stores the raw data in cdf file instead of memory so that the analysis tools
 #'   provided by flowCore based packages can be used in the study that produces hundreds or thousands FCS files.
-
+#' 
+#' @section Slots:
+#'  \describe{
+#' 
+#' \item{\code{file}:}{A character containing the ncdf file name.}
+#' \item{\code{maxEvents}:}{An integer containing the maximum number of events of all samples stored in this ncdfFlowSet object }
+#' \item{\code{flowSetId}:}{A character for the id of ncdfFlowSet object }
+#' \item{\code{indices}:}{Object of class \code{"environment"} containing events indices of each sample stored as \code{"raw"} vector. Each index value is either TURE or FALSE and the entire indices vector is used to subset the raw data.
+#'                         the indices vector of each sample is NA by default when the ncdfFlowSet first created.It is assigned with actual value when ncdfFlowSet object is subsetted by \code{\link{Subset}}
+#'                          or other subsetting methods.}
+#' \item{\code{origSampleVector}:}{A character vector containing the sample names,
+#'                                  which indicates the original order of samples physically stored in cdf format}
+#' \item{\code{origColnames}:}{A character vector containing the flow channel names,
+#'                              which indicates the original order of columns physically stored in cdf format}
+#' 
+#' \item{\code{frames}:}{Object of class \code{"environment"}, which replicates the "frame" slot in \code{\link{flowSet}},
+#'                      except that  \code{\link[=exprs,flowFrame-method]{exprs}} matrix is empty and the actual data is stored in cdf file. }
+#' \item{\code{phenoData}:}{see \code{\link[=phenoData,flowSet-method]{phenoData}}}
+#' \item{\code{colnames}:}{see \code{\link[=colnames,flowSet-method]{colnames}}. Here it serves as the current data view which does not reflect the actual number and order of columns stored in cdf file.}
+#' }
+#' 
+#' @section Extends: 
+#' Class \code{"\linkS4class{flowSet}"}, directly.
+#' 
+#' @exportClass ncdfFlowSet
+#' @rdname ncdfFlowSet-class
+#' @importClassesFrom Biobase AnnotatedDataFrame
+#' @importClassesFrom flowCore flowFrame flowSet
+#' @importClassesFrom methods ANY character environment factor formula integer list logical
+#' @importMethodsFrom Biobase description description<- exprs exprs<- pData pData<- phenoData phenoData<- sampleNames sampleNames<- varLabels varMetadata varMetadata<- AnnotatedDataFrame
+#' @importMethodsFrom flowCore colnames colnames<- compensate filter fsApply identifier %in% ncol nrow parameters parameters<- split Subset transform
+#' @importFrom methods as is new
 setClass("ncdfFlowSet",                   
 		representation=representation(
 				file = "character",
@@ -59,7 +98,29 @@ setClass("ncdfFlowSet",
 #		}
 		)
 		
-
+#' a class that stores multiple ncdfFlowSet objects
+#' 
+#' It is a list of ncdfFlowSet objects
+#' 
+#' @section Objects from the Class:
+#' Objects can be created by coercing a list of ncdfFlowSet objects 
+#' as("ncdfFlowList",nclist = .... #a list of ncdfFlowSet objects)
+#' 
+#' @seealso \code{\link{ncdfFlowSet}}
+#' @exportClass ncdfFlowList
+#' @examples 
+#' data(GvHD)
+#' nc1 <- ncdfFlowSet(GvHD[1])
+#' nc2 <- ncdfFlowSet(GvHD[2])
+#' nc3 <- ncdfFlowSet(GvHD[3])
+#' list1 <- list(nc1, nc2, nc3)
+#' #coerce from list to ncdfFlowList
+#' nclist <- as(list1, "ncdfFlowList")
+#' nclist
+#' #coerce(collapse) from ncdfFlowList to a single flowFrame
+#' collapsedData <- as(nclist, "flowFrame")
+#' collapsedData
+#' @rdname ncdfFlowList-class
 setClass("ncdfFlowList"
     ,representation=representation(
         data = "list"

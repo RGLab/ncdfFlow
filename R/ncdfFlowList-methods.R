@@ -1,19 +1,14 @@
-#setMethod("ncfsUnlink",
-#		signature=signature(x="ncdfFlowList"),
-#		definition=function(x)
-#		{
-#			lapply(x@datalist,function(ncfs)unlink(ncfs@file))
-#			
-#		}
-#)
-### to ncdfFlowSet
-
 #' validity check for samples slot        
 .isValidSamples<-function(samples,object){
   return (setequal(unlist(lapply(object,sampleNames, level = 1)),samples))
 }
 
-
+#' lapply method for ncdfFlowList
+#' 
+#' Depending on \code{level} parameter, loop either iterates through the list of ncdfFlowSet objects 
+#' or every\code{flowFrame} objects.
+#' 
+#' 
 #' @param \code{ncdfFlowList} object
 #' @param FUN \code{function} to apply
 #' @param level \code{numeric}. It controls whether loop at `ncdfFlowSet` level or `sample` level. 
@@ -43,7 +38,10 @@ setMethod("fsApply",
       selectMethod("fsApply", signature = c("flowSet"))(x, FUN, ..., simplify = simplify, use.exprs = use.exprs)
       })
   
-
+#' @rdname ncdfFlowList-class
+#' @export 
+#' @aliases 
+#' filter,ncdfFlowList,filter-method
 setMethod("filter",
     signature=signature(x="ncdfFlowList",
         filter="filter"),
@@ -52,7 +50,8 @@ setMethod("filter",
       selectMethod("filter", signature = c("flowSet", "filter"))(x, filter)
     })
 
-#' @rdname ncdfFlowSet-class
+#' @rdname ncdfFlowList-class
+#' @aliases [[,ncdfFlowList,numeric-method
 setMethod("[[",c(x="ncdfFlowList",i="numeric"),function(x,i,j, ...){
       
       #convert non-character indices to character
@@ -64,14 +63,16 @@ setMethod("[[",c(x="ncdfFlowList",i="numeric"),function(x,i,j, ...){
       x[[this_samples[i], j, ...]]
       
     })
-#' @rdname ncdfFlowSet-class
+#' @rdname ncdfFlowList-class
+#' @aliases [[,ncdfFlowList,logical-method
 setMethod("[[",c(x="ncdfFlowList",i="logical"),function(x,i, j, ...){
       #convert non-character indices to character
       
       x[[sampleNames(x)[i], j, ...]]
       
     })
-#' @rdname ncdfFlowSet-class
+#' @rdname ncdfFlowList-class
+#' @aliases [[,ncdfFlowList,character-method
 setMethod("[[",c(x="ncdfFlowList",i="character"),function(x,i, j, ...){
       #convert non-character indices to character
       
@@ -102,6 +103,8 @@ setMethod("length",
       selectMethod("length", signature = c("ncdfFlowSet"))(x) 
     })
 #' @rdname ncdfFlowList-class
+#' @aliases 
+#' show,ncdfFlowList-method
 setMethod("show",
     signature = signature(object="ncdfFlowList"),
     definition = function(object) { 
@@ -111,6 +114,8 @@ setMethod("show",
     })
 
 #' @rdname ncdfFlowList-class
+#' @aliases 
+#' sampleNames,ncdfFlowList-method
 setMethod("sampleNames", 
     signature = signature(object = "ncdfFlowList"),
     function(object) {
@@ -214,7 +219,7 @@ setMethod("pData","ncdfFlowList",function(object){
       rownames(res) <- res[, "name"]
       res[object@samples,,drop=FALSE]
     })
-
+#' @exportMethod pData<-
 setReplaceMethod("pData",c("ncdfFlowList","data.frame"),function(object,value){
       
       if(!.isValidSamples(rownames(value),object))
