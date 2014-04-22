@@ -2,7 +2,7 @@ context("ncdfFlowSet accessors")
 fs <- GvHD[pData(GvHD)$Patient %in% 6:7][1:4]
 suppressMessages(ncfs <- ncdfFlowSet(fs))
 samples <- sampleNames(ncfs)
-
+lgcl <- logicleTransform( w = 0.5, t= 10000, m =4.5)
 
 test_that("[[", {
       
@@ -105,8 +105,11 @@ test_that("[[<-", {
       fr <- nc[[sn]]
       
       #transform the data
-      lgcl <- logicleTransform( w = 0.5, t= 10000, m =4.5)
-      fr_trans <- transform(fr, `FL1-H` = lgcl(`FL1-H`), `FL2-H` = lgcl(`FL2-H`))
+      #construct transformList first instead of 
+      # trransform(fr, `FL1-H` = lgcl(`FL1-H`), `FL2-H` = lgcl(`FL2-H`))
+      # because the latter only works in console mode (global envir)
+      translist <- transformList(c("FL1-H", "FL2-H"), lgcl)
+      fr_trans <- transform(fr, translist)
       
       #update the data
       suppressMessages(nc[[sn]] <- fr_trans)
@@ -143,8 +146,8 @@ test_that("[[<-", {
 test_that("ncfsApply", {
       sn <- samples[1]
       #use ncfsApply when FUN returns a flowFrame
-      lgcl <- logicleTransform( w = 0.5, t= 10000, m =4.5)
-      suppressMessages(nc1 <- ncdfFlow:::ncfsApply(ncfs, transform, `FL1-H` = lgcl(`FL1-H`), `FL2-H` = lgcl(`FL2-H`)))
+      translist <- transformList(c("FL1-H", "FL2-H"), lgcl)
+      suppressMessages(nc1 <- ncdfFlow:::ncfsApply(ncfs, transform, translist))
       expect_is(nc1, "ncdfFlowSet")
       expect_equal(sampleNames(ncfs), sampleNames(nc1))
       expect_equal(colnames(ncfs), colnames(nc1))
@@ -269,6 +272,7 @@ test_that("read.ncdfFlowSet", {
   suppressMessages(nc1[[1]] <- fs1[[1]])
   expect_equal(nrow(nc1[[1]]), 1e4)
   expect_equal(nrow(nc1[[2]]), 0)
+  unlink(nc1)
 })
 
 test_that("clone.ncdfFlowSet", {
@@ -287,4 +291,6 @@ test_that("clone.ncdfFlowSet", {
       is_equal_flowSet(nc1, nc2)
       expect_equal(getFileName(nc2), "clone.nc")
       expect_false(identical(nc2@frames, nc1@frames))
+      
+      unlink(nc2)
     })
