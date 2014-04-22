@@ -240,8 +240,8 @@ test_that("split", {
       
 
       #split by filter
-      nclist <- split(ncfs, morphGate)
-      fslist <- split(fs, morphGate)
+      nclist <- split(ncfs, rectGate)
+      fslist <- split(fs, rectGate)
       expect_is(nclist, "list")
       expect_equal(names(nclist), names(fslist))
       invisible(lapply(names(nclist), function(thisPop){
@@ -280,7 +280,7 @@ test_that("clone.ncdfFlowSet", {
       expect_equal(getFileName(nc2), "clone.nc")
       
       #add the actual raw data
-      suppressMessages(nc2[[1]] <- nc[[1]])
+      suppressMessages(nc2[[1]] <- nc1[[1]])
       is_equal_flowFrame(nc1[[1]], nc2[[1]])
       
       suppressMessages(nc2 <- clone.ncdfFlowSet(nc1, "clone.nc", isEmpty = FALSE))

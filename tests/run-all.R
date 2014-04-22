@@ -31,7 +31,6 @@ is_equal_flowSet <- function(fs_orig, fs_new, ...){
             is_equal_flowFrame(orig, target, ...)
           }))  
 }  
-
 test_package("ncdfFlow")
 
 #test_file("~/rglab/workspace/ncdfFlow/inst/tests/test_ncdfFlowSet_accessor.R")
