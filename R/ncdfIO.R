@@ -1,78 +1,49 @@
-# TODO: Add comment
-# 
-# Author: mike
-###############################################################################
-############################################################################################
-# three low-level indice IO routines deal with bitvector,no intended to be exposed to user
-#ncIndice is a list that contains the filename and node list
-#TODO:high-level wrapper is to be written to call these routines to deal with logical vector
-##############################################################################################
-
-#len is the eventCount,nlist is the list of node/gate
-createIndiceFile<-function(ncFile,eventCount,nlist)
-{
-	
-	msgCreate <- .Call(dll$"_createIndiceFile", ncFile,as.integer(eventCount),length(nlist))
-			
-	if(!msgCreate)stop()
-}
-
-
-##indiceMat is a eventCount x N matrix which represents N contiguous indices vectors
-#Node is a gate/node character
-writeIndice<-function(ncIndice,indiceMat,startNode) 
-{
-	if(!is.matrix(indiceMat)||!all(c("bitlen","nbitset")%in%names(attributes(indiceMat))))
-	{
-		warning("the input needs to have attributes of bitLen and nbitset!")
-		return(NULL)
-	}
-	nodeStartInd<-which(ncIndice$nlist==startNode)
-	
-	msgWrite <- .Call(dll$"_writeIndice",ncIndice$ncFile,indiceMat,as.integer(nodeStartInd))
-	if(!msgWrite)stop()
-	
-	msgWrite
-}
-
-#Node is a gate/node character,nodeCount indicates how many contiguous indices vectors is to be read
-#return value is a matrix,when single column is retrieved,it is coeced to vector
-readIndice<-function(ncIndice,Node,nodeCount=1) 
-{
-	
-	nodeStartInd<-which(ncIndice$nlist==Node)
-	
-	#	
-	indiceMat <- .Call(dll$"_readIndice",ncIndice$ncFile,nodeStartInd,as.integer(nodeCount))
-	if(!is.matrix(indiceMat)&&!indiceMat)stop()
-	
-	indx <- nodeStartInd:(nodeStartInd+nodeCount-1)
-	clNames <-ncIndice$nlist[indx]
-#	colnames(indiceMat) <- clNames
-	
-	##wrap it to a list of bitvector
-	indices<-list()
-	for(i in 1:ncol(indiceMat))
-	{
-#		
-		curCol<-indiceMat[,i]
-		eval(parse(text=paste("indices$`",clNames[i],"`<-structure(curCol,bitlen=attr(indiceMat,\"bitlen\"),nbitset=attr(indiceMat,\"nbitset\")[i])",sep="")))
-		
-	}
-	
-	if(length(indices)==1)
-		indices<-indices[[1]]
-	
-	indices
-}
-
-############################################################################################
-# the following routines are IO for ncdfFlowSet object to cdf file
-##############################################################################################
+#' create ncdfFlowSet from FCS files
+#' 
+#' read FCS files from the disk and load them into a ncdfFlowSet object
+#' 
+#' @param files A character vector giving the source FCS raw file paths.
+#' @param ncdfFile A character scalar giving the output file name. Default is NULL and the function will generate a random
+#'                  file in the temporary folder, potentially adding the \code{.cdf} suffix unless a file
+#'                  extension is already present. It is sometimes useful to specify this file path to avoid the failure of writing large flow data set to cdf file 
+#'                  due to the the shortage of disk space in system temporary folder. 
+#'                  It is only valid when isNewNcFile=TRUE 
+#' @param flowSetId  A character scalar giving the unique ncdfFlowSet ID.
+#' @param isWriteSlice A logical scalar indicating whether the raw data should also be copied.if FALSE,
+#'                      an empty cdf file is created with the dimensions (sample*events*channels) supplied by raw FCS files. 
+#' @param phenoData An object of \code{AnnotatedDataFrame} providing a way to manually set the phenotyoic data for the whole data set in ncdfFlowSet.
+#' @param channels A character vector specifying which channels to extract from FCS files.
+#'                  It can be useful when FCS files do not share exactly the same channel names.
+#'                  Thus this argument is used to select those common channels that are of interests.
+#'                  Default value is NULL and the function will try to scan the FCS headers of all files
+#'                  and determine the common channels.
+#' @param ... extra arguments to be passed to \code{\link{read.FCS}}.
+#' @return   A ncdfFlowSet object
+#' @seealso \code{\link{clone.ncdfFlowSet}}
+#' @examples 
+#' library(ncdfFlow)
+#' 
+#' path<-system.file("extdata","compdata","data",package="flowCore")
+#' files<-list.files(path,full.names=TRUE)[1:3]
+#' 
+#' #create ncdfFlowSet from fcs with the actual raw data written in cdf
+#' nc1  <- read.ncdfFlowSet(files=files,ncdfFile="ncfsTest.nc",flowSetId="fs1",isWriteSlice= TRUE)
+#' nc1
+#' nc1[[1]]
+#' unlink(nc1)
+#' rm(nc1)
+#' 
+#' #create empty ncdfFlowSet from fcs and add data slices afterwards
+#' nc1  <- read.ncdfFlowSet(files=files,ncdfFile="ncfsTest.nc",flowSetId="fs1",isWriteSlice= FALSE)
+#' fs1<-read.flowSet(files)
+#' nc1[[1]] <- fs1[[1]]
+#' nc1[[1]]
+#' nc1[[2]]
+#' @export 
+#' @importFrom flowCore read.FCS read.FCSheader
 read.ncdfFlowSet <- function(files = NULL
 								,ncdfFile,flowSetId=""
 								,isWriteSlice= TRUE
-								,isSaveMeta=FALSE
 								,phenoData
 								,channels=NULL
 								,...) #dots to be passed to read.FCS
@@ -109,7 +80,7 @@ read.ncdfFlowSet <- function(files = NULL
 	message("Determine the max total events by reading FCS headers ...")
 	for(i in 1:nFile){
 		curFile<-files[i]
-		txt<-flowCore:::read.FCSheader(curFile)[[1]]
+		txt <- read.FCSheader(curFile)[[1]]
 		nChannels <- as.integer(txt[["$PAR"]])
 		channelNames <- unlist(lapply(1:nChannels,function(i)flowCore:::readFCSgetPar(txt,paste("$P",i,"N",sep="")))) 
 		channelNames<- unname(channelNames)
@@ -205,11 +176,11 @@ read.ncdfFlowSet <- function(files = NULL
 
 	
 	#get the meta size
-	metaSize<-ifelse(isSaveMeta,length(serialize(ncfs,NULL)),0)
+	metaSize <- 0
 
 	#create empty cdf file
 #	
-	msgCreate <- .Call(dll$createFile, ncdfFile, as.integer(maxEvents), 
+	msgCreate <- .Call(C_ncdfFlow_createFile, ncdfFile, as.integer(maxEvents), 
 					length(chnls_common), as.integer(nFile),
 					as.integer(metaSize),as.logical(compress))
 	if(!msgCreate)stop()
@@ -235,12 +206,7 @@ read.ncdfFlowSet <- function(files = NULL
 					ncfs[[guids[i]]] <- this_fr
 				}, verbose = TRUE)
 	}
-#	
 	
-	
-	#write metaData to cdf
-	if(isSaveMeta)
-		ncdfFlowSet_sync(ncfs)
 	
 	message("done!")
 	return(ncfs)
@@ -259,78 +225,47 @@ read.ncdfFlowSet <- function(files = NULL
   #escape all the meta characters
   gsub(metaCharacters, "\\\\\\1", x)
 }
-##################################################################
-#this function is to be deprecated due to its copy of the entire cdf repository
-#if isEmpty is set as FAlSE,then simply copy the orginal cdf file including the data
-#by default,create empty cdf file and then add the data later on 
-#has the bug of  dimensions (sample*colnames) are not consistent with original cdf
-##################################################################
-clone.ncdfFlowSet.old<-function(ncfs,newNcFile=NULL,isEmpty=TRUE,isNewNcFile=TRUE,isSaveMeta=FALSE)
-{
-#		
-	
-	##if flag isNewNcFile=TRUE then creat new ncdf file
-	##otherwise keep using the original ncdf file
-	if(isNewNcFile)
-	{
-		if(is.null(newNcFile))
-			newNcFile<-tempfile(pattern = "ncfs")
 
-		if (!length(grep(".", newNcFile, fixed = TRUE)))  
-			newNcFile <- paste(newNcFile, "nc", sep = ".")
-		if(isEmpty)
-		{
-			metaSize<-ifelse(isSaveMeta,length(serialize(ncfs,NULL)),0)
-			msgCreate <- .Call(dll$createFile, newNcFile, as.integer(ncfs@maxEvents), 
-							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
-							as.integer(metaSize),as.logical(FALSE))
-			if(!msgCreate)stop("make sure the file does not exist already or your have write permission to the folder!")
-		}
-		
-		else
-			file.copy(ncfs@file,newNcFile,overwrite=TRUE)
-		#update file info
-		ncfs@file<-newNcFile	
-	}
-	
-	#update frames info
-	orig<-ncfs@frames
-	ncfs@frames<-new.env(hash=TRUE, parent=emptyenv())
-	for(i in ls(orig))
-	{
-		assign(i,orig[[i]],ncfs@frames)
-	}
-	
-	if(isEmpty)#when empty init the indices with 
-	{
-		orig<-ncfs@indices
-		ncfs@indices<-new.env(hash=TRUE, parent=emptyenv())
-		#copy indices info
-		for(i in sampleNames(ncfs))
-		{
-			
-#			updateIndices(ncfs,i,rep(TRUE,length(eval(parse(text=paste("orig$'",i,"'",sep=""))))))
-			updateIndices(ncfs,i,NA)
-		}
-	}else
-	{
-		orig<-ncfs@indices
-		ncfs@indices<-new.env(hash=TRUE, parent=emptyenv())
-		#copy indices info
-		for(i in ls(orig))
-		{
-			if(class(orig[[i]])=="raw"){
-				updateIndices(x=ncfs,y=i,z=.getBitStatus(orig[[i]]))
-			}else{
-				updateIndices(x=ncfs,y=i,z=orig[[i]])
-			}
-#			assign(i,orig[[i]],ncfs@indices)
-		}	
-	}
-	ncfs
-}
-
-clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMeta=FALSE)
+#' Clone a ncdfFlowSet
+#' 
+#' Create a new ncdfFlowSet object from an existing one
+#' 
+#' @param ncfs A \code{\link{ncdfFlowSet}}.
+#' @param isNew  A logical scalar indicating whether the new cdf file should be created.
+#'   					If FALSE, the original cdf file is associated with the new ncdfFlowSet object.
+#' @param ncdfFile A character scalar giving the output file name. By
+#'                  default, It is NULL and the function will generate a random
+#'                  file name, potentially adding the \code{.cdf} suffix unless a file
+#'                  extension is already present. It is only valid when isNewNcFile=TRUE
+#' @param isEmpty A logical scalar indicating whether the raw data should also be copied.if FALSE,
+#'   				an empty cdf file is created with the same dimensions (sample*events*channels) as the orignial one.
+#' @return A ncdfFlowSet object
+#' @seealso \code{\link{read.ncdfFlowSet}}
+#' @examples 
+#' 
+#' path<-system.file("extdata","compdata","data",package="flowCore")
+#' files<-list.files(path,full.names=TRUE)[1:3]
+#' 
+#' #create ncdfFlowSet from fcs
+#' nc1  <- read.ncdfFlowSet(files=files,ncdfFile="ncfsTest.nc",flowSetId="fs1",isWriteSlice= TRUE)
+#' 
+#' ##clone the ncdfFlowSet object,by default the actual raw data is not added
+#' nc2<-clone.ncdfFlowSet(nc1,"clone.nc")
+#' nc2[[1]]
+#' 
+#' #add the actual raw data
+#' fs1  <- read.flowSet(files=files)
+#' nc2[[sampleNames(fs1)[1]]] <- fs1[[1]]
+#' nc2[[1]]
+#' 
+#' #delete the cdf file associated with ncdfFlowSet before removing it from memory
+#' unlink(nc2)
+#' rm(nc2)
+#' 
+#' unlink(nc1)
+#' rm(nc1)
+#' @export 
+clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE)
 {
 	
 #	
@@ -373,8 +308,8 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 		
 		
 		
-		metaSize<-ifelse(isSaveMeta,length(serialize(ncfs,NULL)),0)
-		msgCreate <- .Call(dll$createFile, ncdfFile, as.integer(ncfs@maxEvents), 
+		metaSize <- 0
+		msgCreate <- .Call(C_ncdfFlow_createFile, ncdfFile, as.integer(ncfs@maxEvents), 
 				as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
 				as.integer(metaSize),as.logical(FALSE))
 		if(!msgCreate)stop("make sure the file does not exist already or your have write permission to the folder!")
@@ -432,47 +367,6 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE,isSaveMet
 		
 	
 	ncfs
-}
-
-#Defunct:merged into [[<- method
-.writeSlice <- function(ncfs,data,sampleName)
-{ 
-  .Defunct("[[<-")
-  
-	if(class(data)=="flowFrame")
-	{
-		mat <- exprs(data)
-	}else
-	{
-		mat<-data
-	}
-	mode(mat) <- "single"
-	#make sure to use origSampleVector for IO since phetaData slot may change after subsetting
-	i<-which(ncfs@origSampleVector==sampleName)
-	
-    ##always get the enire original slice for optimized reading
-    origChNames <-ncfs@origColnames ##
-    localChNames <-colnames(data)
-    chIndx <- match(localChNames,origChNames)
-#	
-	
-	if(any(is.na(chIndx)))
-	{
-		stop("Colnames of the input are not consistent with ncdfFlowSet!"
-				,sampleName)	
-	}
-		
-	
-	#write it back to disk
-	msgWrite <- .Call(dll$writeSlice, ncfs@file, mat , as.integer(i), as.integer(chIndx))
-	
-	if(!msgWrite)
-	{
-#		
-		stop("Writing to CDF file failed!",sampleName)
-	}
-	msgWrite
-
 }
 
 
