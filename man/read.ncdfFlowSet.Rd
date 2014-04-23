@@ -2,22 +2,15 @@
 \docType{methods}
 \name{ncdfFlowSet,flowFrame-method}
 \alias{ncdfFlowSet,flowFrame-method}
-\alias{ncdfFlowSet,flowSet-method}
 \alias{read.ncdfFlowSet}
 \title{create ncdfFlowSet from flowFrame (not supported)}
 \usage{
 \S4method{ncdfFlowSet}{flowFrame}(x, ncdfFile)
 
-\S4method{ncdfFlowSet}{flowSet}(x, ncdfFile)
-
 read.ncdfFlowSet(files = NULL, ncdfFile, flowSetId = "",
-  isWriteSlice = TRUE, phenoData, channels = NULL, ...)
+  isWriteSlice = TRUE, phenoData, channels = NULL, dim = 2, ...)
 }
 \arguments{
-\item{x}{\code{flowSet}}
-
-\item{ncdfFile}{\code{character} specifies the file name of cdf file}
-
 \item{files}{A character vector giving the source FCS raw file paths.}
 
 \item{ncdfFile}{A character scalar giving the output file name. Default is NULL and the function will generate a random
@@ -39,6 +32,10 @@ Thus this argument is used to select those common channels that are of interests
 Default value is NULL and the function will try to scan the FCS headers of all files
 and determine the common channels.}
 
+\item{dim}{\code{integer} the number of dimensions that specifies the physical storage format of hdf5 dataset.
+                           Default is 2, which stores each FCS data as a seperate 2d dataset.
+                           Normally, user shouldn't need to change this but tt can also be set to 3, which stores all FCS data as one single 3d dataset.}
+
 \item{...}{extra arguments to be passed to \code{\link{read.FCS}}.}
 }
 \value{
@@ -47,15 +44,9 @@ A ncdfFlowSet object
 \description{
 create ncdfFlowSet from flowFrame (not supported)
 
-Normally the \code{ncdfFlowSet} is constructed by loading raw FCS files using \code{read.ncdfFlowSet}.
-In case there is a legacy \code{flowSet} object, we can convert it to \code{ncdfFlowSet} with this constructor.
-
 read FCS files from the disk and load them into a ncdfFlowSet object
 }
 \examples{
-data(GvHD)
-fs <- GvHD[1:2]
-ncfs <- ncdfFlowSet(fs)
 library(ncdfFlow)
 
 path<-system.file("extdata","compdata","data",package="flowCore")

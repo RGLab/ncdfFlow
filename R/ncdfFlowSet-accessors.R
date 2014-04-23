@@ -44,7 +44,7 @@ setMethod("ncdfFlowSet",
 #'
 #' @param x \code{flowSet}
 #' @param ncdfFile \code{character} specifies the file name of cdf file
-#' @rdname read.ncdfFlowSet
+#' @param dim \code{integer} see details in \link{read.ncdfFlowset}.
 #' @export 
 #' @examples 
 #' data(GvHD)
@@ -52,7 +52,10 @@ setMethod("ncdfFlowSet",
 #' ncfs <- ncdfFlowSet(fs)
 setMethod("ncdfFlowSet",
 		signature=(x="flowSet"),
-		definition=function(x,ncdfFile){		
+		definition=function(x,ncdfFile, dim = 2){
+          
+            dim <- as.integer(match.arg(as.character(dim), c("2","3")))
+          
 			if(missing(ncdfFile))
 				ncdfFile <-tempfile(pattern = "ncfs") 
 			flowSetId = ncdfFile
@@ -64,18 +67,24 @@ setMethod("ncdfFlowSet",
 			e1<-new.env(hash=TRUE, parent=emptyenv())
 
 			
-			maxEvents<-0
-			for(guid in sampleNames(x))
-			{
-				assign(guid, new("flowFrame",exprs=matrix(numeric(0),nrow=0,ncol=0),parameters(x[[guid]]),description(x[[guid]])), env=e1)
-				maxEvents<-max(maxEvents,nrow(exprs(x[[guid]])))				
-			}
+			maxEvents <- 0L
+            
+            
+            for(guid in sampleNames(x))
+            {
+              assign(guid, new("flowFrame",exprs=matrix(numeric(0),nrow=0,ncol=0),parameters(x[[guid]]),description(x[[guid]])), env=e1)
+              if(dim == 3)
+              {    maxEvents<-max(maxEvents,nrow(exprs(x[[guid]])))				
+              }  
+            }
+			
 			
 			#assign the maximum number of indices to estimate the ncfs object size
 			e2<-new.env(hash=TRUE, parent=emptyenv())
 			for(guid in sampleNames(x))
 			{
-				assign(guid,rep(TRUE,maxEvents),e2)
+                assign(guid, NA, e2)
+#				assign(guid,rep(TRUE,maxEvents),e2)
 			}
 			
 #			
@@ -85,11 +94,10 @@ setMethod("ncdfFlowSet",
 					,origColnames=colnames(x))
                 
             
-            metaSize<-0
+            
 			#create new ncdf file			
 			msgCreate <-.Call(C_ncdfFlow_createFile, ncdfFile, as.integer(ncfs@maxEvents), 
-							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
-							as.integer(metaSize),as.logical(FALSE))
+							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)), dim)
 			if(!msgCreate)stop()
                         initIndices(ncfs)			
 			for(guid in sampleNames(x))
@@ -338,12 +346,16 @@ setMethod("[[",
                 if(length(samplePos) == 0)
                   stop("Invalid sample name '", sampleName, "'! It is not found in 'origSampleVector' slot!")
                 
-    			mat <- .Call(C_ncdfFlow_readSlice, x@file, as.integer(chIndx), as.integer(samplePos), localChNames)
+    			mat <- .Call(C_ncdfFlow_readSlice, x@file, as.integer(chIndx), as.integer(samplePos), paste0("/", sampleName), localChNames)
     			if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
+    			if(nrow(mat) == 0){
+                  mat <- matrix(numeric(0),nrow=0, ncol = length(localChNames), dimnames = list(NULL, localChNames)) 
+                }else{
+                  #subset data by indices if neccessary	
+                  if(subByIndice)
+                    mat<-mat[getIndices(x,sampleName),,drop=FALSE]  
+                }
     			
-    			#subset data by indices if neccessary	
-    			if(subByIndice&&nrow(mat)>0)
-    				mat<-mat[getIndices(x,sampleName),,drop=FALSE]
     			
     			fr@exprs <- mat
           }			
@@ -490,7 +502,7 @@ setReplaceMethod("[[",
           
         }
         #write to disk
-        msgWrite <- .Call(C_ncdfFlow_writeSlice, ncfs@file, newData, as.integer(chIndx), as.integer(sampleInd))
+        msgWrite <- .Call(C_ncdfFlow_writeSlice, ncfs@file, newData, as.integer(chIndx), as.integer(sampleInd), paste0("/", sampleName))
         
         if(!msgWrite)
         {

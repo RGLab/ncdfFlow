@@ -121,10 +121,11 @@ setMethod("rbind2",
               
             }else{
     			#create new ncdf file		
-    			#NOTE: rbind2 will not save the metadata in the new file..	
+    			#NOTE: rbind2 will not save the metadata in the new file..
+                dim <- 2
     			msgCreate <- try(.Call(C_ncdfFlow_createFile, newNcFile, as.integer(ncfs@maxEvents), 
     							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
-    							as.integer(0),as.logical(FALSE)),silent = TRUE)
+    							as.integer(dim)),silent = TRUE)
     			if(!msgCreate)stop(msgCreate)
     			
     			
