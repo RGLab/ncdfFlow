@@ -348,13 +348,11 @@ setMethod("[[",
                 
     			mat <- .Call(C_ncdfFlow_readSlice, x@file, as.integer(chIndx), as.integer(samplePos), paste0("/", sampleName), localChNames)
     			if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
-    			if(nrow(mat) == 0){
-                  mat <- matrix(numeric(0),nrow=0, ncol = length(localChNames), dimnames = list(NULL, localChNames)) 
-                }else{
-                  #subset data by indices if neccessary	
-                  if(subByIndice)
-                    mat<-mat[getIndices(x,sampleName),,drop=FALSE]  
-                }
+    			
+                #subset data by indices if neccessary	
+                if(subByIndice&&nrow(mat)>0)
+                  mat<-mat[getIndices(x,sampleName),,drop=FALSE]  
+                
     			
     			
     			fr@exprs <- mat

@@ -189,7 +189,7 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx, SEXP 
 			/* Create the 2d mat. */
 			dataset = H5Dcreate2(file, sampleName, H5T_IEEE_F32LE_g, dataspace,
 								  H5P_DEFAULT, dcpl_id, H5P_DEFAULT);
-			H5Dclose(dcpl_id);
+			H5Pclose(dcpl_id);
 		}
 		else
 		{
@@ -397,7 +397,9 @@ SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sampleIndx, SEXP _sampleName,
 					 H5P_DEFAULT, data_out);
 
 		}
-
+		H5Dclose(dataset);
+		H5Sclose(dataspace);
+		H5Sclose(memspace);
 	}
 	else
 	{
@@ -484,6 +486,9 @@ SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sampleIndx, SEXP _sampleName,
 						 H5P_DEFAULT, data_out);
 
 			}
+			H5Dclose(dataset);
+			H5Sclose(dataspace);
+			H5Sclose(memspace);
 		}
 		else
 		{
@@ -493,13 +498,9 @@ SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sampleIndx, SEXP _sampleName,
 		}
 
 	}
-	/*
-	 * Close/release resources.
-	 */
 
-	H5Dclose(dataset);
-	H5Sclose(dataspace);
-	H5Sclose(memspace);
+
+
 	H5Fclose(file);
     
 	/*
