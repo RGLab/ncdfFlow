@@ -2,7 +2,7 @@
 #include <R.h>
 #include <stdlib.h>
 #define DATASETNAME3d "/exprsMat"
-
+#define MAXLEN 100//max character length of sample index
 
 #define TRUE            1
 #define FALSE           0

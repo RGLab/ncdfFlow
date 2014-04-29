@@ -346,7 +346,7 @@ setMethod("[[",
                 if(length(samplePos) == 0)
                   stop("Invalid sample name '", sampleName, "'! It is not found in 'origSampleVector' slot!")
                 
-    			mat <- .Call(C_ncdfFlow_readSlice, x@file, as.integer(chIndx), as.integer(samplePos), paste0("/", sampleName), localChNames)
+    			mat <- .Call(C_ncdfFlow_readSlice, x@file, as.integer(chIndx), as.integer(samplePos), localChNames)
     			if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
     			
                 #subset data by indices if neccessary	
@@ -500,7 +500,7 @@ setReplaceMethod("[[",
           
         }
         #write to disk
-        msgWrite <- .Call(C_ncdfFlow_writeSlice, ncfs@file, newData, as.integer(chIndx), as.integer(sampleInd), paste0("/", sampleName))
+        msgWrite <- .Call(C_ncdfFlow_writeSlice, ncfs@file, newData, as.integer(chIndx), as.integer(sampleInd))
         
         if(!msgWrite)
         {

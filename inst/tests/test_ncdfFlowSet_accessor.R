@@ -169,6 +169,7 @@ test_that("sampleNames<-", {
       expect_equal(sampleNames(nc), newNames)
       expect_equal(nc@origSampleVector, c(newNames,samples[-c(1:2)]))
       expect_equal(ls(nc@indices), newNames)
+      is_equal_flowFrame(ncfs[sn][[1]], nc[[1]])
     })
 
 test_that("colnames<-", {

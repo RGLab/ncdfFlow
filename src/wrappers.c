@@ -41,7 +41,7 @@ SEXP createFile(SEXP _fileName, SEXP _nEvent, SEXP _nChannel, SEXP _nSample, SEX
 /*
  * inline _writeSlice and _writeSlice2d code
  */
-SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx, SEXP _sampleName) {
+SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx) {
 
 	SEXP k = allocVector(LGLSXP,1);//create logical scalar for return value
 	const char * fName = translateChar(STRING_ELT(_fileName, 0));
@@ -54,6 +54,8 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx, SEXP 
     nRow = INTEGER(Rdim)[0];
     nCol = INTEGER(Rdim)[1];
     int nEvents = nRow;
+    int sampleIndx = INTEGER(_sampleIndx)[0];
+    sampleIndx = sampleIndx -1;//convert from R to C indexing
 	/*
 	 * Open the file and the dataset.
 	 */
@@ -77,8 +79,6 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx, SEXP 
 	if(is3d)
 	{
 
-		int sampleIndx = INTEGER(_sampleIndx)[0];
-
 		hid_t attrID;
 		/*
 		 * Define the memory dataspace.
@@ -101,7 +101,7 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx, SEXP 
 		 * write subsets
 		 */
 		unsigned i;
-		sampleIndx = sampleIndx -1;//convert from R to C indexing
+
 		for(i = 0; i < chCount; i++){
 			int colStart = chIndx[i] -1; //convert from R to C indexing
 			offset[0] = sampleIndx;//start from sampleIndx-th sample
@@ -158,7 +158,9 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx, SEXP 
 	}
 	else
 	{
-		const char * sampleName = translateChar(STRING_ELT(_sampleName, 0));
+		//convert index to string to be used as dataset name
+		char * sampleName = (char *)malloc(sizeof(char)*MAXLEN);
+		snprintf(sampleName, MAXLEN, "%d", sampleIndx);
 		/*
 		 * Open the file and the dataset.
 		 */
@@ -196,7 +198,7 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx, SEXP 
 			dataset = H5Dopen2(file, sampleName, H5P_DEFAULT);
 			dataspace = H5Dget_space(dataset);    /* dataspace handle */
 		}
-
+		free(sampleName);
 		/*
 		 * Define the memory dataspace.
 		 */
@@ -279,7 +281,7 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx, SEXP 
  * 2. we want to query the hdf format in order to dispatch to the different logic of IO
  * Both requires the hdf query, which causes disk IO, thus we do it here directly so that hdf only needs to be opened once
  */
-SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sampleIndx, SEXP _sampleName, SEXP _colnames) {
+SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sampleIndx, SEXP _colnames) {
 
 
 	SEXP k = allocVector(LGLSXP,1);//create logical scalar for return value
@@ -291,6 +293,9 @@ SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sampleIndx, SEXP _sampleName,
     const char * fName = translateChar(STRING_ELT(_fileName, 0));
     int * chnlIndx = INTEGER(_chIndx);
 	int chCount = length(_chIndx);
+
+	int sampleIndx = INTEGER(_sampleIndx)[0];
+	sampleIndx = sampleIndx -1;//convert from R to C indexing
     /*
      * determine the dataset format
      */
@@ -312,15 +317,11 @@ SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sampleIndx, SEXP _sampleName,
 	}
 	else
 		is3d = 0;
-
+	/*
+	 * read data from 3d mat
+	 */
 	if(is3d)
 	{
-		/*
-		 * read data from 3d mat
-		 */
-		int sampleIndx = INTEGER(_sampleIndx)[0];
-		sampleIndx = sampleIndx -1;//convert from R to C indexing
-
 
 		/*
 		 * get the total number of events for the current sample
@@ -406,7 +407,13 @@ SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sampleIndx, SEXP _sampleName,
 		/*
 		 * read 2d format
 		 */
-		const char * sampleName = translateChar(STRING_ELT(_sampleName, 0));
+
+		/*
+		 * convert index to string to be used as dataset name
+		 * because dataset can not be renamed once created in hdf
+		 */
+		char * sampleName = (char *)malloc(sizeof(char)*MAXLEN);
+		snprintf(sampleName, MAXLEN, "%d", sampleIndx);
 		/*
 		 * Open the file and the dataset.
 		 */
@@ -424,7 +431,7 @@ SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sampleIndx, SEXP _sampleName,
 			dataset = H5Dopen2(file, sampleName, H5P_DEFAULT);
 			dataspace = H5Dget_space(dataset);    /* dataspace handle */
 
-
+			free(sampleName);
 			/*
 			 * get the total number of events for the current sample
 			 */
