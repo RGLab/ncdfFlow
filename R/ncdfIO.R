@@ -19,8 +19,8 @@
 #'                  and determine the common channels.
 #' @param dim \code{integer} the number of dimensions that specifies the physical storage format of hdf5 dataset.
 #'                            Default is 2, which stores each FCS data as a seperate 2d dataset. 
-#'                            Normally, user shouldn't need to change this but tt can also be set to 3, which stores all FCS data as one single 3d dataset. 
-#'                             
+#'                            Normally, user shouldn't need to change this but dim can also be set to 3, which stores all FCS data as one single 3d dataset. 
+#' @param compress \code{integer} the HDF5 compression ratio (from 0 to 9). Default is 0, which does not compress the data and is recommeneded (especially for 2d format) because the speed loss usually outweights the disk saving.                              
 #' @param ... extra arguments to be passed to \code{\link{read.FCS}}.
 #' @return   A ncdfFlowSet object
 #' @seealso \code{\link{clone.ncdfFlowSet}}
@@ -51,6 +51,7 @@ read.ncdfFlowSet <- function(files = NULL
 								,phenoData
 								,channels=NULL
                                 ,dim = 2
+                                ,compress = 0
 								,...) #dots to be passed to read.FCS
 {
     dim <- as.integer(match.arg(as.character(dim), c("2","3")))
@@ -183,7 +184,7 @@ read.ncdfFlowSet <- function(files = NULL
 
 	#create empty cdf file
 	msgCreate <- .Call(C_ncdfFlow_createFile, ncdfFile, as.integer(maxEvents), 
-					length(chnls_common), as.integer(nFile), dim)
+					length(chnls_common), as.integer(nFile), dim, as.integer(compress))
 	if(!msgCreate)stop()
 #	
 	##remove indicies to keep the slot as empty by default for memory and speed issue
@@ -204,7 +205,7 @@ read.ncdfFlowSet <- function(files = NULL
                         ,...)
                     #we need to reorder columns in order to make them identical across samples
                     this_fr <- this_fr[,chnls_common]
-					ncfs[[guids[i]]] <- this_fr
+					ncfs[[guids[i], compress = compress]] <- this_fr
 				}, verbose = TRUE)
 	}
 	
@@ -241,6 +242,7 @@ read.ncdfFlowSet <- function(files = NULL
 #' @param isEmpty A logical scalar indicating whether the raw data should also be copied.if FALSE,
 #'   				an empty cdf file is created with the same dimensions (sample*events*channels) as the orignial one.
 #' @param dim \code{integer} see details in \link{read.ncdfFlowset}.
+#' @param compress \code{integer} see details in \link{read.ncdfFlowset}.
 #' @return A ncdfFlowSet object
 #' @seealso \code{\link{read.ncdfFlowSet}}
 #' @examples 
@@ -267,7 +269,7 @@ read.ncdfFlowSet <- function(files = NULL
 #' unlink(nc1)
 #' rm(nc1)
 #' @export 
-clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE, dim = 2)
+clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE, dim = 2, compress = 0)
 {
     dim <- as.integer(match.arg(as.character(dim), c("2","3")))
 #	
@@ -309,7 +311,7 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE, dim = 2)
 
 		
 		msgCreate <- .Call(C_ncdfFlow_createFile, ncdfFile, as.integer(ncfs@maxEvents), 
-				as.integer(length(colnames(ncfs))), as.integer(length(ncfs)), dim)
+				as.integer(length(colnames(ncfs))), as.integer(length(ncfs)), dim, as.integer(compress))
 		if(!msgCreate)stop("make sure the file does not exist already or your have write permission to the folder!")
 #		
 		if(!isEmpty)##write the actual data 
@@ -317,7 +319,7 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE, dim = 2)
 			for(i in sampleNames(orig))
 			{
 				message("copying data slice:",i)
-				ncfs[[i]] <- orig[[i]]
+				ncfs[[i, compress = compress]] <- orig[[i]]
 				
 			}
 			

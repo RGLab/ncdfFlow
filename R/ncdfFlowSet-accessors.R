@@ -45,6 +45,7 @@ setMethod("ncdfFlowSet",
 #' @param x \code{flowSet}
 #' @param ncdfFile \code{character} specifies the file name of cdf file
 #' @param dim \code{integer} see details in \link{read.ncdfFlowset}.
+#' @param compress \code{integer} see details in \link{read.ncdfFlowset}.
 #' @export 
 #' @examples 
 #' data(GvHD)
@@ -52,7 +53,7 @@ setMethod("ncdfFlowSet",
 #' ncfs <- ncdfFlowSet(fs)
 setMethod("ncdfFlowSet",
 		signature=(x="flowSet"),
-		definition=function(x,ncdfFile, dim = 2){
+		definition=function(x,ncdfFile, dim = 2, compress = 0){
           
             dim <- as.integer(match.arg(as.character(dim), c("2","3")))
           
@@ -97,13 +98,13 @@ setMethod("ncdfFlowSet",
             
 			#create new ncdf file			
 			msgCreate <-.Call(C_ncdfFlow_createFile, ncdfFile, as.integer(ncfs@maxEvents), 
-							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)), dim)
+							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)), dim, as.integer(compress))
 			if(!msgCreate)stop()
                         initIndices(ncfs)			
 			for(guid in sampleNames(x))
 			{
 
-				ncfs[[guid]] <- x[[guid]]
+				ncfs[[guid, compress = compress]] <- x[[guid]]
 			}
 
 			ncfs
@@ -372,6 +373,7 @@ setMethod("[[",
 #' @param only.exprs a \code{logical} Default is FALSE. which will update the parameters and decriptions slot as well as the raw data.
 #'                                  Sometime it is more efficient ti set it to TRUE skip the overhead of colnames matching and updating
 #'                                  when user is only concerned about raw data instead of the entire flowFrame.   
+#' @param compress \code{integer} It is only relevant to writing slice to '2d' format because the compression is set during the creation of hdf5 file for '3d' format. see details in \link{read.ncdfFlowset}.
 #' 
 #' @exportMethod [[<-
 #' @aliases [[<-,ncdfFlowSet,flowFrame-method 
@@ -405,7 +407,7 @@ setMethod("[[",
 #' nc[[sn, only.exprs = TRUE]] <- fr_trans
 setReplaceMethod("[[",
 		signature=signature(x="ncdfFlowSet",value="flowFrame"),
-		definition=function(x, i, j = "missing", only.exprs = FALSE,..., value)
+		definition=function(x, i, j = "missing", only.exprs = FALSE, compress = 0, ..., value)
 {
        
         #check sample index  
@@ -500,7 +502,7 @@ setReplaceMethod("[[",
           
         }
         #write to disk
-        msgWrite <- .Call(C_ncdfFlow_writeSlice, ncfs@file, newData, as.integer(chIndx), as.integer(sampleInd))
+        msgWrite <- .Call(C_ncdfFlow_writeSlice, ncfs@file, newData, as.integer(chIndx), as.integer(sampleInd), as.integer(compress))
         
         if(!msgWrite)
         {

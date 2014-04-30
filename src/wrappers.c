@@ -9,7 +9,7 @@ void ERR(int e){
 /*
  * metaSize and compress are currently not used
  */
-SEXP createFile(SEXP _fileName, SEXP _nEvent, SEXP _nChannel, SEXP _nSample, SEXP _dim) {
+SEXP createFile(SEXP _fileName, SEXP _nEvent, SEXP _nChannel, SEXP _nSample, SEXP _dim, SEXP _ratio) {
 
 	SEXP k = allocVector(LGLSXP,1); //create logical scalar for return value
     int nDim = INTEGER(_dim)[0];
@@ -20,7 +20,9 @@ SEXP createFile(SEXP _fileName, SEXP _nEvent, SEXP _nChannel, SEXP _nSample, SEX
     	int nSample = INTEGER(_nSample)[0];
     	int nChannel = INTEGER(_nChannel)[0];
 		int nEvent = INTEGER(_nEvent)[0];
-		retval = _createFile3d(translateChar(STRING_ELT(_fileName, 0)), nSample, nChannel, nEvent);
+		//compression
+		int nCmpRatio = INTEGER(_ratio)[0];
+		retval = _createFile3d(translateChar(STRING_ELT(_fileName, 0)), nSample, nChannel, nEvent, nCmpRatio);
     }
     else
     {
@@ -41,13 +43,14 @@ SEXP createFile(SEXP _fileName, SEXP _nEvent, SEXP _nChannel, SEXP _nSample, SEX
 /*
  * inline _writeSlice and _writeSlice2d code
  */
-SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx) {
+SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx, SEXP _ratio) {
 
 	SEXP k = allocVector(LGLSXP,1);//create logical scalar for return value
 	const char * fName = translateChar(STRING_ELT(_fileName, 0));
 	double *mat = REAL(_mat);
 	int * chIndx = INTEGER(_chIndx);
 	int chCount = length(_chIndx);
+
 
     int nRow, nCol, sample;
     SEXP Rdim = getAttrib(_mat, R_DimSymbol);
@@ -187,6 +190,10 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx) {
 			//set it to use chunking
 			hsize_t		chunk_dims[2] = {1, nEvents};
 			H5Pset_chunk(dcpl_id, 2, chunk_dims);
+
+			//compression
+			int nCmpRatio = INTEGER(_ratio)[0];
+			status = H5Pset_deflate (dcpl_id, nCmpRatio);
 
 			/* Create the 2d mat. */
 			dataset = H5Dcreate2(file, sampleName, H5T_IEEE_F32LE_g, dataspace,
@@ -493,9 +500,10 @@ SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sampleIndx, SEXP _colnames) {
 						 H5P_DEFAULT, data_out);
 
 			}
-			H5Dclose(dataset);
+
 			H5Sclose(dataspace);
 			H5Sclose(memspace);
+			H5Dclose(dataset);
 		}
 		else
 		{

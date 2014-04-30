@@ -28,6 +28,8 @@ setMethod("rbind2",
 #' Similar to \code{\link[=rbind2,flowSet,flowSet-method]{flowCore:rbind2}}. 
 #' But one needs to first construct a ncdfFlowList and then apply rbind2 to it instead of merging them pairwise 
 #' 
+#' @param dim \code{integer} see details in \link{read.ncdfFlowset}.
+#' @param compress \code{integer} see details in \link{read.ncdfFlowset}.
 #' @return a new ncdfFlowSet with a new cdf file that combines multiple raw datasets.
 #' 
 #' @rdname rbind2-method
@@ -44,7 +46,7 @@ setMethod("rbind2",
 #' nc4
 setMethod("rbind2",
 		signature=c("ncdfFlowList"),
-		definition=function(x,ncdfFile=tempfile(pattern = "ncfs"))
+		definition=function(x,ncdfFile=tempfile(pattern = "ncfs"), dim = 2, compress = 0)
 		{
 			
 #			nclist<-x@datalist
@@ -125,7 +127,7 @@ setMethod("rbind2",
                 dim <- 2
     			msgCreate <- try(.Call(C_ncdfFlow_createFile, newNcFile, as.integer(ncfs@maxEvents), 
     							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
-    							as.integer(dim)),silent = TRUE)
+    							as.integer(dim), as.integer(compress)),silent = TRUE)
     			if(!msgCreate)stop(msgCreate)
     			
     			
@@ -136,7 +138,7 @@ setMethod("rbind2",
     			
     				for(curSample in sampleNames(nc))
     				{	
-    					ncfs[[curSample]] <- nc[[curSample]]
+    					ncfs[[curSample, compress = compress]] <- nc[[curSample]]
     				}	
     			}
 	

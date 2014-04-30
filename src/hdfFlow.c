@@ -16,7 +16,7 @@ herr_t _createFile2d(const char * fName){
  *
  * In order to keep it back-compatible, we have to stick to the attribute for eCount
  */
-herr_t _createFile3d(const char * fName, unsigned nSample, unsigned nChnl, unsigned nEvt){
+herr_t _createFile3d(const char * fName, unsigned nSample, unsigned nChnl, unsigned nEvt, unsigned nRatio){
 //	hid_t       file_id, dataset_id, dataspace_id, dataspace_ecount_id,dataset_ecount_id;  /* identifiers */
 	hid_t       file_id, dataset_id, dataspace_id, dataspace_attr_id, attribute_id;  /* identifiers */
 	hsize_t     dims[3], dim_attr;
@@ -36,6 +36,8 @@ herr_t _createFile3d(const char * fName, unsigned nSample, unsigned nChnl, unsig
 	//set it to use chunking
 	hsize_t		chunk_dims[3] = {1, 1, nEvt};
 	H5Pset_chunk(dcpl_id, 3, chunk_dims);
+	//set it to use compression (zlib)
+	status = H5Pset_deflate (dcpl_id, nRatio);
 
 	/* Create the 3d mat. */
 	dataset_id = H5Dcreate2(file_id, DATASETNAME3d, H5T_IEEE_F32LE_g, dataspace_id,
