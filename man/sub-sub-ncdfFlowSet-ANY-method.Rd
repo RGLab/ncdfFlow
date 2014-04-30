@@ -14,6 +14,8 @@
 \item{j}{a \code{numeric} or \code{character} used as channel index}
 
 \item{use.exprs}{a \code{logical} scalar indicating whether to read the actual data from cdf}
+
+\item{...}{other arguments. not used.}
 }
 \description{
 Simliar to \code{\link[=[[,flowSet-method]{[[}}, and there are cerntain ways to

@@ -17,9 +17,14 @@
 #'                  Thus this argument is used to select those common channels that are of interests.
 #'                  Default value is NULL and the function will try to scan the FCS headers of all files
 #'                  and determine the common channels.
+#' @param dim \code{integer} the number of dimensions that specifies the physical storage format of hdf5 dataset.
+#'                            Default is 2, which stores each FCS data as a seperate 2d dataset. 
+#'                            Normally, user shouldn't need to change this but dim can also be set to 3, which stores all FCS data as one single 3d dataset. 
+#' @param compress \code{integer} the HDF5 compression ratio (from 0 to 9). Default is 0, which does not compress the data and is recommeneded (especially for 2d format) because the speed loss usually outweights the disk saving.                              
 #' @param ... extra arguments to be passed to \code{\link{read.FCS}}.
 #' @return   A ncdfFlowSet object
 #' @seealso \code{\link{clone.ncdfFlowSet}}
+#' @aliases read.ncdfFlowset
 #' @examples 
 #' library(ncdfFlow)
 #' 
@@ -46,9 +51,11 @@ read.ncdfFlowSet <- function(files = NULL
 								,isWriteSlice= TRUE
 								,phenoData
 								,channels=NULL
+                                ,dim = 2
+                                ,compress = 0
 								,...) #dots to be passed to read.FCS
 {
-#	
+    dim <- as.integer(match.arg(as.character(dim), c("2","3")))
 	#remove nonexisting files
 	fileInd<-file.exists(files)
 	missingFiles<-files[!fileInd]
@@ -61,8 +68,6 @@ read.ncdfFlowSet <- function(files = NULL
 		return(NULL)
 	}
 		
-	compress<-FALSE##no need for this argument anymore 
-	
 	if(missing(ncdfFile)) 
 		ncdfFile<-tempfile(pattern = "ncfs")
 #				 
@@ -77,7 +82,9 @@ read.ncdfFlowSet <- function(files = NULL
 	nFile<-length(files)
 	events<-vector("integer",nFile)
 	channels.all<-vector("character",nFile)
-	message("Determine the max total events by reading FCS headers ...")
+    
+    maxEvents <- 0L
+#	message("Determine the max total events by reading FCS headers ...")
 	for(i in 1:nFile){
 		curFile<-files[i]
 		txt <- read.FCSheader(curFile)[[1]]
@@ -94,6 +101,10 @@ read.ncdfFlowSet <- function(files = NULL
 		
 		events[i]<-as.integer(txt[["$TOT"]])
 	}
+    if(dim == 3)
+      maxEvents <- max(events)
+#    message("Maximum total events: ",maxEvents)
+    
 	#try to find common channels among fcs files
 	if(is.null(channels))
 	{
@@ -121,14 +132,10 @@ read.ncdfFlowSet <- function(files = NULL
 			)
 		}
 	}
-#	bigFile <- files[which.max(file.info(files)[,"size"])]
+
 	tmp <- read.FCSheader(files[1])[[1]]
-#	maxEvents <- as.integer(tmp[["$TOT"]])
-#	maxChannels <- as.integer(tmp[["$PAR"]])
-	maxEvents<-max(events)
-	message("Maximum total events: ",maxEvents)
-#	channelNames <- unlist(lapply(1:maxChannels,function(i)flowCore:::readFCSgetPar(tmp,paste("$P",i,"N",sep="")))) 
-#	channelNames <- unname(channelNames)
+    
+	
 	#make a dummy parameters slot for every frames to pass the validity check of flowSet class
 	params <- flowCore:::makeFCSparameters(chnls_common,tmp, transformation=F, scale=F,decades=0, realMin=-111)		
 	#assign metaData to two environment slots
@@ -139,7 +146,8 @@ read.ncdfFlowSet <- function(files = NULL
 				,value=new("flowFrame",parameters=params)
 				,envir=e1
 				) 
-		assign(file.names[i],rep(TRUE,maxEvents),e2)
+        assign(file.names[i], NA, e2)
+#		assign(file.names[i],rep(TRUE,maxEvents),e2)
 	}
 	
 	if(!missing(phenoData)){
@@ -174,15 +182,10 @@ read.ncdfFlowSet <- function(files = NULL
 				,origColnames=chnls_common
 			)
 
-	
-	#get the meta size
-	metaSize <- 0
 
 	#create empty cdf file
-#	
 	msgCreate <- .Call(C_ncdfFlow_createFile, ncdfFile, as.integer(maxEvents), 
-					length(chnls_common), as.integer(nFile),
-					as.integer(metaSize),as.logical(compress))
+					length(chnls_common), as.integer(nFile), dim, as.integer(compress))
 	if(!msgCreate)stop()
 #	
 	##remove indicies to keep the slot as empty by default for memory and speed issue
@@ -203,7 +206,7 @@ read.ncdfFlowSet <- function(files = NULL
                         ,...)
                     #we need to reorder columns in order to make them identical across samples
                     this_fr <- this_fr[,chnls_common]
-					ncfs[[guids[i]]] <- this_fr
+					ncfs[[guids[i], compress = compress]] <- this_fr
 				}, verbose = TRUE)
 	}
 	
@@ -239,6 +242,8 @@ read.ncdfFlowSet <- function(files = NULL
 #'                  extension is already present. It is only valid when isNewNcFile=TRUE
 #' @param isEmpty A logical scalar indicating whether the raw data should also be copied.if FALSE,
 #'   				an empty cdf file is created with the same dimensions (sample*events*channels) as the orignial one.
+#' @param dim \code{integer} see details in \link{read.ncdfFlowset}.
+#' @param compress \code{integer} see details in \link{read.ncdfFlowset}.
 #' @return A ncdfFlowSet object
 #' @seealso \code{\link{read.ncdfFlowSet}}
 #' @examples 
@@ -265,9 +270,9 @@ read.ncdfFlowSet <- function(files = NULL
 #' unlink(nc1)
 #' rm(nc1)
 #' @export 
-clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE)
+clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE, dim = 2, compress = 0)
 {
-	
+    dim <- as.integer(match.arg(as.character(dim), c("2","3")))
 #	
 	
 	##when isNew==TRUE, the actual data reflected by the current view of ncdfFlowSet is created 
@@ -306,12 +311,8 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE)
 		}
 
 		
-		
-		
-		metaSize <- 0
 		msgCreate <- .Call(C_ncdfFlow_createFile, ncdfFile, as.integer(ncfs@maxEvents), 
-				as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
-				as.integer(metaSize),as.logical(FALSE))
+				as.integer(length(colnames(ncfs))), as.integer(length(ncfs)), dim, as.integer(compress))
 		if(!msgCreate)stop("make sure the file does not exist already or your have write permission to the folder!")
 #		
 		if(!isEmpty)##write the actual data 
@@ -319,7 +320,7 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE)
 			for(i in sampleNames(orig))
 			{
 				message("copying data slice:",i)
-				ncfs[[i]] <- orig[[i]]
+				ncfs[[i, compress = compress]] <- orig[[i]]
 				
 			}
 			

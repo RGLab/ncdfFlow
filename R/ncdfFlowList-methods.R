@@ -9,10 +9,11 @@
 #' or every\code{flowFrame} objects.
 #' 
 #' 
-#' @param \code{ncdfFlowList} object
+#' @param X \code{ncdfFlowList} object
 #' @param FUN \code{function} to apply
 #' @param level \code{numeric}. It controls whether loop at `ncdfFlowSet` level or `sample` level. 
 #' when level = 2 (default value),\code{FUN} is applied to each sample. When level = 1, \code{FUN} is applied to each object stored in \code{data} slot.  
+#' @param ... other arguments passed to \code{FUN}
 #' 
 #' @rdname lapply-methods
 #' @export 
@@ -39,6 +40,12 @@ setMethod("fsApply",
       })
   
 #' @rdname ncdfFlowList-class
+##' @param x \code{ncdfFlowList} object
+##' @param filter \code{filter} to be applied
+##' @param method \code{missing} not used
+##' @param sides \code{missing} not used
+##' @param circular \code{missing} not used
+##' @param init \code{missing} not used
 #' @export 
 #' @aliases 
 #' filter,ncdfFlowList,filter-method
@@ -51,6 +58,8 @@ setMethod("filter",
     })
 
 #' @rdname ncdfFlowList-class
+#' @param i \code{numeric} index
+#' @param j column index
 #' @aliases [[,ncdfFlowList,numeric-method
 setMethod("[[",c(x="ncdfFlowList",i="numeric"),function(x,i,j, ...){
       
@@ -122,7 +131,7 @@ setMethod("sampleNames",
       object@samples      
     })
 
-#' @rdname ncdfFlowSet-class
+#' @rdname ncdfFlowList-class
 setMethod("[",c(x="ncdfFlowList"),function(x,i,j,...){
       
       if(missing(i) && missing(j)) 
@@ -188,13 +197,15 @@ setMethod("[",c(x="ncdfFlowList"),function(x,i,j,...){
 
 #' @export 
 #' @rdname ncdfFlowList-class
+#' @aliases split,ncdfFlowList,factor-method
 setMethod("split",signature=signature(x="ncdfFlowList",f="factor"),definition=function(x, f, ...)
     {
       
       selectMethod("split", signature = c("ncdfFlowSet", "factor"))(x, f, ...)
       
     })
-
+#' @rdname ncdfFlowList-class
+#' @aliases split,ncdfFlowList,character-method
 setMethod("split", signature=signature(x="ncdfFlowList", f="character"), definition=function(x, f, ...)
     {
       selectMethod("split", signature = c("ncdfFlowSet", "character"))(x, f, ...)

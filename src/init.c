@@ -6,7 +6,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"bitarray_getBitStatus", (DL_FUNC)&bitarray_getBitStatus, 1},
     {"bitarray_Flip", (DL_FUNC)&bitarray_Flip, 1},
     {"createFile", (DL_FUNC)&createFile, 6},
-    {"writeSlice", (DL_FUNC)&writeSlice, 4},
+    {"writeSlice", (DL_FUNC)&writeSlice, 5},
     {"readSlice", (DL_FUNC)&readSlice, 4},
     {NULL, NULL, 0}
 };

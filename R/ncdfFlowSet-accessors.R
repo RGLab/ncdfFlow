@@ -28,7 +28,8 @@ as.flowSet <- function(from,top)
     }
     
 #' create ncdfFlowSet from flowFrame (not supported)
-#' @rdname read.ncdfFlowSet 
+#' 
+#' @rdname ncdfFlowSet-constructor 
 setMethod("ncdfFlowSet",
 			signature=(x="flowFrame"),
 			definition=function(x,ncdfFile){
@@ -44,7 +45,10 @@ setMethod("ncdfFlowSet",
 #'
 #' @param x \code{flowSet}
 #' @param ncdfFile \code{character} specifies the file name of cdf file
-#' @rdname read.ncdfFlowSet
+#' @param dim \code{integer} see details in \link{read.ncdfFlowset}.
+#' @param compress \code{integer} see details in \link{read.ncdfFlowset}.
+#' @aliases ncdfFlowSet
+#' @rdname ncdfFlowSet-constructor 
 #' @export 
 #' @examples 
 #' data(GvHD)
@@ -52,7 +56,10 @@ setMethod("ncdfFlowSet",
 #' ncfs <- ncdfFlowSet(fs)
 setMethod("ncdfFlowSet",
 		signature=(x="flowSet"),
-		definition=function(x,ncdfFile){		
+		definition=function(x,ncdfFile, dim = 2, compress = 0){
+          
+            dim <- as.integer(match.arg(as.character(dim), c("2","3")))
+          
 			if(missing(ncdfFile))
 				ncdfFile <-tempfile(pattern = "ncfs") 
 			flowSetId = ncdfFile
@@ -64,18 +71,24 @@ setMethod("ncdfFlowSet",
 			e1<-new.env(hash=TRUE, parent=emptyenv())
 
 			
-			maxEvents<-0
-			for(guid in sampleNames(x))
-			{
-				assign(guid, new("flowFrame",exprs=matrix(numeric(0),nrow=0,ncol=0),parameters(x[[guid]]),description(x[[guid]])), env=e1)
-				maxEvents<-max(maxEvents,nrow(exprs(x[[guid]])))				
-			}
+			maxEvents <- 0L
+            
+            
+            for(guid in sampleNames(x))
+            {
+              assign(guid, new("flowFrame",exprs=matrix(numeric(0),nrow=0,ncol=0),parameters(x[[guid]]),description(x[[guid]])), env=e1)
+              if(dim == 3)
+              {    maxEvents<-max(maxEvents,nrow(exprs(x[[guid]])))				
+              }  
+            }
+			
 			
 			#assign the maximum number of indices to estimate the ncfs object size
 			e2<-new.env(hash=TRUE, parent=emptyenv())
 			for(guid in sampleNames(x))
 			{
-				assign(guid,rep(TRUE,maxEvents),e2)
+                assign(guid, NA, e2)
+#				assign(guid,rep(TRUE,maxEvents),e2)
 			}
 			
 #			
@@ -85,17 +98,16 @@ setMethod("ncdfFlowSet",
 					,origColnames=colnames(x))
                 
             
-            metaSize<-0
+            
 			#create new ncdf file			
 			msgCreate <-.Call(C_ncdfFlow_createFile, ncdfFile, as.integer(ncfs@maxEvents), 
-							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
-							as.integer(metaSize),as.logical(FALSE))
+							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)), dim, as.integer(compress))
 			if(!msgCreate)stop()
                         initIndices(ncfs)			
 			for(guid in sampleNames(x))
 			{
 
-				ncfs[[guid]] <- x[[guid]]
+				ncfs[[guid, compress = compress]] <- x[[guid]]
 			}
 
 			ncfs
@@ -127,7 +139,10 @@ setMethod("unlink",
 #' 
 #' For internal use.
 #' 
+#' @param obj \code{ncdfFlowSet} object
+#' @param y \code{character} sample name
 #' @return a logical vector.
+#' @aliases getIndices
 #' @export 
 #' @examples 
 #' data(GvHD)
@@ -144,7 +159,7 @@ setMethod("unlink",
 #' getIndices(nc1, sn) #reset indices
 setMethod("getIndices",
 		signature=signature(obj="ncdfFlowSet",y="character"), 
-		definition=function(obj,y,...)
+		definition=function(obj,y)
 		{
 		
 			ret<-get(y,obj@indices)
@@ -153,10 +168,14 @@ setMethod("getIndices",
 			ret			
 		})
 #' initialize the event indices for the entire ncdfFlowSet with NA
+#' 
+#' For internal use.
+#' @param x \code{ncdfFlowSet} object
+#' @aliases initIndices
 #' @export 
 setMethod("initIndices",
 		signature=signature(x="ncdfFlowSet"), 
-		definition=function(x,y)
+		definition=function(x)
 		{
 			
 			for(i in sampleNames(x)){
@@ -164,8 +183,13 @@ setMethod("initIndices",
                   }
 		})
 #' update the event indices of the target sample in ncdfFlowSet
+#' 
+#' For internal use.
+#' @aliases updateIndices
+#' @param x \code{ncdfFlowSet} object
+#' @param y \code{character} sample name
+#' @param z \code{logical} vector to be assigned.
 #' @export
-#' @param z a \code{logical} vector		
 setMethod("updateIndices",
 		signature=signature(x="ncdfFlowSet",y="character",z="logical"), 
 		definition=function(x,y,z)
@@ -189,6 +213,11 @@ getFileName <- function(ncfs){
 #' 
 #' similar to \code{\link[=[,flowSet-method]{[}}.
 #'  
+#' @param x \code{ncdfFlowSet}
+#' @param i sample index(or name)
+#' @param j column(or channel) index (or name)
+#' @param ... other arguments not used
+#' @param drop \code{logical} not used.
 #' @export
 #' @examples 
 #' data(GvHD)
@@ -278,6 +307,7 @@ setMethod("[",
 #' @param i a \code{numeric} or \code{character} used as sample index
 #' @param j a \code{numeric} or \code{character} used as channel index
 #' @param use.exprs a \code{logical} scalar indicating whether to read the actual data from cdf
+#' @param ... other arguments. not used.
 #' @export 
 #' @aliases [[,ncdfFlowSet,ANY-method
 #' @examples 
@@ -341,9 +371,11 @@ setMethod("[[",
     			mat <- .Call(C_ncdfFlow_readSlice, x@file, as.integer(chIndx), as.integer(samplePos), localChNames)
     			if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
     			
-    			#subset data by indices if neccessary	
-    			if(subByIndice&&nrow(mat)>0)
-    				mat<-mat[getIndices(x,sampleName),,drop=FALSE]
+                #subset data by indices if neccessary	
+                if(subByIndice&&nrow(mat)>0)
+                  mat<-mat[getIndices(x,sampleName),,drop=FALSE]  
+                
+    			
     			
     			fr@exprs <- mat
           }			
@@ -362,9 +394,13 @@ setMethod("[[",
 #' @param only.exprs a \code{logical} Default is FALSE. which will update the parameters and decriptions slot as well as the raw data.
 #'                                  Sometime it is more efficient ti set it to TRUE skip the overhead of colnames matching and updating
 #'                                  when user is only concerned about raw data instead of the entire flowFrame.   
+#' @param compress \code{integer} It is only relevant to writing slice to '2d' format because the compression is set during the creation of hdf5 file for '3d' format. see details in \link{read.ncdfFlowset}.
 #' 
 #' @exportMethod [[<-
-#' @aliases [[<-,ncdfFlowSet,flowFrame-method 
+#' @aliases 
+#' [[<-,ncdfFlowSet,flowFrame-method 
+#' [[<-,ncdfFlowSet,ANY,ANY,flowFrame-method
+#' 
 #' @examples 
 #' data(GvHD)
 #' nc <- ncdfFlowSet(GvHD[1:2])
@@ -395,7 +431,7 @@ setMethod("[[",
 #' nc[[sn, only.exprs = TRUE]] <- fr_trans
 setReplaceMethod("[[",
 		signature=signature(x="ncdfFlowSet",value="flowFrame"),
-		definition=function(x, i, j = "missing", only.exprs = FALSE,..., value)
+		definition=function(x, i, j = "missing", only.exprs = FALSE, compress = 0, ..., value)
 {
        
         #check sample index  
@@ -490,7 +526,7 @@ setReplaceMethod("[[",
           
         }
         #write to disk
-        msgWrite <- .Call(C_ncdfFlow_writeSlice, ncfs@file, newData, as.integer(chIndx), as.integer(sampleInd))
+        msgWrite <- .Call(C_ncdfFlow_writeSlice, ncfs@file, newData, as.integer(chIndx), as.integer(sampleInd), as.integer(compress))
         
         if(!msgWrite)
         {
@@ -519,7 +555,13 @@ setReplaceMethod("[[",
 #' 
 #' When the function given by argument "FUN" does not return the entire flowFrame object with the same 
 #' size of the original one (such as compensate,transform...), \code{\link[flowCore:fsApply]{fsApply}} should be used instead.
+#' @param x \code{ncdfFlowSet}
+#' @param FUN \code{function} to apply
+#' @param ... other arguments to pass to \code{FUN}
+#' @param use.exprs \code{logical} see \code{\link{fsApply}}
+#' @param newNcFile \code{logical} wether to create a new hdf file or simply overwrite the existing file.
 #' @export 
+#' @aliases ncfsApply
 #' @examples 
 #' data(GvHD)
 #' nc <- ncdfFlowSet(GvHD[1:2])
@@ -613,6 +655,8 @@ setMethod("show",
 #' @rdname ncdfFlowSet-class
 #' @exportMethod sampleNames<-
 #' @name sampleNames<-
+#' @aliases 
+#' sampleNames<-,ncdfFlowSet,ANY-method
 setReplaceMethod("sampleNames",
     signature=signature(object="ncdfFlowSet"),
     definition=function(object, value)
@@ -648,6 +692,9 @@ setReplaceMethod("sampleNames",
 #' @rdname ncdfFlowSet-class
 #' @exportMethod colnames<-
 #' @name colnames<-
+#' @aliases 
+#' colnames<-,ncdfFlowSet,ANY-method
+#' colnames<-,ncdfFlowSet-method
 setReplaceMethod("colnames",
     signature=signature(x="ncdfFlowSet",
         value="ANY"),

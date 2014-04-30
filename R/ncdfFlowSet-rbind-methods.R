@@ -1,37 +1,17 @@
-#' @export 
-#' @rdname rbind2-method
-#' @importMethodsFrom methods rbind2
-setMethod("rbind2",
-		signature=c(x="ncdfFlowSet",
-				y="ncdfFlowSet"),
-		definition=function(x, y,ncdfFile=tempfile(pattern = "ncfs"))
-		{
-			.Defunct(msg = "Combining two ncdfFlowSets is deprecated!Please coerce to a 'ncdfFlowList' first and then apply 'rbind2' !")
-		})
-    
-##this method is removed because it is pointless to add a flowFrame 
-#without specifying the phenoData with the same structure as the existing ncdfFlowSet
-#' @aliases rbind2,ncdfFlowSet,flowFrame-method 
-#' @rdname rbind2-method
-setMethod("rbind2",
-		signature=c(x="ncdfFlowSet",
-				y="flowFrame"),
-		definition=function(x,y)
-		{
-			warning("Please convert the flowFrame to ncdfFlowSet with the appropriate phenoData and then use rbind2 to combine the two ncdfFlowSets!")
-			return(NULL)
-		})
-    
-
 #' combine multiple ncdfFlowSet objects into one
 #' 
 #' Similar to \code{\link[=rbind2,flowSet,flowSet-method]{flowCore:rbind2}}. 
 #' But one needs to first construct a ncdfFlowList and then apply rbind2 to it instead of merging them pairwise 
 #' 
+#' @param x \code{ncdfFlowList}
+#' @param ncdfFile \code{character} see details in \link{read.ncdfFlowset}
+#' @param dim \code{integer} see details in \link{read.ncdfFlowset}.
+#' @param compress \code{integer} see details in \link{read.ncdfFlowset}.
 #' @return a new ncdfFlowSet with a new cdf file that combines multiple raw datasets.
 #' 
 #' @rdname rbind2-method
 #' @importFrom Biobase copyEnv
+#' @export 
 #' @examples
 #' data(GvHD)
 #' 
@@ -44,7 +24,7 @@ setMethod("rbind2",
 #' nc4
 setMethod("rbind2",
 		signature=c("ncdfFlowList"),
-		definition=function(x,ncdfFile=tempfile(pattern = "ncfs"))
+		definition=function(x,ncdfFile=tempfile(pattern = "ncfs"), dim = 2, compress = 0)
 		{
 			
 #			nclist<-x@datalist
@@ -121,10 +101,11 @@ setMethod("rbind2",
               
             }else{
     			#create new ncdf file		
-    			#NOTE: rbind2 will not save the metadata in the new file..	
+    			#NOTE: rbind2 will not save the metadata in the new file..
+                dim <- 2
     			msgCreate <- try(.Call(C_ncdfFlow_createFile, newNcFile, as.integer(ncfs@maxEvents), 
     							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
-    							as.integer(0),as.logical(FALSE)),silent = TRUE)
+    							as.integer(dim), as.integer(compress)),silent = TRUE)
     			if(!msgCreate)stop(msgCreate)
     			
     			
@@ -135,7 +116,7 @@ setMethod("rbind2",
     			
     				for(curSample in sampleNames(nc))
     				{	
-    					ncfs[[curSample]] <- nc[[curSample]]
+    					ncfs[[curSample, compress = compress]] <- nc[[curSample]]
     				}	
     			}
 	

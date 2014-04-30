@@ -1,4 +1,12 @@
 #include "hdfFlow.h"
+herr_t _createFile2d(const char * fName){
+	/* Create a new file using default properties. */
+	hid_t file_id = H5Fcreate(fName, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+	/* Close the file. */
+	herr_t status = H5Fclose(file_id);
+
+	return status;
+}
 
 /*
  * create hdf file for flow data
@@ -8,7 +16,7 @@
  *
  * In order to keep it back-compatible, we have to stick to the attribute for eCount
  */
-herr_t _createFile(const char * fName, unsigned nSample, unsigned nChnl, unsigned nEvt){
+herr_t _createFile3d(const char * fName, unsigned nSample, unsigned nChnl, unsigned nEvt, unsigned nRatio){
 //	hid_t       file_id, dataset_id, dataspace_id, dataspace_ecount_id,dataset_ecount_id;  /* identifiers */
 	hid_t       file_id, dataset_id, dataspace_id, dataspace_attr_id, attribute_id;  /* identifiers */
 	hsize_t     dims[3], dim_attr;
@@ -28,9 +36,11 @@ herr_t _createFile(const char * fName, unsigned nSample, unsigned nChnl, unsigne
 	//set it to use chunking
 	hsize_t		chunk_dims[3] = {1, 1, nEvt};
 	H5Pset_chunk(dcpl_id, 3, chunk_dims);
+	//set it to use compression (zlib)
+	status = H5Pset_deflate (dcpl_id, nRatio);
 
 	/* Create the 3d mat. */
-	dataset_id = H5Dcreate2(file_id, DATASETNAME, H5T_IEEE_F32LE_g, dataspace_id,
+	dataset_id = H5Dcreate2(file_id, DATASETNAME3d, H5T_IEEE_F32LE_g, dataspace_id,
 						  H5P_DEFAULT, dcpl_id, H5P_DEFAULT);
 
 
@@ -65,7 +75,6 @@ herr_t _createFile(const char * fName, unsigned nSample, unsigned nChnl, unsigne
 
 	return status;
 }
-
 /*
  * write one sample to hdf
  *
@@ -81,7 +90,7 @@ herr_t _writeSlice(const char * fName, double * mat, unsigned nEvents, unsigned 
 	hid_t attrID;
 	herr_t      status;
 	file = H5Fopen(fName, H5F_ACC_RDWR, H5P_DEFAULT);//open file
-	dataset = H5Dopen2(file, DATASETNAME, H5P_DEFAULT);//open dataset
+	dataset = H5Dopen2(file, DATASETNAME3d, H5P_DEFAULT);//open dataset
 	dataspace = H5Dget_space(dataset);    /* dataspace handle */
 
 	/*
@@ -212,7 +221,7 @@ herr_t _readSlice(const char * fName, unsigned * chnlIndx, unsigned chCount, uns
     hsize_t 	dimsm[2]; //dimenstions
     herr_t      status;
     file = H5Fopen(fName, H5F_ACC_RDONLY, H5P_DEFAULT);
-	dataset = H5Dopen2(file, DATASETNAME, H5P_DEFAULT);
+	dataset = H5Dopen2(file, DATASETNAME3d, H5P_DEFAULT);
     dataspace = H5Dget_space(dataset);    /* dataspace handle */
 
     sampleIndx = sampleIndx -1;//convert from R to C indexing

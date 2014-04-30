@@ -1,4 +1,11 @@
-#' @rdname ncdfFlowSet-class
+#' subset a ncdfFlowSet by filter
+#' 
+#' Equivalent to \code{Subset} method for \code{flowSet}.
+#' 
+#' @param x \code{ncdfFlowSet} or \code{ncdfFlowList}
+#' @param subset,select,... see \code{\link[flowCore]{Subset-methods}}
+#' @return one or more \code{ncdfFlowSet} objects which share the same hdf5 file with the original one.
+#' @rdname ncdfFlowSet-Subset
 #' @export 
 #' @importClassesFrom flowCore filterResultList
 setMethod("Subset",
@@ -33,7 +40,7 @@ setMethod("Subset",
 				ncfs@colnames<-select
 			ncfs
 		})
-#' @rdname ncdfFlowList-class    
+#' @rdname ncdfFlowSet-Subset    
 setMethod("Subset",
     signature=signature(x="ncdfFlowList",
         subset="filterResultList"),
@@ -56,7 +63,7 @@ setMethod("Subset",
       res
     })    
     
-#' @rdname ncdfFlowSet-class 
+#' @rdname ncdfFlowSet-Subset 
 setMethod("Subset",
 		signature=signature(x="ncdfFlowSet",
 				subset="filter"),
@@ -66,7 +73,7 @@ setMethod("Subset",
 			Subset(x,fr,...)
 		})
     
-#' @rdname ncdfFlowList-class    
+#' @rdname ncdfFlowSet-Subset    
 #' @importClassesFrom flowCore filter
 setMethod("Subset",
     signature=signature(x="ncdfFlowList",
@@ -78,7 +85,7 @@ setMethod("Subset",
     })
     
 			
-#' @rdname ncdfFlowSet-class
+#' @rdname ncdfFlowSet-Subset
 setMethod("Subset",
 		signature=signature(x="ncdfFlowSet",
 				subset="list"),

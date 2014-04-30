@@ -8,7 +8,7 @@ setGeneric("getIndices",function(obj,y,...){
 		})
 #' @export 
 setGeneric("initIndices", 
-		function(x,y)
+		function(x)
 			standardGeneric("initIndices"))
 
 #' @export 

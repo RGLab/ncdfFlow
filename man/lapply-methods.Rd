@@ -7,16 +7,14 @@
 \S4method{lapply}{ncdfFlowList}(X, FUN, level = 2, ...)
 }
 \arguments{
-\item{\code{ncdfFlowList}}{object}
+\item{X}{\code{ncdfFlowList} object}
 
 \item{FUN}{\code{function} to apply}
 
 \item{level}{\code{numeric}. It controls whether loop at `ncdfFlowSet` level or `sample` level.
 when level = 2 (default value),\code{FUN} is applied to each sample. When level = 1, \code{FUN} is applied to each object stored in \code{data} slot.}
 
-\item{X}{
-    A list-like or vector-like object.
-  }
+\item{...}{other arguments passed to \code{FUN}}
 }
 \description{
 Depending on \code{level} parameter, loop either iterates through the list of ncdfFlowSet objects
