@@ -4,7 +4,7 @@
 \title{Clone a ncdfFlowSet}
 \usage{
 clone.ncdfFlowSet(ncfs, ncdfFile = NULL, isEmpty = TRUE, isNew = TRUE,
-  dim = 2)
+  dim = 2, compress = 0)
 }
 \arguments{
 \item{ncfs}{A \code{\link{ncdfFlowSet}}.}
@@ -21,6 +21,8 @@ extension is already present. It is only valid when isNewNcFile=TRUE}
 an empty cdf file is created with the same dimensions (sample*events*channels) as the orignial one.}
 
 \item{dim}{\code{integer} see details in \link{read.ncdfFlowset}.}
+
+\item{compress}{\code{integer} see details in \link{read.ncdfFlowset}.}
 }
 \value{
 A ncdfFlowSet object

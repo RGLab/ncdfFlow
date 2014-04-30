@@ -24,6 +24,7 @@
 #' @param ... extra arguments to be passed to \code{\link{read.FCS}}.
 #' @return   A ncdfFlowSet object
 #' @seealso \code{\link{clone.ncdfFlowSet}}
+#' @aliases read.ncdfFlowset
 #' @examples 
 #' library(ncdfFlow)
 #' 

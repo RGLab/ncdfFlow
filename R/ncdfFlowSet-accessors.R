@@ -28,7 +28,8 @@ as.flowSet <- function(from,top)
     }
     
 #' create ncdfFlowSet from flowFrame (not supported)
-#' @rdname read.ncdfFlowSet 
+#' 
+#' @rdname ncdfFlowSet-constructor 
 setMethod("ncdfFlowSet",
 			signature=(x="flowFrame"),
 			definition=function(x,ncdfFile){
@@ -46,6 +47,8 @@ setMethod("ncdfFlowSet",
 #' @param ncdfFile \code{character} specifies the file name of cdf file
 #' @param dim \code{integer} see details in \link{read.ncdfFlowset}.
 #' @param compress \code{integer} see details in \link{read.ncdfFlowset}.
+#' @aliases ncdfFlowSet
+#' @rdname ncdfFlowSet-constructor 
 #' @export 
 #' @examples 
 #' data(GvHD)
@@ -136,7 +139,10 @@ setMethod("unlink",
 #' 
 #' For internal use.
 #' 
+#' @param obj \code{ncdfFlowSet} object
+#' @param y \code{character} sample name
 #' @return a logical vector.
+#' @aliases getIndices
 #' @export 
 #' @examples 
 #' data(GvHD)
@@ -153,7 +159,7 @@ setMethod("unlink",
 #' getIndices(nc1, sn) #reset indices
 setMethod("getIndices",
 		signature=signature(obj="ncdfFlowSet",y="character"), 
-		definition=function(obj,y,...)
+		definition=function(obj,y)
 		{
 		
 			ret<-get(y,obj@indices)
@@ -162,10 +168,14 @@ setMethod("getIndices",
 			ret			
 		})
 #' initialize the event indices for the entire ncdfFlowSet with NA
+#' 
+#' For internal use.
+#' @param x \code{ncdfFlowSet} object
+#' @aliases initIndices
 #' @export 
 setMethod("initIndices",
 		signature=signature(x="ncdfFlowSet"), 
-		definition=function(x,y)
+		definition=function(x)
 		{
 			
 			for(i in sampleNames(x)){
@@ -173,8 +183,13 @@ setMethod("initIndices",
                   }
 		})
 #' update the event indices of the target sample in ncdfFlowSet
+#' 
+#' For internal use.
+#' @aliases updateIndices
+#' @param x \code{ncdfFlowSet} object
+#' @param y \code{character} sample name
+#' @param z \code{logical} vector to be assigned.
 #' @export
-#' @param z a \code{logical} vector		
 setMethod("updateIndices",
 		signature=signature(x="ncdfFlowSet",y="character",z="logical"), 
 		definition=function(x,y,z)
@@ -198,6 +213,11 @@ getFileName <- function(ncfs){
 #' 
 #' similar to \code{\link[=[,flowSet-method]{[}}.
 #'  
+#' @param x \code{ncdfFlowSet}
+#' @param i sample index(or name)
+#' @param j column(or channel) index (or name)
+#' @param ... other arguments not used
+#' @param drop \code{logical} not used.
 #' @export
 #' @examples 
 #' data(GvHD)
@@ -287,6 +307,7 @@ setMethod("[",
 #' @param i a \code{numeric} or \code{character} used as sample index
 #' @param j a \code{numeric} or \code{character} used as channel index
 #' @param use.exprs a \code{logical} scalar indicating whether to read the actual data from cdf
+#' @param ... other arguments. not used.
 #' @export 
 #' @aliases [[,ncdfFlowSet,ANY-method
 #' @examples 
@@ -376,7 +397,10 @@ setMethod("[[",
 #' @param compress \code{integer} It is only relevant to writing slice to '2d' format because the compression is set during the creation of hdf5 file for '3d' format. see details in \link{read.ncdfFlowset}.
 #' 
 #' @exportMethod [[<-
-#' @aliases [[<-,ncdfFlowSet,flowFrame-method 
+#' @aliases 
+#' [[<-,ncdfFlowSet,flowFrame-method 
+#' [[<-,ncdfFlowSet,ANY,ANY,flowFrame-method
+#' 
 #' @examples 
 #' data(GvHD)
 #' nc <- ncdfFlowSet(GvHD[1:2])
@@ -531,7 +555,13 @@ setReplaceMethod("[[",
 #' 
 #' When the function given by argument "FUN" does not return the entire flowFrame object with the same 
 #' size of the original one (such as compensate,transform...), \code{\link[flowCore:fsApply]{fsApply}} should be used instead.
+#' @param x \code{ncdfFlowSet}
+#' @param FUN \code{function} to apply
+#' @param ... other arguments to pass to \code{FUN}
+#' @param use.exprs \code{logical} see \code{\link{fsApply}}
+#' @param newNcFile \code{logical} wether to create a new hdf file or simply overwrite the existing file.
 #' @export 
+#' @aliases ncfsApply
 #' @examples 
 #' data(GvHD)
 #' nc <- ncdfFlowSet(GvHD[1:2])
@@ -625,6 +655,8 @@ setMethod("show",
 #' @rdname ncdfFlowSet-class
 #' @exportMethod sampleNames<-
 #' @name sampleNames<-
+#' @aliases 
+#' sampleNames<-,ncdfFlowSet,ANY-method
 setReplaceMethod("sampleNames",
     signature=signature(object="ncdfFlowSet"),
     definition=function(object, value)
@@ -660,6 +692,9 @@ setReplaceMethod("sampleNames",
 #' @rdname ncdfFlowSet-class
 #' @exportMethod colnames<-
 #' @name colnames<-
+#' @aliases 
+#' colnames<-,ncdfFlowSet,ANY-method
+#' colnames<-,ncdfFlowSet-method
 setReplaceMethod("colnames",
     signature=signature(x="ncdfFlowSet",
         value="ANY"),

@@ -1,33 +1,10 @@
-#' @export 
-#' @rdname rbind2-method
-#' @importMethodsFrom methods rbind2
-setMethod("rbind2",
-		signature=c(x="ncdfFlowSet",
-				y="ncdfFlowSet"),
-		definition=function(x, y,ncdfFile=tempfile(pattern = "ncfs"))
-		{
-			.Defunct(msg = "Combining two ncdfFlowSets is deprecated!Please coerce to a 'ncdfFlowList' first and then apply 'rbind2' !")
-		})
-    
-##this method is removed because it is pointless to add a flowFrame 
-#without specifying the phenoData with the same structure as the existing ncdfFlowSet
-#' @aliases rbind2,ncdfFlowSet,flowFrame-method 
-#' @rdname rbind2-method
-setMethod("rbind2",
-		signature=c(x="ncdfFlowSet",
-				y="flowFrame"),
-		definition=function(x,y)
-		{
-			warning("Please convert the flowFrame to ncdfFlowSet with the appropriate phenoData and then use rbind2 to combine the two ncdfFlowSets!")
-			return(NULL)
-		})
-    
-
 #' combine multiple ncdfFlowSet objects into one
 #' 
 #' Similar to \code{\link[=rbind2,flowSet,flowSet-method]{flowCore:rbind2}}. 
 #' But one needs to first construct a ncdfFlowList and then apply rbind2 to it instead of merging them pairwise 
 #' 
+#' @param x \code{ncdfFlowList}
+#' @param ncdfFile \code{character} see details in \link{read.ncdfFlowset}
 #' @param dim \code{integer} see details in \link{read.ncdfFlowset}.
 #' @param compress \code{integer} see details in \link{read.ncdfFlowset}.
 #' @return a new ncdfFlowSet with a new cdf file that combines multiple raw datasets.
