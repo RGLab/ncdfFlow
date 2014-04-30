@@ -11,6 +11,7 @@
 #' 
 #' @rdname rbind2-method
 #' @importFrom Biobase copyEnv
+#' @export 
 #' @examples
 #' data(GvHD)
 #' 
