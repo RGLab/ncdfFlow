@@ -1,15 +1,63 @@
 #include "wrappers.h"
 
+#define MSG_SIZE       640
+herr_t my_hdf5_error_handler(unsigned n, const H5E_error2_t *err_desc, void *client_data)
+{
+	char                maj[MSG_SIZE];
+	char                min[MSG_SIZE];
+	char                cls[MSG_SIZE];
+	const int		indent = 4;
+
+	/* Get descriptions for the major and minor error numbers */
+	if(H5Eget_class_name(err_desc->cls_id, cls, MSG_SIZE)<0)
+		return -1;
+
+	if(H5Eget_msg(err_desc->maj_num, NULL, maj, MSG_SIZE)<0)
+		return -1;
+
+	if(H5Eget_msg(err_desc->min_num, NULL, min, MSG_SIZE)<0)
+		return -1;
+
+	REprintf ("%*s error #%03d: %s in %s(): line %u\n",
+		 indent, "", n, err_desc->file_name,
+		 err_desc->func_name, err_desc->line);
+//	REprintf ("%*sclass: %s\n", indent*2, "", cls);
+	REprintf ("%*smajor: %s\n", indent*2, "", maj);
+	REprintf ("%*sminor: %s\n", indent*2, "", min);
+
+
+   return 0;
+}
+
+herr_t custom_print_cb(hid_t estack, void *client_data)
+{
+	H5Ewalk2(estack, H5E_WALK_DOWNWARD, my_hdf5_error_handler, client_data);
+	H5Eclear2(estack);
+	error("hdf Error");
+    return 0;
+
+}
+
 void ERR(int e){
-	char * errmsg ="";
+	char errmsg[MSG_SIZE];
 //	error("Error from C API:");
 //	errmsg = HEstring(e);
-	REprintf("hdf Error: %s\n", errmsg);
+//	extern FILE * R_Consolefile;
+//	fprintf(R_Consolefile, msg);
+
+//	H5Eprint2(H5E_DEFAULT,errmsg);
+	error("hdf Error", errmsg);
+
+
 }
 /*
  * metaSize and compress are currently not used
  */
 SEXP createFile(SEXP _fileName, SEXP _nEvent, SEXP _nChannel, SEXP _nSample, SEXP _dim, SEXP _ratio) {
+
+//	H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
+	H5Eset_auto2(H5E_DEFAULT, (H5E_auto2_t)custom_print_cb, NULL);
+//	H5Eset_auto2(H5E_DEFAULT, my_hdf5_error_handler, NULL);
 
 	SEXP k = allocVector(LGLSXP,1); //create logical scalar for return value
     int nDim = INTEGER(_dim)[0];
@@ -32,7 +80,7 @@ SEXP createFile(SEXP _fileName, SEXP _nEvent, SEXP _nChannel, SEXP _nSample, SEX
 
     if(retval < 0)
     {
-    	ERR(retval);
+//    	ERR(retval);
     	LOGICAL(k)[0] = FALSE; //set return value as FALSE
     }
 
