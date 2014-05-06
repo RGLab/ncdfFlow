@@ -2,6 +2,7 @@
 herr_t _createFile2d(const char * fName){
 	/* Create a new file using default properties. */
 	hid_t file_id = H5Fcreate(fName, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+
 	/* Close the file. */
 	herr_t status = H5Fclose(file_id);
 

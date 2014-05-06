@@ -1,15 +1,48 @@
 #include "wrappers.h"
 
-void ERR(int e){
-	char * errmsg ="";
-//	error("Error from C API:");
-//	errmsg = HEstring(e);
-	REprintf("hdf Error: %s\n", errmsg);
+#define MSG_SIZE       1024
+
+herr_t my_hdf5_error_handler(unsigned n, const H5E_error2_t *err_desc, void *client_data)
+{
+	char                maj[MSG_SIZE];
+	char                min[MSG_SIZE];
+
+	const int		indent = 4;
+
+	if(H5Eget_msg(err_desc->maj_num, NULL, maj, MSG_SIZE)<0)
+		return -1;
+
+	if(H5Eget_msg(err_desc->min_num, NULL, min, MSG_SIZE)<0)
+		return -1;
+
+	REprintf("%*s error #%03d: in %s(): line %u\n",
+		 indent, "", n, err_desc->func_name, err_desc->line);
+	REprintf("%*smajor: %s\n", indent*2, "", maj);
+	REprintf("%*sminor: %s\n", indent*2, "", min);
+
+   return 0;
 }
+
+/*
+ * customize the printing function so that it print to R error console
+ * also raise the R error once the error stack printing is done
+ */
+herr_t custom_print_cb(hid_t estack, void *client_data)
+{
+	hid_t estack_id = H5Eget_current_stack();//copy stack before it is corrupted by my_hdf5_error_handler
+	H5Ewalk2(estack_id, H5E_WALK_DOWNWARD, my_hdf5_error_handler, client_data);
+	H5Eclose_stack(estack_id);
+	error("hdf Error");
+    return 0;
+
+}
+
 /*
  * metaSize and compress are currently not used
  */
 SEXP createFile(SEXP _fileName, SEXP _nEvent, SEXP _nChannel, SEXP _nSample, SEXP _dim, SEXP _ratio) {
+
+	H5Eset_auto2(H5E_DEFAULT, (H5E_auto2_t)custom_print_cb, NULL);
 
 	SEXP k = allocVector(LGLSXP,1); //create logical scalar for return value
     int nDim = INTEGER(_dim)[0];
@@ -30,13 +63,7 @@ SEXP createFile(SEXP _fileName, SEXP _nEvent, SEXP _nChannel, SEXP _nSample, SEX
     	retval = _createFile2d(translateChar(STRING_ELT(_fileName, 0)));
     }
 
-    if(retval < 0)
-    {
-    	ERR(retval);
-    	LOGICAL(k)[0] = FALSE; //set return value as FALSE
-    }
-
-    LOGICAL(k)[0] = TRUE; //set return value as TRUE
+    LOGICAL(k)[0] = retval >= 0;
     return(k);
 }
 
@@ -45,6 +72,8 @@ SEXP createFile(SEXP _fileName, SEXP _nEvent, SEXP _nChannel, SEXP _nSample, SEX
  */
 SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx, SEXP _ratio) {
 
+	H5Eset_auto2(H5E_DEFAULT, (H5E_auto2_t)custom_print_cb, NULL);
+
 	SEXP k = allocVector(LGLSXP,1);//create logical scalar for return value
 	const char * fName = translateChar(STRING_ELT(_fileName, 0));
 	double *mat = REAL(_mat);
@@ -52,10 +81,10 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx, SEXP 
 	int chCount = length(_chIndx);
 
 
-    int nRow, nCol, sample;
+    int nRow;
     SEXP Rdim = getAttrib(_mat, R_DimSymbol);
     nRow = INTEGER(Rdim)[0];
-    nCol = INTEGER(Rdim)[1];
+
     int nEvents = nRow;
     int sampleIndx = INTEGER(_sampleIndx)[0];
     sampleIndx = sampleIndx -1;//convert from R to C indexing
@@ -271,14 +300,9 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx, SEXP 
 
 
 
-	if(status < 0)
-	{
-		ERR(status);
-		LOGICAL(k)[0] = FALSE; //set return value as FALSE
-	}
 
-	LOGICAL(k)[0] = TRUE; //set return value as TRUE
-    return(k);
+	LOGICAL(k)[0] = status >= 0;
+	return(k);
 
 }
 /*
@@ -290,8 +314,7 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx, SEXP 
  */
 SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sampleIndx, SEXP _colnames) {
 
-
-	SEXP k = allocVector(LGLSXP,1);//create logical scalar for return value
+	H5Eset_auto2(H5E_DEFAULT, (H5E_auto2_t)custom_print_cb, NULL);
 
 	/*
 	 * convert R arguments to C type
