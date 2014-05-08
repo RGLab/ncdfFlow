@@ -1,6 +1,6 @@
 #include "wrappers.h"
 
-SEXP ncdf_bitarray_set(SEXP bits, SEXP _indx) {
+SEXP bitarray_set(SEXP bits, SEXP _indx) {
     SEXP ans = PROTECT(duplicate(bits)), btcnt;
     unsigned char *bytes = (unsigned char*) RAW(ans);
     int *indx =  LOGICAL(_indx);
@@ -33,7 +33,7 @@ SEXP ncdf_bitarray_set(SEXP bits, SEXP _indx) {
     return(ans);
 }
 
-SEXP ncdf_bitarray_getSetBitPos(SEXP bits) {
+SEXP bitarray_getSetBitPos(SEXP bits) {
     SEXP ans;
     int n = asInteger(getAttrib(bits, install("nbitset"))) ;
     PROTECT(ans = allocVector(INTSXP, n));
@@ -55,7 +55,7 @@ SEXP ncdf_bitarray_getSetBitPos(SEXP bits) {
     return(ans);
 }
 
-SEXP ncdf_bitarray_getBitStatus(SEXP bits) {
+SEXP bitarray_getBitStatus(SEXP bits) {
     SEXP ans;
     unsigned char *bytes = (unsigned char*) RAW(bits);
     int len = asInteger(getAttrib(bits, install("bitlen"))) ;
@@ -76,7 +76,7 @@ SEXP ncdf_bitarray_getBitStatus(SEXP bits) {
     return(ans);
 }
 
-SEXP ncdf_bitarray_Flip(SEXP bits) {
+SEXP bitarray_Flip(SEXP bits) {
     SEXP ans = PROTECT(duplicate(bits)), btcnt;
     unsigned char *bytes = (unsigned char*) RAW(ans);
     int len = asInteger(getAttrib(bits, install("bitlen"))) ;
