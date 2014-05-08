@@ -248,7 +248,10 @@ setMethod("[",
 
 			} else {
 				#update samples info in phenoData(can't use phenoData<- due to the validity check)
-				ncfs@phenoData <- phenoData(x)[i,]
+				#it is too expenstive to call [ on annotationDataFrame 
+                #so we simply subset data slot(a data.frame) directly
+                # which is sufficient in this context (i.e. no column subsetting involved)
+                ncfs@phenoData@data <- ncfs@phenoData@data[i, , drop = FALSE]
 				if(is.numeric(i) || is.logical(i)) {
 					copy <- sampleNames(x)[i]
 				} else {
