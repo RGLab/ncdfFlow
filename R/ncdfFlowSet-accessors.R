@@ -126,7 +126,6 @@ setMethod("ncdfFlowSet",
 #' nc <- ncdfFlowSet(GvHD[1:2])
 #' nc[[1]] # data is loaded from cdf file
 #' unlink(nc)
-#' nc[[1]] # now events since the underlining cdf file is gone        
 setMethod("unlink",
 		signature=signature(x="ncdfFlowSet"),
 		definition=function(x, recursive = FALSE, force = FALSE)
