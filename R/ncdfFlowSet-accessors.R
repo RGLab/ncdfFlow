@@ -1,56 +1,18 @@
-## ==========================================================================
-## ncdfFlowSets store the expr matrices to ncdf files and keep meta data in memory
-## ==========================================================================
-#deFunct
-setMethod("addFrame",
-		signature=c(ncfs="ncdfFlowSet",data="flowFrame"),
-		definition=function(ncfs,data,sampleName){
-			.Defunct("[[<-")
-#			
-			#write to ncdf
-			#Since we don't update the indices, we have to make sure we update the correct subset
-			ind<-ncdfFlow::getIndices(ncfs,sampleName)
-			ddim<-dim(data)
-			
-#			
-			
-			#sdim is either size subset or full size
-            
-			sdim<-dim(origData)
-			#if indice is defined,update the subset defined by indices
-			if(!any(is.na(ind))){
-				updateIndices(ncfs,sampleName,NA)
-                slice <- ncfs[[sampleName]]	
-				tmp<-exprs(slice)
-				tmp[ind,]<-exprs(data)
-				exprs(slice)<-tmp
-				parameters(slice)<-parameters(data)
-				description(slice)<-description(data)
-				data<-slice
-			}
-			#checks if sample dimensions matches data dimensions
-			#does data size match ncdf file size?
-			if(all(sdim==ddim)){
-				.writeSlice(ncfs,data,sampleName)
-				#No? Then check if we are doing a full replacement. Does data size match full ncdf size (length(ind))
-			}else if((ddim[1]==length(ind)&ddim[2]==sdim[2])){
-				#warn that we are replacing the full size data
-				warning("ncdfFlowSet size ",length(ind),", view size ",dim(slice)[1]," data size ",ddim[1])
-				.writeSlice(ncfs,data,sampleName)
-			}else if(sdim[1]==0)##when source event is empty then add the frame
-			{
-				.writeSlice(ncfs,data,sampleName)
-			}
-			#replace the indices
-			updateIndices(ncfs,sampleName,ind);
-
-	
-			##update all other slots to keep the whole flowFrame consistent
-			eval(parse(text=paste("ncfs@frames$'",sampleName,"'@parameters<-parameters(data)",sep="")))
-			eval(parse(text=paste("ncfs@frames$'",sampleName,"'@description<-description(data)",sep="")))
-			
-		})
-
+#' convert from a \code{ncdfFlowSet} to a \code{flowSet}
+#' 
+#' The main purpose of this API is to convert the archived data (stored in \code{ncdfFlowSet}) to \code{flowSet}
+#' when the speed is more concerned than memory effieciency. 
+#' Although \code{ncdfFlowSet} is designed to minimize the disk-IO cost, so usually it is not necessary to do such coersion.  
+#'  
+#' @param from a \code{ncdfFlowSet}
+#' @param top \code{integer} specifies a certain number of samples are evenly selected for the coersion.
+#'                            If this argument is missing, then coerce all the samples within the \code{ncdfFlowSet}.
+#'                            It is to be used with caution because it can incur the huge memory consumption given  the \code{flowSet} is all-in-memory data structure.    
+#' @export 
+#' @examples 
+#' data(GvHD)
+#' nc1 <- ncdfFlowSet(GvHD[1:4])
+#' fs <- as.flowSet(nc1)
 as.flowSet <- function(from,top)
     {
       if(!missing(top))
@@ -65,23 +27,9 @@ as.flowSet <- function(from,top)
       return(fs)
     }
     
-setMethod("NcdfFlowSetToFlowSet",
-		signature=(x="ncdfFlowSet"),
-		definition=function(x,top){
-			.Defunct("as.flowSet")
-            
-			if(!missing(top))
-			{
-				indice<-round(seq(from=1,to=length(x),length.out=top))
-				x<-x[indice]
-			}
-			frs <- structure(lapply(sampleNames(x),function(n)x[[n]])
-					,names=sampleNames(x))
-			fs<-as(frs,"flowSet")
-			fs@phenoData<-x@phenoData
-			return(fs)
-		})
-#create ncdfFlowSet from flowFrame
+#' create ncdfFlowSet from flowFrame (not supported)
+#' 
+#' @rdname ncdfFlowSet-constructor 
 setMethod("ncdfFlowSet",
 			signature=(x="flowFrame"),
 			definition=function(x,ncdfFile){
@@ -90,26 +38,30 @@ setMethod("ncdfFlowSet",
 		}
 )
 
-#load ncdfFlowSet from previous saved ncdf file
-setMethod("ncdfFlowSet_open",
-		signature=(x="character"),
-		definition=function(x){
-          .Deprecated()
-			ret<-.Call(dll$readMeta, x)
-			if(!is.raw(ret)&&!ret)stop()
-			if(length(ret)==0)
-			{
-				warning("Loading Error:no metadata available!")
-			}else
-				unserialize(ret)
-		})
-
-#create ncdfFlowSet from flowSet
+#' create ncdfFlowSet from flowSet
+#' 
+#' Normally the \code{ncdfFlowSet} is constructed by loading raw FCS files using \code{read.ncdfFlowSet}.
+#' In case there is a legacy \code{flowSet} object, we can convert it to \code{ncdfFlowSet} with this constructor.
+#'
+#' @param x \code{flowSet}
+#' @param ncdfFile \code{character} specifies the file name of cdf file
+#' @param dim \code{integer} see details in \link{read.ncdfFlowset}.
+#' @param compress \code{integer} see details in \link{read.ncdfFlowset}.
+#' @aliases ncdfFlowSet
+#' @rdname ncdfFlowSet-constructor 
+#' @export 
+#' @examples 
+#' data(GvHD)
+#' fs <- GvHD[1:2]
+#' ncfs <- ncdfFlowSet(fs)
 setMethod("ncdfFlowSet",
 		signature=(x="flowSet"),
-		definition=function(x,ncdfFile){		
+		definition=function(x,ncdfFile, dim = 2, compress = 0){
+          
+            dim <- as.integer(match.arg(as.character(dim), c("2","3")))
+          
 			if(missing(ncdfFile))
-				ncdfFile <-tempfile(pattern = "ncfs")#ncdfFlow:::.guid() 
+				ncdfFile <-tempfile(pattern = "ncfs") 
 			flowSetId = ncdfFile
 			
 			
@@ -119,18 +71,24 @@ setMethod("ncdfFlowSet",
 			e1<-new.env(hash=TRUE, parent=emptyenv())
 
 			
-			maxEvents<-0
-			for(guid in sampleNames(x))
-			{
-				assign(guid, new("flowFrame",exprs=matrix(numeric(0),nrow=0,ncol=0),parameters(x[[guid]]),description(x[[guid]])), env=e1)
-				maxEvents<-max(maxEvents,nrow(exprs(x[[guid]])))				
-			}
+			maxEvents <- 0L
+            
+            
+            for(guid in sampleNames(x))
+            {
+              assign(guid, new("flowFrame",exprs=matrix(numeric(0),nrow=0,ncol=0),parameters(x[[guid]]),description(x[[guid]])), env=e1)
+              if(dim == 3)
+              {    maxEvents<-max(maxEvents,nrow(exprs(x[[guid]])))				
+              }  
+            }
+			
 			
 			#assign the maximum number of indices to estimate the ncfs object size
 			e2<-new.env(hash=TRUE, parent=emptyenv())
 			for(guid in sampleNames(x))
 			{
-				assign(guid,rep(TRUE,maxEvents),e2)
+                assign(guid, NA, e2)
+#				assign(guid,rep(TRUE,maxEvents),e2)
 			}
 			
 #			
@@ -140,98 +98,135 @@ setMethod("ncdfFlowSet",
 					,origColnames=colnames(x))
                 
             
-            metaSize<-0
+            
 			#create new ncdf file			
-			msgCreate <-.Call(dll$createFile, ncdfFile, as.integer(ncfs@maxEvents), 
-							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
-							as.integer(metaSize),as.logical(FALSE))
+			msgCreate <-.Call(C_ncdfFlow_createFile, ncdfFile, as.integer(ncfs@maxEvents), 
+							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)), dim, as.integer(compress))
 			if(!msgCreate)stop()
                         initIndices(ncfs)			
 			for(guid in sampleNames(x))
 			{
 
-				ncfs[[guid]] <- x[[guid]]
+				ncfs[[guid, compress = compress]] <- x[[guid]]
 			}
 
 			ncfs
 		})
-#save ncdfFlowSet object to ncdf file
-setMethod("ncdfFlowSet_sync",
-		signature=(x="ncdfFlowSet"),
-		definition=function(x,...){
-          .Deprecated()
-			toWrite<-serialize(x,NULL)
-#			
-			.Call(dll$writeMeta, x@file, toWrite , as.integer(1),as.integer(length(toWrite)))
-			
-			path<-list(...)$path
-			if(!is.null(path))
-			{
-				if(!identical(dirname(x@file),path))
-				{
-					file.copy(x@file,path,overwrite=TRUE)
-					x@file<-file.path(path,x@file)
-				}
-			}
-			
-			message(paste("ncdfFlowSet saved in", x@file))
 
-				
-		})
-
-
-
-
-
-setMethod("ncfsUnlink",
+#' delete the cdf file associated with the ncdfFlowSet object
+#'         
+#' ncdfFlowSet object is unrecoverable after cdf is deleted.
+#' So this method is usually called when ncdfFlowSet object is no longer in need.
+#' @param x \code{ncdfFlowSet}
+#' @param recursive see \link[base:unlink]{unlink}
+#' @param force see \link[base:unlink]{unlink}
+#' @export 
+#' @examples
+#' data(GvHD)
+#' nc <- ncdfFlowSet(GvHD[1:2])
+#' nc[[1]] # data is loaded from cdf file
+#' unlink(nc)
+#' nc[[1]] # now events since the underlining cdf file is gone        
+setMethod("unlink",
 		signature=signature(x="ncdfFlowSet"),
-		definition=function(x)
+		definition=function(x, recursive = FALSE, force = FALSE)
 		{
-			unlink(x@file)
+			unlink(x@file, recursive = recursive, force = force)
 		}
 )
 
-
-
-
-
-				
+#' extract the event indices of one or multiple samples from ncdfFlowSet
+#' 
+#' For internal use.
+#' 
+#' @param obj \code{ncdfFlowSet} object
+#' @param y \code{character} sample name
+#' @return a logical vector.
+#' @aliases getIndices
+#' @export 
+#' @examples 
+#' data(GvHD)
+#' nc <- ncdfFlowSet(GvHD[1:2])
+#' sn <- sampleNames(nc)[1]
+#' nrow(nc[[sn]])
+#' getIndices(nc, sn) #initial index is NA 
+#' #subset with filter
+#' morphGate <- norm2Filter("FSC-H", "SSC-H", filterId = "MorphologyGate",scale = 2)
+#' nc1 <- Subset(nc, morphGate)
+#' ind <- getIndices(nc1, sn)
+#' all.equal(sum(ind), nrow(nc1[[sn]]))
+#' initIndices(nc1)
+#' getIndices(nc1, sn) #reset indices
 setMethod("getIndices",
 		signature=signature(obj="ncdfFlowSet",y="character"), 
-		definition=function(obj,y,...)
+		definition=function(obj,y)
 		{
-#			
+		
 			ret<-get(y,obj@indices)
 			if(all(!is.na(ret)))
 				ret<-.getBitStatus(ret)
 			ret			
 		})
-		
+#' initialize the event indices for the entire ncdfFlowSet with NA
+#' 
+#' For internal use.
+#' @param x \code{ncdfFlowSet} object
+#' @aliases initIndices
+#' @export 
 setMethod("initIndices",
 		signature=signature(x="ncdfFlowSet"), 
-		definition=function(x,y)
+		definition=function(x)
 		{
 			
 			for(i in sampleNames(x)){
 					updateIndices(x,i,NA)
                   }
 		})
-		
+#' update the event indices of the target sample in ncdfFlowSet
+#' 
+#' For internal use.
+#' @aliases updateIndices
+#' @param x \code{ncdfFlowSet} object
+#' @param y \code{character} sample name
+#' @param z \code{logical} vector to be assigned.
+#' @export
 setMethod("updateIndices",
 		signature=signature(x="ncdfFlowSet",y="character",z="logical"), 
 		definition=function(x,y,z)
 		{
-#			
+		
 			if(all(!is.na(z)))
 				z<-.makeBitVec(length(z),z)
 			assign(y,z,x@indices)
 		})
 
+#' get the cdf file name associated with ncdfFlowSet object
+#' 
+#' @param ncfs \code{ncdfFlowSet}
+#' @return \code{character} 
+#' @export 
+getFileName <- function(ncfs){
+  ncfs@file
+}
 
-## ==========================================================================
-## subsetting by sampleNames,channels(not for events) methods 
-## - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-## to ncdfFlowSet
+#' subsetting by sampleNames,channels(not for events) methods 
+#' 
+#' similar to \code{\link[=[,flowSet-method]{[}}.
+#'  
+#' @param x \code{ncdfFlowSet}
+#' @param i sample index(or name)
+#' @param j column(or channel) index (or name)
+#' @param ... other arguments not used
+#' @param drop \code{logical} not used.
+#' @export
+#' @examples 
+#' data(GvHD)
+#' nc <- ncdfFlowSet(GvHD[1:2])
+#' samples <- sampleNames(nc)
+#' nc[1] 
+#' nc1 <- nc[samples[1]]
+#' #nc1 and nc share the cdf file
+#' all.equal(getFileName(nc1), getFileName(nc))
 setMethod("[",
 		signature=signature(x="ncdfFlowSet"),
 		definition=function(x, i, j, ..., drop=FALSE)
@@ -253,7 +248,10 @@ setMethod("[",
 
 			} else {
 				#update samples info in phenoData(can't use phenoData<- due to the validity check)
-				ncfs@phenoData <- phenoData(x)[i,]
+				#it is too expenstive to call [ on annotationDataFrame 
+                #so we simply subset data slot(a data.frame) directly
+                # which is sufficient in this context (i.e. no column subsetting involved)
+                ncfs@phenoData@data <- ncfs@phenoData@data[i, , drop = FALSE]
 				if(is.numeric(i) || is.logical(i)) {
 					copy <- sampleNames(x)[i]
 				} else {
@@ -271,7 +269,7 @@ setMethod("[",
 				assign(nm,x@frames[[nm]],ncfs@frames)
 
 
-				updateIndices(x=ncfs,y=nm,z=ncdfFlow::getIndices(x,nm))
+				updateIndices(x=ncfs,y=nm,z=getIndices(x,nm))
 #				
 				#update channels info for each frame
 				if(!missing(j))
@@ -302,37 +300,33 @@ setMethod("[",
 			return(ncfs)
 		})
 
-setReplaceMethod("colnames",
-		signature=signature(x="ncdfFlowSet",
-				value="ANY"),
-		definition=function(x, value)
-		{
-#			
-			if(length(value) != length(colnames(x)))
-				stop("length of new colnames doesn't match with the old one",call.=FALSE)
-	
-			#get the index of the colnames in the original colnames vector
-			colIndex<-which(x@origColnames%in%x@colnames)
-			x@colnames <- value#update colnames slot
-			x@origColnames[colIndex]<-value#update the original colnames baed on the inex
-
-			##updte colnames of each flowFrames
-			for(i in sampleNames(x))
-				x@frames[[i]]@parameters@data$name <- value
-				
-			x
-		})		
-		
 
 #' extract a \code{flowFrame} object from \code{ncdfFlowSet}
 #' 
+#' Simliar to \code{\link[=[[,flowSet-method]{[[}}, and there are cerntain ways to 
+#' reduce the disk IO and optimize the speed.
+#'  
 #' @param x a \code{ncdfFlowSet}
 #' @param i a \code{numeric} or \code{character} used as sample index
 #' @param j a \code{numeric} or \code{character} used as channel index
 #' @param use.exprs a \code{logical} scalar indicating whether to read the actual data from cdf
+#' @param ... other arguments. not used.
 #' @export 
-#' @rdname subsetting-methods
 #' @aliases [[,ncdfFlowSet,ANY-method
+#' @examples 
+#' data(GvHD)
+#' nc <- ncdfFlowSet(GvHD[1:2])
+#' samples <- sampleNames(nc)
+#' sn <- samples[1]
+#' #return the entire flowFrame
+#' fr <- nc[[sn]]  
+#' 
+#' #access the flowFrame meta data without loading the raw event data from disk
+#' nc[[sn, use.exprs = FALSE]]
+#' 
+#' #only read a subset of channels (more efficient than reading entire data set) 
+#' nc[[sn, 1:2]]
+#' 
 setMethod("[[",
 		signature=signature(x="ncdfFlowSet"),
 		definition=function(x, i, j, use.exprs = TRUE, ...)
@@ -355,8 +349,8 @@ setMethod("[[",
                   stop("subscript out of bounds")
               }
              
-              
-              pData(fr@parameters) <- pData(fr@parameters)[j,]
+              #we don't update description slot(i.e. keywords) as flowCore does 
+              fr@parameters <- fr@parameters[j, , drop = FALSE]
               localChNames <- localChNames[j]
             }
              
@@ -377,41 +371,70 @@ setMethod("[[",
                 if(length(samplePos) == 0)
                   stop("Invalid sample name '", sampleName, "'! It is not found in 'origSampleVector' slot!")
                 
-    			mat <- .Call(dll$readSlice, x@file, as.integer(chIndx), as.integer(samplePos))
+    			mat <- .Call(C_ncdfFlow_readSlice, x@file, as.integer(chIndx), as.integer(samplePos), localChNames)
     			if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
-    
-    			##append colnames to matrix
-    			colnames(mat) <- localChNames
     			
-    			#subset data by indices if neccessary	
-    			if(subByIndice&&nrow(mat)>0)
-    				mat<-mat[getIndices(x,sampleName),,drop=FALSE]
+                #subset data by indices if neccessary	
+                if(subByIndice&&nrow(mat)>0)
+                  mat<-mat[getIndices(x,sampleName),,drop=FALSE]  
+                
+    			
     			
     			fr@exprs <- mat
           }			
 		return(fr)
 	})
 
-
 #' write the flow data from a \code{flowFrame} to \code{ncdfFlowSet}
 #'  
 #' flowFrame can have less channels than ncdfFlowSet,which is used for partial updating(useful for \code{normalization}) 
-#' 
+#'
+#' @name replacement method for ncdfFlowSet
+#'  
 #' @param x a \code{ncdfFlowSet}
 #' @param i a \code{numeric} or \code{character} used as sample index of \code{ncdfFlowSet}
 #' @param j not used
-#' @param check.names a \code{logical} indicating whether the colnames of flowFrame
-#' should be matched to ncdfFlowSet, it can be set as FALSE 
-#' Thus simply update the first n channels wihtin ncdfFlowSet without matching channel names
-#' It is useful in parseWorkspace where the flowFrame with pre-fixed colnames needs to be written to fs
-#' where the colnames has not yet ready to be updated in the middle of parsing
-#' @param only.exprs a \code{logical} scalar When TRUE, it will only update the exprs data
-#' othewise, the parameters and decriptions slot are updated as well. 
-#' @rdname subsetting-methods
-#' @aliases [[<-,ncdfFlowSet,ANY,ANY,flowFrame-method
+#' @param only.exprs a \code{logical} Default is FALSE. which will update the parameters and decriptions slot as well as the raw data.
+#'                                  Sometime it is more efficient ti set it to TRUE skip the overhead of colnames matching and updating
+#'                                  when user is only concerned about raw data instead of the entire flowFrame.   
+#' @param compress \code{integer} It is only relevant to writing slice to '2d' format because the compression is set during the creation of hdf5 file for '3d' format. see details in \link{read.ncdfFlowset}.
+#' 
+#' @exportMethod [[<-
+#' @aliases 
+#' [[<-,ncdfFlowSet,flowFrame-method 
+#' [[<-,ncdfFlowSet,ANY,ANY,flowFrame-method
+#' 
+#' @examples 
+#' data(GvHD)
+#' nc <- ncdfFlowSet(GvHD[1:2])
+#' samples <- sampleNames(nc)
+#' sn <- samples[1]
+#' #return the entire flowFrame
+#' fr <- nc[[sn]]  
+#'  
+#' apply(exprs(nc[[sn]]), 2, range)
+#' 
+#' #transform the data
+#' lgcl <- logicleTransform( w = 0.5, t= 10000, m =4.5)
+#' fr_trans <- transform(fr, `FL1-H` = lgcl(`FL1-H`), `FL2-H` = lgcl(`FL2-H`))
+#' 
+#' #update the data
+#' nc[[sn]] <- fr_trans
+#' apply(exprs(nc[[sn]]), 2, range)
+#' 
+#' #subset on channels
+#' nc1 <- nc[,2:3]
+#' #only write the channels of interest (reduce disk IO)
+#' nc1[[sn]] <- fr_trans[,2:3]
+#' 
+#' #chanel colnames
+#' colnames(fr_trans)[3:4] <- c("<FL1-H>", "<FL2-H>")
+#' 
+#' #write data without matching up the colnames  
+#' nc[[sn, only.exprs = TRUE]] <- fr_trans
 setReplaceMethod("[[",
 		signature=signature(x="ncdfFlowSet",value="flowFrame"),
-		definition=function(x, i, j = "missing", check.names = TRUE, only.exprs = FALSE,..., value)
+		definition=function(x, i, j = "missing", only.exprs = FALSE, compress = 0, ..., value)
 {
        
         #check sample index  
@@ -423,30 +446,26 @@ setReplaceMethod("[[",
         #validity check for channels in flowFrame
         localChNames <-colnames(x)
         frChNames <- colnames(value)
-        if(check.names){
-          localChIndx <- match(frChNames,localChNames)
-          if(any(is.na(localChIndx)))
-            stop("Not all colnames of the input are present in ncdfFlowSet!", sampleName)  
+        if(only.exprs){
+          localChIndx <- 1:length(frChNames)  
         }else{
-          localChIndx <- 1:length(frChNames)
-        }
-        #when need to update other slots in flowFrame
-        #make sure the channel names are the same as the ones in ncfs
-        if(!only.exprs){
+          #when need to update other slots in flowFrame
+          #make sure the channel names are the same as the ones in ncfs
           if(!setequal(frChNames, localChNames))
             stop("Can't update the entire flowFrame because colnames of the input are not consistent with ncdfFlowSet!"
-#                    , sampleName
-                    , "\n To only update raw data,set only.exprs = TRUE"
-                )
+                , "\n To only update raw data,set only.exprs = TRUE"
+            )
+          localChIndx <- match(frChNames,localChNames)
+#          if(any(is.na(localChIndx)))
+#            stop("Not all colnames of the input are present in ncdfFlowSet!", sampleName)          
         }
-
         
         #####################################
         #prepare the data matrix to write
         #####################################
         ncfs <- x[,localChIndx]
-        #Since we don't update the indices, we have to make sure we update the correct subset
-        ind<-ncdfFlow::getIndices(ncfs,sampleName)
+        #Since we don't update the indices, we have to make sure to update the correct subset
+        ind <- getIndices(ncfs,sampleName)
               
         #source data to be updated
         updateIndices(ncfs,sampleName,NA)#clear indices to get the data of original size
@@ -494,24 +513,23 @@ setReplaceMethod("[[",
         ###################
 #        mode(newData) <- "single"
         #make sure to use origSampleVector for IO since phetaData slot may change after subsetting
-        sampleInd<-which(ncfs@origSampleVector==sampleName)
+        sampleInd <- which(ncfs@origSampleVector==sampleName)
         
         #get original channel ind  
         origChNames <-x@origColnames ##
-        if(check.names){
+        if(only.exprs){
+          chIndx <- match(colnames(ncfs),origChNames)
+        }else{
           chIndx <- match(frChNames,origChNames)
           if(any(is.na(chIndx)))
           {
             stop("Colnames of the input are not consistent with ncdfFlowSet! "
                 ,sampleName)    
           }
-        }else{
-          chIndx <- match(colnames(ncfs),origChNames)
+          
         }
-        
-        
         #write to disk
-        msgWrite <- .Call(dll$writeSlice, ncfs@file, newData, as.integer(chIndx), as.integer(sampleInd))
+        msgWrite <- .Call(C_ncdfFlow_writeSlice, ncfs@file, newData, as.integer(chIndx), as.integer(sampleInd), as.integer(compress))
         
         if(!msgWrite)
         {
@@ -532,12 +550,32 @@ setReplaceMethod("[[",
 
 
 
-## ==========================================================================
-## apply method for ncdfFlowSet,do not return direct results,
-## instead,creating new nc file,save the results in nc file,and return new ncdfFlowSet
-## use this method only when the FUN returns a flowFrame,otherwise use fsApply
-## - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+#' apply method for ncdfFlowSet (for internal use)
+#' 
+#' It is equivalent to \code{\link{fsApply}}. But the latter could cause memory issue 
+#' when \code{FUN} returns a \code{flowFrame}. \code{ncdfApply} writes to a new cdf file instead of memory. 
+#' Thus it will return a ncdfFlowSet object.
+#' 
+#' When the function given by argument "FUN" does not return the entire flowFrame object with the same 
+#' size of the original one (such as compensate,transform...), \code{\link[flowCore:fsApply]{fsApply}} should be used instead.
+#' @param x \code{ncdfFlowSet}
+#' @param FUN \code{function} to apply
+#' @param ... other arguments to pass to \code{FUN}
+#' @param use.exprs \code{logical} see \code{\link{fsApply}}
+#' @param newNcFile \code{logical} wether to create a new hdf file or simply overwrite the existing file.
+#' @export 
+#' @aliases ncfsApply
+#' @examples 
+#' data(GvHD)
+#' nc <- ncdfFlowSet(GvHD[1:2])
+#' 
+#' #use fsApply when FUN does not return a flowFrame 
+#' fsApply(nc, nrow)
+#' fsApply(nc, range)
+#' 
+#' #use ncfsApply when FUN returns a flowFrame
+#' lgcl <- logicleTransform( w = 0.5, t= 10000, m =4.5)
+#' nc1 <- ncfsApply(nc, transform, `FL1-H` = lgcl(`FL1-H`), `FL2-H` = lgcl(`FL2-H`))
 setMethod("ncfsApply",
 		signature=signature(x="ncdfFlowSet",
 				FUN="ANY"),
@@ -561,9 +599,8 @@ setMethod("ncfsApply",
 
 
 
-## ===========================================================================
-## compensate method
-## ---------------------------------------------------------------------------
+#' @rdname ncdfFlowSet-class
+#' @export
 setMethod("compensate",
 		signature=signature(x="ncdfFlowSet",
 				spillover="ANY"),
@@ -577,6 +614,24 @@ setMethod("compensate",
 
 )
 
+#' @rdname ncdfFlowSet-class
+#' @export
+setMethod("transform",
+    signature=signature(`_data`="ncdfFlowSet"),
+    definition=function(`_data`,...)
+    {
+#			
+      newNcFile<-paste(`_data`@file,"trans",sep=".")
+      ncfsApply(`_data`,transform,...,newNcFile=newNcFile)
+    })
+
+
+
+
+#' @aliases 
+#' show,ncdfFlowSet-method
+#' @rdname ncdfFlowSet-class
+#' @importMethodsFrom methods show
 setMethod("show",
 		signature=signature(object="ncdfFlowSet"),
 		definition=function(object)
@@ -595,86 +650,21 @@ setMethod("show",
  
 		})
 
-## ==========================================================================
-## Transformation methods
-## - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-setMethod("transform",
-		signature=signature(`_data`="ncdfFlowSet"),
-		definition=function(`_data`,...)
-		{
-#			
-			newNcFile<-paste(`_data`@file,"trans",sep=".")
-			ncfsApply(`_data`,transform,...,newNcFile=newNcFile)
-		})
 
-
-
-
-# TODO:
-## ===========================================================================
-## spillover method
-## ---------------------------------------------------------------------------
-setMethod("spillover",
-          signature=signature(x="ncdfFlowSet"),
-          definition=function(x, unstained=NULL, patt=NULL, fsc="FSC-A",
-                              ssc="SSC-A", method="median", useNormFilt=FALSE)
-      {
-          if(is.null(unstained)) {
-              stop("Sorry, we don't yet support unstained cells blended ",
-                   "with stained cells", call.=FALSE)
-          } else {
-              ## We often only want spillover for a subset of the columns 
-              allcols <- colnames(x)
-              cols <- if(is.null(patt)) allcols else grep(patt, allcols,
-                                                          value=TRUE)
-
-              ## Ignore these guys if they somehow got into cols.
-              ## cols <- cols[-match(c(fsc,ssc),cols)]
-              cols <- cols[!(cols %in% c(fsc,ssc))]
-              
-              ## There has got to be a better way of doing this...
-              if(!is.numeric(unstained)) {
-                  unstained <- match(unstained,sampleNames(x))
-                  if(is.na(unstained))
-                      stop("Baseline not in this set.", call.=FALSE)
-              }
-              ## Check to see if the unstained sample is in the list of
-              ## stains. If not, we need to add it, making it the first
-              ## row and adjust the unstained index accordingly.
-              ## If it is there we adjust to the appropriate index.
-              
-              ## pdh: you shouldn't use the nor2Filter as a default without telling people!
-              if(useNormFilt){
-                  if(is.numeric(fsc)) fsc <- allcols[fsc]
-                  if(is.numeric(ssc)) ssc <- allcols[ssc]
-                  
-                  if(is.na(match(fsc,allcols)))
-                      stop("Could not find forward scatter parameter. ",
-                           "Please set the fsc parameter", call.=FALSE)
-                  if(is.na(match(ssc,allcols)))
-                      stop("Could not find side scatter parameter. ",
-                           "Please set the ssc parameter", call.=FALSE)
-                  n2f <- norm2Filter(fsc, ssc, scale.factor=1.5)
-                  x <- Subset(x,n2f)
-              }
-              ## inten <- fsApply(Subset(x, n2f), each_col,method)[, cols]
-              inten <- fsApply(x, each_col,method)[, cols]
-              inten <- pmax(sweep(inten[-unstained,], 2,inten[unstained,]), 0)
-              inten <- sweep(inten, 1,apply(inten, 1, max), "/")
-              row.names(inten) <- colnames(inten)[apply(inten ,1, which.max)]
-              inten[colnames(inten),]
-          }
-      })
-
-
-
-
-## Note that the replacement method also replaces the GUID for each flowFrame
+# .Note that the replacement method also replaces the GUID for each flowFrame)
+# Besides what \code{\link[flowCore:sampleNames<-]{sampleNames<-}} does, it also
+# needs to take care of the \code{origSampleVector} and \code{indices} slot.
+#
+#' @rdname ncdfFlowSet-class
+#' @exportMethod sampleNames<-
+#' @name sampleNames<-
+#' @aliases 
+#' sampleNames<-,ncdfFlowSet,ANY-method
 setReplaceMethod("sampleNames",
     signature=signature(object="ncdfFlowSet"),
     definition=function(object, value)
     {
-#      browser()
+
       oldSampleNames <- sampleNames(object)
       
       #update pData and flowFrame
@@ -698,4 +688,33 @@ setReplaceMethod("sampleNames",
       object
     })
 
-
+# channel names replacement method
+# 
+# Besides what \code{\link[flowCore:colnames<-]{colnames<-}} does, it also
+# needs to update the \code{origColnames} slot.
+#' @rdname ncdfFlowSet-class
+#' @exportMethod colnames<-
+#' @name colnames<-
+#' @aliases 
+#' colnames<-,ncdfFlowSet,ANY-method
+#' colnames<-,ncdfFlowSet-method
+setReplaceMethod("colnames",
+    signature=signature(x="ncdfFlowSet",
+        value="ANY"),
+    definition=function(x, value)
+    {
+#			
+      if(length(value) != length(colnames(x)))
+        stop("length of new colnames doesn't match with the old one",call.=FALSE)
+      
+      #get the index of the colnames in the original colnames vector
+      colIndex<-which(x@origColnames%in%x@colnames)
+      x@colnames <- value#update colnames slot
+      x@origColnames[colIndex]<-value#update the original colnames baed on the inex
+      
+      ##updte colnames of each flowFrames
+      for(i in sampleNames(x))
+        x@frames[[i]]@parameters@data$name <- value
+      
+      x
+    })	

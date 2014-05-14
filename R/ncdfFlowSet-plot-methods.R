@@ -1,4 +1,9 @@
 #override flowSet-version methods to pass data instead of data@frames
+#' @aliases densityplot,formula,ncdfFlowSet-method
+#' @rdname ncdfFlowSet-class
+#' @export 
+#' @importMethodsFrom flowViz densityplot xyplot
+#' @importFrom flowViz flowViz.par.get panel.densityplot.flowset
 setMethod("densityplot",
 		signature(x = "formula", data = "ncdfFlowSet"),
 		function(x, data, ...)
@@ -16,7 +21,9 @@ setMethod("densityplot",
 		})
 
 
-
+#' @aliases xyplot,formula,ncdfFlowSet-method
+#' @rdname ncdfFlowSet-class
+#' @export 
 setMethod("xyplot",
 		signature=signature(x="formula",
 				data="ncdfFlowSet"),
@@ -38,6 +45,8 @@ setMethod("xyplot",
           thisTrellisObj
 		})
 
+#' @aliases xyplot,formula,ncdfFlowList-method
+#' @rdname ncdfFlowList-class
 setMethod("xyplot",
     signature=signature(x="formula",
         data="ncdfFlowList"),
@@ -46,6 +55,8 @@ setMethod("xyplot",
       selectMethod("xyplot", signature = c("formula", "ncdfFlowSet"))(x, data, ...)
     })
 
+#' @aliases densityplot,formula,ncdfFlowList-method
+#' @rdname ncdfFlowList-class
 setMethod("densityplot",
     signature(x = "formula", data = "ncdfFlowList"),
     function(x, data, ...)

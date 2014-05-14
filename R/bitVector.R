@@ -1,13 +1,7 @@
-# TODO: Add comment
-# 
-# Author: mike
-###############################################################################
-
-
-## bitlen gives number of bits intended to be saved
-## nbitset is the number of 1
-## length(gives number of bytes used)
-### n is number of bits inteded to be saved
+#' bitlen gives number of bits intended to be saved
+#' nbitset is the number of 1
+#' length(gives number of bytes used)
+#' n is number of bits inteded to be saved
 .makeBitVecZeros <- function(n) {
 	n <- as.integer(n)
 	structure(raw(ceiling(n / 8)), bitlen = n, nbitset = 0L)
@@ -16,7 +10,7 @@
 .makeBitVecOnes <- function(n) {
 	bt <- .makeBitVecZeros(n)
 	indx <- rep(TRUE, n)
-	sbt <- .Call(dll$ncdf_bitarray_set, bt, indx)
+	sbt <- .Call(C_ncdfFlow_bitarray_set, bt, indx)
 	sbt
 }
 
@@ -25,14 +19,14 @@
 	if(length(indx) != attr(bt, "bitlen"))
 		stop("indx must be  a logical vector of the same length as number of
 						bits represented in the bit vector")
-	sbt <- .Call(dll$ncdf_bitarray_set, bt, indx)
+	sbt <- .Call(C_ncdfFlow_bitarray_set, bt, indx)
 	sbt
 }
 
 .getSetBitIndx <- function(bt){
-	.Call(dll$ncdf_bitarray_getSetBitPos, bt)
+	.Call(C_ncdfFlow_bitarray_getSetBitPos, bt)
 }
 
 .getBitStatus <- function(bt){
-	.Call(dll$ncdf_bitarray_getBitStatus, bt)
+	.Call(C_ncdfFlow_bitarray_getBitStatus, bt)
 }

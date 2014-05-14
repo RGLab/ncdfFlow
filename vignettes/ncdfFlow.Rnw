@@ -101,10 +101,10 @@ fs1  <- read.flowSet(files=files)
 
 
 Note that an ncdf file that stores the actual data is generated and saved on disk once a \Robject{ncdfFlowSet} is created. 
-Users need to explicitely call the \Rfunction{ncfsUnlink} method to remove the file before delete the object from memory by \Rfunction{rm}. 
+Users need to explicitely call the \Rfunction{unlink} method to remove the file before delete the object from memory by \Rfunction{rm}. 
 
 <<ncdfFlowSet, echo=true, results=verbatim>>=
-ncfsUnlink(nc1)
+unlink(nc1)
 rm(nc1)
 @
 
@@ -138,10 +138,10 @@ nc2[[1]]
 @
 
 <<ncdfFlowSet, echo=FALSE,results=hide>>=
-ncfsUnlink(nc2)
+unlink(nc2)
 rm(nc2)
 
-ncfsUnlink(nc1)
+unlink(nc1)
 rm(nc1)
 @
 
@@ -226,7 +226,7 @@ comp <- compensation(comp.mat)
 summary(nc1)[[1]]
 nc2<-compensate(nc1, comp)
 summary(nc2)[[1]]
-ncfsUnlink(nc2)
+unlink(nc2)
 rm(nc2)
 
 #transformation
@@ -234,7 +234,7 @@ asinhTrans <- arcsinhTransform(transformationId="ln-transformation", a=1, b=1, c
 nc2 <- transform(nc1,`FL1-H`=asinhTrans(`FL1-H`))
 summary(nc1)[[1]]
 summary(nc2)[[1]]
-ncfsUnlink(nc2)
+unlink(nc2)
 rm(nc2)
 @
 
@@ -274,7 +274,7 @@ nc1[[1]]
 rm(smaller)
 @
 Note that \Rfunction{Subset} does not create the new ncdf file (the same as extraction operator \Rfunction{[}).
-So we need to be careful about using \Rfunction{ncfsUnlink} to delete the subsetted data 
+So we need to be careful about using \Rfunction{unlink} to delete the subsetted data 
 since it points to the same ncdf file that is also used by the original \Robject{ncdfFlowSet} object. 
 
 

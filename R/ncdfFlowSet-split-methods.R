@@ -1,6 +1,17 @@
 ## Split a ncdfFlowSet by a single filter, by first creating a list of
 ## filterResult and then working our way through that in the next
 ## method.
+#' split a \code{ncdfFlowSet} object.
+#' 
+#' Equivalent to \code{split} method for \code{flowSet} object.  
+#'
+#' @param x \code{ncdfFlowSet} 
+#' @param f,drop,population,prefix,... see \code{\link{split-methods}}
+#' @param isNew \code{logical} wehther to create a new hdf file or using existing hdf file.
+#' @return a list of \code{ncdfFlowSet} objects that may not may not share the same hdf file depending on \code{isNew} argument.
+#' @export 
+#' @rdname ncdfFlowSet-split
+#' @aliases split,ncdfFlowSet,filter-method
 setMethod("split",
 		signature=signature(x="ncdfFlowSet",
 				f="filter"),
@@ -12,7 +23,8 @@ setMethod("split",
 			
 			split(x, fres, population=population, prefix=prefix,...)
 		})
-
+#' @rdname ncdfFlowSet-split
+#' @aliases split,ncdfFlowSet,filterResultList-method
 setMethod("split",
 		signature=signature(x="ncdfFlowSet",
 				f="filterResultList"),
@@ -26,7 +38,8 @@ setMethod("split",
 			
 			split(x, f, drop=drop, population=NULL, prefix=NULL, ...)
 		})
-
+#' @rdname ncdfFlowSet-split
+#' @aliases split,ncdfFlowSet,list-method
 setMethod("split",
 		signature=signature(x="ncdfFlowSet",
 				f="list"),
@@ -121,6 +134,8 @@ setMethod("split",
 ## Split by frames of flowSet according to a factor, character or numeric.
 ## Those have to be of the same length as the flowSet. We can't allow for
 ## drop=TRUE, because this would create invalid sets.
+#' @rdname ncdfFlowSet-split
+#' @aliases split,ncdfFlowSet,factor-method
 setMethod("split",
 		signature=signature(x="ncdfFlowSet",
 				f="factor"),
@@ -151,7 +166,8 @@ setMethod("split",
 			
 			return(res)
 		})
-
+#' @rdname ncdfFlowSet-split
+#' @aliases split,ncdfFlowSet,character-method
 setMethod("split",
 		signature=signature(x="ncdfFlowSet",
 				f="character"),
