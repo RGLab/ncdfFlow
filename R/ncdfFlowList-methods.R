@@ -210,11 +210,29 @@ setMethod("split", signature=signature(x="ncdfFlowList", f="character"), definit
     {
       selectMethod("split", signature = c("ncdfFlowSet", "character"))(x, f, ...)
     })
+#' @aliases
+#' phenoData,ncdfFlowList-method
+#' phenoData<-,ncdfFlowList,AnnotatedDataFrame-method
 #' @export 
 #' @rdname ncdfFlowList-class
 setMethod("phenoData","ncdfFlowList",function(object){
       res <- phenoData(object@data[[1]])
       pData(res) <- pData(object)
+      res
+    })
+#' @exportMethod phenoData<-
+setReplaceMethod("phenoData",c("ncdfFlowList","AnnotatedDataFrame"),function(object,value){
+      
+      if(!.isValidSamples(rownames(value),object))
+        stop("The sample names in data.frame are not consistent with the ",class(x), "!")
+      
+      res <- lapply(object,function(fs){
+            this_pd <- value[sampleNames(fs), ]
+            phenoData(fs) <- this_pd
+            fs
+          }, level =1)
+      
+      res <- as(res, "ncdfFlowList")
       res
     })
 #' @aliases
