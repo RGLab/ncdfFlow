@@ -13,6 +13,7 @@
 \alias{pData,ncdfFlowList-method}
 \alias{pData<-,ncdfFlowList,data.frame-method}
 \alias{phenoData,ncdfFlowList-method}
+\alias{phenoData<-,ncdfFlowList,AnnotatedDataFrame-method}
 \alias{sampleNames,ncdfFlowList-method}
 \alias{show,ncdfFlowList-method}
 \alias{split,ncdfFlowList,character-method}

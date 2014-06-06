@@ -69,19 +69,25 @@ setMethod("[[",c(x="ncdfFlowList",i="numeric"),function(x,i,j, ...){
       if(i > nSamples){
         stop(i, " is larger than the number of samples: ", nSamples)
       }
-      x[[this_samples[i], j, ...]]
+      
+      if(missing(j))#somehow missing j causes trouble for S4 dispatching
+        x[[this_samples[i], ...]]
+      else
+        x[[this_samples[i], j, ...]]
       
     })
 #' @rdname ncdfFlowList-class
 #' @aliases [[,ncdfFlowList,logical-method
 setMethod("[[",c(x="ncdfFlowList",i="logical"),function(x,i, j, ...){
       #convert non-character indices to character
-      
-      x[[sampleNames(x)[i], j, ...]]
+      if(missing(j))
+        x[[sampleNames(x)[i], ...]]
+      else
+        x[[sampleNames(x)[i], j, ...]]
       
     })
 #' @rdname ncdfFlowList-class
-#' @aliases [[,ncdfFlowList,character-method
+#' @aliases [[,ncdfFlowList,character,missing-method
 setMethod("[[",c(x="ncdfFlowList",i="character"),function(x,i, j, ...){
       #convert non-character indices to character
       
@@ -90,7 +96,10 @@ setMethod("[[",c(x="ncdfFlowList",i="character"),function(x,i, j, ...){
         this_samples <- sampleNames(object)
         ind <- match(i,this_samples)
         if(!is.na(ind)){
-          fr <- object[[ind, j, ...]]
+          if(missing(j))
+            fr <- object[[ind, ...]]
+          else
+            fr <- object[[ind, j, ...]]
         }
       }
       if(is.null(fr)){
@@ -210,11 +219,29 @@ setMethod("split", signature=signature(x="ncdfFlowList", f="character"), definit
     {
       selectMethod("split", signature = c("ncdfFlowSet", "character"))(x, f, ...)
     })
+#' @aliases
+#' phenoData,ncdfFlowList-method
+#' phenoData<-,ncdfFlowList,AnnotatedDataFrame-method
 #' @export 
 #' @rdname ncdfFlowList-class
 setMethod("phenoData","ncdfFlowList",function(object){
       res <- phenoData(object@data[[1]])
       pData(res) <- pData(object)
+      res
+    })
+#' @exportMethod phenoData<-
+setReplaceMethod("phenoData",c("ncdfFlowList","AnnotatedDataFrame"),function(object,value){
+      
+      if(!.isValidSamples(rownames(value),object))
+        stop("The sample names in data.frame are not consistent with the ",class(x), "!")
+      
+      res <- lapply(object,function(fs){
+            this_pd <- value[sampleNames(fs), ]
+            phenoData(fs) <- this_pd
+            fs
+          }, level =1)
+      
+      res <- as(res, "ncdfFlowList")
       res
     })
 #' @aliases
