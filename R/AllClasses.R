@@ -123,7 +123,7 @@ setClass("ncdfFlowSet",
 #' nc3 <- ncdfFlowSet(GvHD[3])
 #' list1 <- list(nc1, nc2, nc3)
 #' #coerce from list to ncdfFlowList
-#' nclist <- as(list1, "ncdfFlowList")
+#' nclist <- ncdfFlowList(list1)
 #' nclist
 #' #coerce(collapse) from ncdfFlowList to a single flowFrame
 #' collapsedData <- as(nclist, "flowFrame")

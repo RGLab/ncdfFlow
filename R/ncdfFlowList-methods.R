@@ -1,6 +1,6 @@
 #' validity check for samples slot    
 #' @param samples \code{character} vector
-#' @param \code{list) of objects   
+#' @param \code{list} of objects   
 .isValidSamples<-function(samples,object){
   return (setequal(unlist(lapply(object,sampleNames, level = 1)),samples))
 }
