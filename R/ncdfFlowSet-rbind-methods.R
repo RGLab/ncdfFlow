@@ -19,7 +19,7 @@
 #' nc2 <- ncdfFlowSet(GvHD[3:4])
 #' nc3 <- ncdfFlowSet(GvHD[5:6])
 
-#' ncfslist <- as(list(nc1,nc2,nc3),"ncdfFlowList")
+#' ncfslist <- ncdfFlowList(list(nc1,nc2,nc3))
 #' nc4 <- rbind2(ncfslist)
 #' nc4
 setMethod("rbind2",
