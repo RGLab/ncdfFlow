@@ -1,4 +1,6 @@
-#' validity check for samples slot        
+#' validity check for samples slot    
+#' @param samples \code{character} vector
+#' @param \code{list} of objects   
 .isValidSamples<-function(samples,object){
   return (setequal(unlist(lapply(object,sampleNames, level = 1)),samples))
 }
@@ -91,22 +93,25 @@ setMethod("[[",c(x="ncdfFlowList",i="logical"),function(x,i, j, ...){
 setMethod("[[",c(x="ncdfFlowList",i="character"),function(x,i, j, ...){
       #convert non-character indices to character
       
-      fr <- NULL
-      for(object in x@data){
-        this_samples <- sampleNames(object)
-        ind <- match(i,this_samples)
-        if(!is.na(ind)){
-          if(missing(j))
-            fr <- object[[ind, ...]]
-          else
-            fr <- object[[ind, j, ...]]
-        }
-      }
-      if(is.null(fr)){
-        stop(i, " not found in ", class(x), "!")
-      }else{
-        return (fr)
-      }
+      res <- NULL
+      object_ind <- tryCatch(
+                              {
+                                x@samples[[i]]
+                              }
+                            , error = function(cond){
+                              stop("'", i, "' not found in ", class(x), "!")
+                            }
+                          )
+#      browser()
+      
+      object <- x@data[[object_ind]]
+
+      if(missing(j))
+        res <- object[[i, ...]]
+      else
+        res <- object[[i, j, ...]]
+      
+
     })
 
 
@@ -137,7 +142,7 @@ setMethod("show",
 setMethod("sampleNames", 
     signature = signature(object = "ncdfFlowList"),
     function(object) {
-      object@samples      
+      names(object@samples)      
     })
 
 #' @rdname ncdfFlowList-class
@@ -195,12 +200,12 @@ setMethod("[",c(x="ncdfFlowList"),function(x,i,j,...){
             }
           }, level =1)
       res <- res[!unlist(lapply(res,is.null))]
-      res <- as(res, "ncdfFlowList")
+      
+      
       if(is.null(matchInd))
-        res@samples <- samples
+        ncdfFlowList(res, x@samples)
       else
-        res@samples <- samples[matchInd]
-      res
+        ncdfFlowList(res, names(x@samples[matchInd]))
     })
 
 
@@ -241,7 +246,7 @@ setReplaceMethod("phenoData",c("ncdfFlowList","AnnotatedDataFrame"),function(obj
             fs
           }, level =1)
       
-      res <- as(res, "ncdfFlowList")
+      ncdfFlowList(res)
       res
     })
 #' @aliases
@@ -255,7 +260,7 @@ setMethod("pData","ncdfFlowList",function(object){
 
       res <- do.call(rbind,res)
       rownames(res) <- res[, "name"]
-      res[object@samples,,drop=FALSE]
+      res[sampleNames(object),,drop=FALSE]
     })
 #' @exportMethod pData<-
 setReplaceMethod("pData",c("ncdfFlowList","data.frame"),function(object,value){
@@ -269,8 +274,7 @@ setReplaceMethod("pData",c("ncdfFlowList","data.frame"),function(object,value){
             gs
           }, level =1)
       
-      res <- as(res, "ncdfFlowList")
-      res        
+      ncdfFlowList(res)        
     })
 #setReplaceMethod("sampleNames",
 #		signature = signature(object = "ncdfFlowList"),

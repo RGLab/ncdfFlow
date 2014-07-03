@@ -58,9 +58,8 @@ setMethod("Subset",
             else
               Subset(fs, this_subset, select, ...)
           },level = 1)
-      res <- as(res, "ncdfFlowList")
-      res@samples <- x@samples
-      res
+      ncdfFlowList(res, x@samples)
+      
     })    
     
 #' @rdname ncdfFlowSet-Subset 

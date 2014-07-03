@@ -6,7 +6,7 @@ suppressMessages(nc1 <- ncdfFlowSet(GvHD[1:2]))
 suppressMessages(nc2 <- ncdfFlowSet(GvHD[3:4]))
 suppressMessages(nc3 <- ncdfFlowSet(GvHD[5:6]))
 
-nclist <- as(list(nc1,nc2,nc3),"ncdfFlowList")
+nclist <- ncdfFlowList(list(nc1,nc2,nc3))
 
 
 test_that("as flowFrame", {

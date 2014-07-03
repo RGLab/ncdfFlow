@@ -127,7 +127,6 @@ setMethod("split",
 						"population identifier produced by splitting"
 			}
 #			browser()
-#			res<-as(finalRes,"ncdfFlowList")
 			return(finalRes)
 		})
 
@@ -161,8 +160,6 @@ setMethod("split",
 #						"Split"
 			}
 			names(res) <- names(gind)
-
-#			res<-as(res,"ncdfFlowList")
 			
 			return(res)
 		})

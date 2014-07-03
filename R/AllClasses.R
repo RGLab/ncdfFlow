@@ -106,6 +106,14 @@ setClass("ncdfFlowSet",
 #' Objects can be created by coercing a list of ncdfFlowSet objects 
 #' as("ncdfFlowList",nclist = .... #a list of ncdfFlowSet objects)
 #' 
+#' @section Slots:
+#'  \describe{
+#' 
+#' \item{\code{data}:}{A list containing the \link{ncdfFlowSet} objects.}
+#' \item{\code{samples}:}{A \code{integer} vector containing the index of the \link{ncdfFlowSet} object to which each sample belongs.
+#'                        The name of the vector is the sample names that determine the order of samples exposed to the user, which can
+#'                        be different from the physical storing order.}
+#' }
 #' @seealso \code{\link{ncdfFlowSet}}
 #' @exportClass ncdfFlowList
 #' @examples 
@@ -115,7 +123,7 @@ setClass("ncdfFlowSet",
 #' nc3 <- ncdfFlowSet(GvHD[3])
 #' list1 <- list(nc1, nc2, nc3)
 #' #coerce from list to ncdfFlowList
-#' nclist <- as(list1, "ncdfFlowList")
+#' nclist <- ncdfFlowList(list1)
 #' nclist
 #' #coerce(collapse) from ncdfFlowList to a single flowFrame
 #' collapsedData <- as(nclist, "flowFrame")
@@ -124,13 +132,52 @@ setClass("ncdfFlowSet",
 setClass("ncdfFlowList"
     ,representation=representation(
         data = "list"
-        ,samples="character" #this determine the order of samples exposed to user
+        ,samples="integer" # named integer this determine the order of samples exposed to user
     ))
 
-setAs(from = "list", to = "ncdfFlowList", def = function(from){
+#' create the sample index 
+#' 
+#' The index is a named integer vector used for fast indexing
+#' 
+#' @param x \code{list} of objects
+.indexingSample <- function(x){
+       
+  unlist(lapply(seq_along(x), function(i){
+            sn <- sampleNames(x[[i]])
+            ind <- rep(i, length(sn))
+            names(ind) <- sn
+            ind
+          }))
+  
+}
+#' constuctor for \code{ncdfFlowList}
+#' @param samples \code{integer} see \code{samples} slot of \code{ncdfFlowList} class.
+#'                  or \code{character} that specifiy the order to samples.
+#'                                    If not given then reconstruct the index.
+#' @return \code{ncdfFlowList-class} 
+#' @rdname ncdfFlowList-class
+#' @export 
+ncdfFlowList <- function(x, samples = NULL){
+  
+      if(is.null(samples)){
+        
+        sampleIndex <- .indexingSample(x)
+        
+      }else if(is.character(samples))
+      {
+          sampleIndex <- .indexingSample(x)
+          #reorder by the given samples vector
+          thisInd <- match(samples, names(sampleIndex))
+          sampleIndex <- sampleIndex[thisInd]
+          
+       }else if(is.integer(samples)){
+         sampleIndex <- samples
+      }else
+        stop("invalid sampleIndex!")
       
-      new("ncdfFlowList", data = from, samples = unname(unlist(lapply(from, sampleNames))))
-    })
+      new("ncdfFlowList", data = x, samples = sampleIndex)
+      
+    }
 setAs(from = "ncdfFlowList", to = "flowFrame", def = function(from){
       selectMethod("coerce", signature = c("flowSet", "flowFrame"))(from)      
 
