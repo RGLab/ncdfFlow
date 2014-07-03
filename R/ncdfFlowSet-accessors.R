@@ -277,10 +277,17 @@ setMethod("[",
 					##get old AnnotatedDataFrame
 					pd<-parameters(ncfs@frames[[nm]])
 					#update the parameter by subsetting AnnotatedDataFrame wotj parameter name
-					if(is.character(j))
-						parameters(ncfs@frames[[nm]]) <- pd[match(j,pData(pd)$name),]
-					else
-						parameters(ncfs@frames[[nm]]) <- pd[j,]
+					if(is.character(j)){
+                      matchInd <- match(j,pData(pd)$name)
+                      misMatch <- is.na(matchInd)
+                      if(any(misMatch)){
+                        stop("'", paste(j[misMatch], collapse = "','"), "' not found in flow data!")
+                      }
+                      parameters(ncfs@frames[[nm]]) <- pd[matchInd,]
+                    }else{
+                      parameters(ncfs@frames[[nm]]) <- pd[j,]
+                    }
+						
 				}
 			}
 			 
@@ -293,7 +300,7 @@ setMethod("[",
 					ncfs@colnames <- colnames(x)[j]
  
 				if(any(is.na(colnames(ncfs))))
-					stop("Subset out of bounds", call.=FALSE)
+					stop("Subset out of bounds")
 			}
 #			
 			return(ncfs)
