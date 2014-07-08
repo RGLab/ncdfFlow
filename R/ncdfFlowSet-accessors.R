@@ -685,8 +685,12 @@ setReplaceMethod("sampleNames",
       #update indices slot
       indEnv <- object@indices
       mapply(oldSampleNames, value, FUN = function(old, new){
-            assign(new, indEnv[[old]], indEnv) # copy from old to enw  
-            eval(substitute(rm(v, envir = indEnv), list(v = old))) # del the old
+            if(old != new){
+              assign(new, indEnv[[old]], indEnv) # copy from old to enw  
+              eval(substitute(rm(v, envir = indEnv), list(v = old))) # del the old  
+            }
+            #do nothing when the old is the same as the new
+            #otherwise it will rm the existing member
             
           })
       
