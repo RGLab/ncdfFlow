@@ -145,6 +145,15 @@ setMethod("sampleNames",
       names(object@samples)      
     })
 
+#' @rdname subset
+#' @param ... other arguments
+#' @export 
+subset.ncdfFlowList <- function (x, ...) 
+{
+  
+  subset.ncdfFlowSet(x, ...)
+}
+
 #' @rdname ncdfFlowList-class
 setMethod("[",c(x="ncdfFlowList"),function(x,i,j,...){
       

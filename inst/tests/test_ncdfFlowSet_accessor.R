@@ -81,6 +81,20 @@ test_that("[", {
       
     })
 
+test_that("subset", {
+      
+      nc_sub <- subset(ncfs, as.integer(Visit) <= 3)
+      is_equal_flowSet(nc_sub, fs[1:3])
+      
+      nc_sub <- subset(ncfs, as.integer(Visit) <= 3 & Days >=0)
+      is_equal_flowSet(nc_sub, fs[2:3])
+      
+      nc_sub <- subset(ncfs, as.integer(Visit) < 3 | Days == 12)
+      is_equal_flowSet(nc_sub, fs[c(1,2,4)])
+      
+    })
+
+
 test_that("[[", {
       sn <- samples[1]
       #return the entire flowFrame
