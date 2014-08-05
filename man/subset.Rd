@@ -4,16 +4,16 @@
 \alias{subset.ncdfFlowSet}
 \title{subset the ncdfFlowSet/ncdfFlowList based on 'pData'}
 \usage{
-\method{subset}{ncdfFlowList}(x, ...)
+\method{subset}{ncdfFlowList}(x, subset, ...)
 
-\method{subset}{ncdfFlowSet}(x, subset)
+\method{subset}{ncdfFlowSet}(x, subset, ...)
 }
 \arguments{
-\item{...}{other arguments}
-
 \item{x}{\code{ncdfFlowSet} or \code{ncdfFlowList}}
 
-\item{subset}{logical expression(within the context of pData) indicating samples to keep. see \link{base:subset}}
+\item{subset}{logical expression(within the context of pData) indicating samples to keep. see \code{\link[base:subset]{subset}}}
+
+\item{...}{other arguments. (not used)}
 }
 \value{
 a subset of code{ncdfFlowSet} or \code{ncdfFlowList} object

@@ -309,11 +309,12 @@ setMethod("[",
 #' subset the ncdfFlowSet/ncdfFlowList based on 'pData'
 #' 
 #' @param x \code{ncdfFlowSet} or \code{ncdfFlowList}
-#' @param subset logical expression(within the context of pData) indicating samples to keep. see \link{base:subset}
+#' @param subset logical expression(within the context of pData) indicating samples to keep. see \code{\link[base:subset]{subset}}
+#' @param ... other arguments. (not used)
 #' @return a subset of code{ncdfFlowSet} or \code{ncdfFlowList} object
 #' @rdname subset
 #' @export 
-subset.ncdfFlowSet <- function (x, subset) 
+subset.ncdfFlowSet <- function (x, subset, ...) 
 {
   
   pd <- pData(x)

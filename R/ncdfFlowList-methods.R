@@ -146,12 +146,21 @@ setMethod("sampleNames",
     })
 
 #' @rdname subset
-#' @param ... other arguments
 #' @export 
-subset.ncdfFlowList <- function (x, ...) 
+subset.ncdfFlowList <- function (x, subset, ...) 
 {
+  pd <- pData(x)
+  r <- if (missing(subset)) 
+        rep_len(TRUE, nrow(x))
+      else {
+        e <- substitute(subset)
+        r <- eval(e, pd, parent.frame())
+        if (!is.logical(r)) 
+          stop("'subset' must be logical")
+        r & !is.na(r)
+      }
   
-  subset.ncdfFlowSet(x, ...)
+  x[as.character(pd[r, "name"])]
 }
 
 #' @rdname ncdfFlowList-class
