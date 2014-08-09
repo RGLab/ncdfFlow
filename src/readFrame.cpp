@@ -1,0 +1,473 @@
+#include <Rcpp.h>
+#include <Rinternals.h>
+#include "wrappers.h"
+#include <boost/lexical_cast.hpp>
+
+typedef std::vector<std::string> strVec;
+typedef std::vector<int> intVec;
+typedef std::vector<unsigned> uintVec;
+
+#define MSG_SIZE       1024
+herr_t my_hdf5_error_handler(unsigned n, const H5E_error2_t *err_desc, void *client_data)
+{
+	char                maj[MSG_SIZE];
+	char                min[MSG_SIZE];
+
+	const int		indent = 4;
+
+	if(H5Eget_msg(err_desc->maj_num, NULL, maj, MSG_SIZE)<0)
+		return -1;
+
+	if(H5Eget_msg(err_desc->min_num, NULL, min, MSG_SIZE)<0)
+		return -1;
+
+	REprintf("%*s error #%03d: in %s(): line %u\n",
+		 indent, "", n, err_desc->func_name, err_desc->line);
+	REprintf("%*smajor: %s\n", indent*2, "", maj);
+	REprintf("%*sminor: %s\n", indent*2, "", min);
+
+   return 0;
+}
+
+/*
+ * customize the printing function so that it print to R error console
+ * also raise the R error once the error stack printing is done
+ */
+herr_t custom_print_cb(hid_t estack, void *client_data)
+{
+	hid_t estack_id = H5Eget_current_stack();//copy stack before it is corrupted by my_hdf5_error_handler
+	H5Ewalk2(estack_id, H5E_WALK_DOWNWARD, my_hdf5_error_handler, client_data);
+	H5Eclose_stack(estack_id);
+	Rcpp::stop("hdf Error");
+    return 0;
+
+}
+
+
+// [[Rcpp::plugins(hdf5)]]
+Rcpp::NumericVector readSlice_cpp(std::string fName
+								, std::vector<unsigned> chIndx
+								, unsigned sampleIndx
+								, Rcpp::StringVector colnames
+//								, SEXP _colnames
+								)
+{
+
+	H5Eset_auto2(H5E_DEFAULT, (H5E_auto2_t)custom_print_cb, NULL);
+
+    SEXP ans, dnms;
+
+
+	int chCount = chIndx.size();
+    /*
+     * determine the dataset format
+     */
+	hid_t       file, dataset,dataspace, memspace;         /* handles */
+	hsize_t 	dimsm[2]; //dimenstions
+	herr_t      status;
+	unsigned nEvents;
+	file = H5Fopen(fName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+	status = H5Lexists(file, DATASETNAME3d, H5P_DEFAULT);
+
+	int is3d;
+	dataset = -1;
+
+	if(status == TRUE){
+		dataset = H5Dopen2(file, DATASETNAME3d, H5P_DEFAULT);
+		dataspace = H5Dget_space(dataset);    /* dataspace handle */
+		int nDim = H5Sget_simple_extent_ndims(dataspace);
+		is3d = nDim == 3;
+	}
+	else
+		is3d = 0;
+	/*
+	 * read data from 3d mat
+	 */
+	if(is3d)
+	{
+
+		/*
+		 * get the total number of events for the current sample
+		 */
+		hsize_t dims[3];
+		hid_t attrID;
+		status  = H5Sget_simple_extent_dims(dataspace, dims, NULL); //get dimensions of datset
+		unsigned nSample = dims[0];//get total number of samples
+		if(sampleIndx >= nSample)
+			Rcpp::stop("readSlice error!sample index exceeds the boundary.");
+		unsigned * eCount = (unsigned *) malloc(sizeof(unsigned) * nSample);
+		attrID = H5Aopen(dataset, "eventCount", H5P_DEFAULT);
+		status = H5Aread(attrID, H5T_NATIVE_UINT32, eCount);
+		nEvents = eCount[sampleIndx];
+		free(eCount);
+		H5Aclose(attrID);
+
+		/*
+		 * these two lines is the reason for the _readSlice to be inline code
+		 * because we need to open hdf file to get events info
+		 *
+		 */
+		PROTECT(ans = Rf_allocVector(REALSXP, nEvents * chCount));
+		double *data_out = REAL(ans);
+
+		/*
+		 * Define the memory dataspace.
+		 */
+		dimsm[0] = chCount;
+		dimsm[1] = nEvents;
+		memspace = H5Screate_simple(2,dimsm,NULL);
+
+
+		/*
+		 * Define hyperslab in the dataset.
+		 */
+		hsize_t      count[3];              /* size of the hyperslab in the file */
+		hsize_t      offset[3];             /* hyperslab offset in the file */
+		hsize_t      count_out[2];          /* size of the hyperslab in memory */
+		hsize_t      offset_out[2];         /* hyperslab offset in memory */
+
+		unsigned i;
+		for(i = 0; i < chCount; i++){
+			int colStart = chIndx.at(i);
+			offset[0] = sampleIndx;//start from sampleIndx-th sample
+			offset[1] = colStart; //start from colStart-th channel
+			offset[2] = 0; //start from the first event
+
+			count[0]  = 1;//get one sample
+			count[1]  = 1;//get one channel
+			count[2]  = nEvents; //get all events
+
+
+			status = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, offset, NULL,
+												count, NULL);
+
+
+			/*
+			 * Define memory hyperslab.
+			 */
+			offset_out[0] = i;//start from ith column
+			offset_out[1] = 0;//start from 0th event
+
+			count_out[0]  = 1;//one channel
+			count_out[1]  = nEvents; //all events
+			status = H5Sselect_hyperslab(memspace, H5S_SELECT_SET, offset_out, NULL,
+						 count_out, NULL);
+
+			/*
+			 * Read data from hyperslab in the file into the hyperslab in
+			 * memory .
+			 */
+			status = H5Dread(dataset, H5T_NATIVE_DOUBLE, memspace, dataspace,
+					 H5P_DEFAULT, data_out);
+
+		}
+		H5Dclose(dataset);
+		H5Sclose(dataspace);
+		H5Sclose(memspace);
+	}
+	else
+	{
+		/*
+		 * read 2d format
+		 */
+
+		/*
+		 * convert index to string to be used as dataset name
+		 * because dataset can not be renamed once created in hdf
+		 */
+//		char * sampleName = (char *)malloc(sizeof(char)*MAXLEN);
+//		snprintf(sampleName, MAXLEN, "%d", sampleIndx);
+		std::string sampleName = boost::lexical_cast<std::string>(sampleIndx);
+		/*
+		 * Open the file and the dataset.
+		 */
+		if(dataset>0)
+		{
+			//close it if it was previously opened for checking dimension
+			H5Dclose(dataset);
+			H5Sclose(dataspace);
+		}
+
+		status = H5Lexists(file, sampleName.c_str(), H5P_DEFAULT);
+		if(status == TRUE)
+		{
+
+			dataset = H5Dopen2(file, sampleName.c_str(), H5P_DEFAULT);
+			dataspace = H5Dget_space(dataset);    /* dataspace handle */
+
+
+			/*
+			 * get the total number of events for the current sample
+			 */
+			hsize_t dims[2];
+
+			status  = H5Sget_simple_extent_dims(dataspace, dims, NULL); //get dimensions of datset
+			nEvents = dims[1];
+
+
+			PROTECT(ans = Rf_allocVector(REALSXP, nEvents * chCount));
+			double *data_out = REAL(ans);
+
+			/*
+			 * Define the memory dataspace.
+			 */
+			dimsm[0] = chCount;
+			dimsm[1] = nEvents;
+			memspace = H5Screate_simple(2,dimsm,NULL);
+
+
+			/*
+			 * Define hyperslab in the dataset.
+			 */
+			hsize_t      count[2];              /* size of the hyperslab in the file */
+			hsize_t      offset[2];             /* hyperslab offset in the file */
+			hsize_t      count_out[2];          /* size of the hyperslab in memory */
+			hsize_t      offset_out[2];         /* hyperslab offset in memory */
+
+			unsigned i;
+			for(i = 0; i < chCount; i++){
+				int colStart = chIndx.at(i);
+				offset[0] = colStart; //start from colStart-th channel
+				offset[1] = 0; //start from the first event
+
+				count[0]  = 1;//get one channel
+				count[1]  = nEvents; //get all events
+
+
+				status = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, offset, NULL,
+													count, NULL);
+
+
+				/*
+				 * Define memory hyperslab.
+				 */
+				offset_out[0] = i;//start from ith column
+				offset_out[1] = 0;//start from 0th event
+
+				count_out[0]  = 1;//one channel
+				count_out[1]  = nEvents; //all events
+				status = H5Sselect_hyperslab(memspace, H5S_SELECT_SET, offset_out, NULL,
+							 count_out, NULL);
+
+				/*
+				 * Read data from hyperslab in the file into the hyperslab in
+				 * memory .
+				 */
+				status = H5Dread(dataset, H5T_NATIVE_DOUBLE, memspace, dataspace,
+						 H5P_DEFAULT, data_out);
+
+			}
+
+			H5Sclose(dataspace);
+			H5Sclose(memspace);
+			H5Dclose(dataset);
+		}
+		else
+		{
+			nEvents = 0;
+			PROTECT(ans = Rf_allocVector(REALSXP, nEvents * chCount));
+			double *data_out = REAL(ans);
+		}
+
+	}
+
+
+
+	H5Fclose(file);
+
+//	Rcpp::NumericMatrix res(nEvents, chCount); //(ans);
+	Rcpp::NumericVector res(ans);
+	//set dims
+	Rcpp::IntegerVector dims(2);
+	dims[0] = nEvents;
+	dims[1]=  chCount;
+	res.attr("dim") = dims;
+	// attach column names
+	Rcpp::List dimnms = Rcpp::List::create(R_NilValue, colnames);
+	res.attr("dimnames") = dimnms;
+
+
+    UNPROTECT(1);
+    return(res);
+}
+
+
+
+
+// [[Rcpp::export]]
+Rcpp::S4 readFrame(Rcpp::S4 x
+					, std::string sampleName
+					, Rcpp::RObject j_obj
+					, bool useExpr
+					)
+{
+	Rcpp::Environment frEnv = x.slot("frames");
+	Rcpp::S4 frObj = frEnv.get(sampleName);
+	Rcpp::S4 fr = Rcpp::clone(frObj);
+
+	  //get local channel names
+	  Rcpp::StringVector colnames = x.slot("colnames");
+
+	  Rcpp::StringVector ch_selected;
+	 /*
+	  * subset by j if applicable
+	  */
+	 int j_type = j_obj.sexp_type();
+	 //creating j index used for subsetting colnames and pdata
+	 Rcpp::IntegerVector j_indx;
+
+	 if(j_type == STRSXP)//when character vector
+	 {
+		 ch_selected = Rcpp::StringVector(j_obj.get__());
+		 unsigned nCol = ch_selected.size();
+		 j_indx = Rcpp::IntegerVector(nCol);
+		 //match ch_selected to colnames
+		for(unsigned i = 0 ; i < nCol; i ++)
+		{
+			const Rcpp::internal::string_proxy<STRSXP> &thisCh = ch_selected(i);
+			Rcpp::StringVector::iterator match_id = std::find(colnames.begin(), colnames.end(), thisCh);
+			if(match_id == colnames.end()){
+				std::string strCh = Rcpp::as<std::string>(thisCh);
+				Rcpp::stop("j subscript out of bounds: " + strCh);
+			}else
+			{
+				j_indx(i) = match_id - colnames.begin();
+			}
+		}
+	 }
+	 else if(j_type == NILSXP)//j is set to NULL in R when not supplied
+	 {
+		 ch_selected = colnames;
+	 }
+//	 else if(j_type == LGLSXP)
+//	 {
+//		 Rcpp::LogicalVector j_val = Rcpp::LogicalVector(j_obj.get__());
+//		 ch_selected = Rcpp::StringVector(colnames[j_val]);
+//	 }
+//	 else if(j_type == INTSXP)
+//	 {
+//		 Rcpp::IntegerVector j_val = Rcpp::IntegerVector(j_obj.get__());
+//		 j_val = j_val - 1; //convert to 0-based index
+//		 ch_selected = Rcpp::StringVector(colnames[j_val]);
+//	 }
+//	 else if(j_type == REALSXP)
+//	 {
+//		 Rcpp::NumericVector j_val = Rcpp::NumericVector(j_obj.get__());
+//		 j_val = j_val - 1;
+//		 ch_selected = Rcpp::StringVector(colnames[j_val]);
+//	 }
+	/*
+	 * update annotationDataFrame
+	 * we don't update description slot(i.e. keywords) as flowCore does
+	 */
+	 if(j_type != NILSXP)
+	 {
+		Rcpp::S4 pheno = fr.slot("parameters");
+		Rcpp::DataFrame pData = pheno.slot("data");
+
+		Rcpp::CharacterVector pd_name = pData["name"];
+		Rcpp::CharacterVector pd_desc = pData["desc"];
+		Rcpp::NumericVector pd_range = pData["range"];
+		Rcpp::NumericVector pd_minRange = pData["minRange"];
+		Rcpp::NumericVector pd_maxRange = pData["maxRange"];
+
+		Rcpp::DataFrame plist = Rcpp::DataFrame::create(Rcpp::Named("name") = pd_name[j_indx]
+													,Rcpp::Named("desc") = pd_desc[j_indx]
+													,Rcpp::Named("range") = pd_range[j_indx]
+													,Rcpp::Named("minRange") = pd_minRange[j_indx]
+													,Rcpp::Named("maxRange") = pd_maxRange[j_indx]
+													);
+		pheno.slot("data") = plist;
+	 }
+
+	 /*
+	  * read data from hdf
+	  */
+	if(useExpr){
+		Rcpp::StringVector origChNames = x.slot("origColnames");
+		unsigned nCh = ch_selected.size();
+		unsigned nOrig = origChNames.size();
+
+		//convert chnames to global channel index
+		std::vector<unsigned> chIndx(nCh);
+
+		for(unsigned i = 0; i < nCh; i++){
+			Rcpp::String thisCh = ch_selected(i);
+
+			for(unsigned j = 0; j < nOrig; j++)
+			{
+//				std::string thisOrig = Rcpp::as<std::string>(origChNames[j]);
+				if(thisCh == origChNames(j))
+				{
+					chIndx.at(i) = j;
+					break;
+				}
+			}
+//			Rcpp::Rcout << thisCh << ":" << chIndx.at(i) << std::endl;
+		}
+
+
+
+	    Rcpp::Environment IndiceEnv = x.slot("indices");
+	    Rcpp::RObject Indice = IndiceEnv.get(sampleName);
+	    bool subByIndice;
+	    if(Indice.isNULL())
+	    	Rcpp::stop("Invalid sample name '" + sampleName + "'! It is not found in 'indices' slot!");
+	    else{
+
+
+	    	if(Indice.sexp_type() == LGLSXP)//somehow NA is of logical type by default in R
+			{
+	    		subByIndice = false;
+//	    		Rcpp::Rcout <<"no subsetting"<< std::endl;
+
+			}
+	    	else if(Indice.sexp_type() == RAWSXP){
+	    		subByIndice = true;
+//	    		Rcpp::Rcout <<"subsetting"<< std::endl;
+	    	}else
+	    		Rcpp::stop("Invalid indices type '" + sampleName + "'!It must be raw vector !");
+
+	    }
+
+
+//	      get sample index
+	      unsigned samplePos;
+	      //convert Rcpp vector to std vector
+	      Rcpp::StringVector origSampVec = x.slot("origSampleVector");
+	      unsigned nSample = origSampVec.size();
+	      std::vector<std::string> origSampleVector(nSample);
+	      for(unsigned i = 0; i < nSample; i++)
+	    	  origSampleVector.at(i) = Rcpp::as<std::string>(origSampVec[i]);
+
+	      std::vector<std::string>::iterator it = std::find(origSampleVector.begin(), origSampleVector.end(), sampleName);
+
+	      if(it == origSampleVector.end())
+	    	  Rcpp::stop("Invalid sample name '" + sampleName + "'! It is not found in 'origSampleVector' slot!");
+	      else
+	      {
+	    	  samplePos = it - origSampleVector.begin();
+//	    	  Rcpp::Rcout << samplePos << std::endl;
+	      }
+	      Rcpp::String file = x.slot("file");
+
+	      Rcpp::NumericVector mat = readSlice_cpp(file, chIndx, samplePos, ch_selected);
+
+//	      if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
+//
+//	      subset data by indices if neccessary
+//	      if(subByIndice&&mat.size() > 0)
+//	        mat<-mat[getIndices(x,sampleName),,drop=FALSE]
+
+
+
+	      fr.slot("exprs") = mat;
+
+
+	    }
+	return(fr);
+
+}
+
+
+

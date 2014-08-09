@@ -420,16 +420,19 @@ setMethod("[[",
       
       
       fr@exprs <- mat
+      fr
     }	
   }else{
     if(missing(j))
       j <- NULL
-    dd <- readFrame(x, sampleName, j, use.exprs)
-    str(dd)
-    head(exprs(dd))
-    browser()
+#    browser()
+    readFrame(x, sampleName, j, use.exprs)
+#    dd <- readFrame(x, sampleName, j, use.exprs)
+#    dd
+#    head(exprs(dd))
+
   }
-  return(fr)
+  
 }
 
 #' write the flow data from a \code{flowFrame} to \code{ncdfFlowSet}
