@@ -6,6 +6,7 @@
 typedef std::vector<std::string> strVec;
 typedef std::vector<int> intVec;
 typedef std::vector<unsigned> uintVec;
+typedef std::vector<bool> boolVec;
 
 #define MSG_SIZE       1024
 herr_t my_hdf5_error_handler(unsigned n, const H5E_error2_t *err_desc, void *client_data)
@@ -55,8 +56,8 @@ Rcpp::NumericVector readSlice_cpp(std::string fName
 
 	H5Eset_auto2(H5E_DEFAULT, (H5E_auto2_t)custom_print_cb, NULL);
 
-    SEXP ans, dnms;
 
+    Rcpp::NumericVector res;
 
 	int chCount = chIndx.size();
     /*
@@ -107,8 +108,10 @@ Rcpp::NumericVector readSlice_cpp(std::string fName
 		 * because we need to open hdf file to get events info
 		 *
 		 */
-		PROTECT(ans = Rf_allocVector(REALSXP, nEvents * chCount));
-		double *data_out = REAL(ans);
+
+		res = Rcpp::NumericVector(nEvents * chCount);
+		double *data_out = REAL(res.get__());
+
 
 		/*
 		 * Define the memory dataspace.
@@ -175,8 +178,6 @@ Rcpp::NumericVector readSlice_cpp(std::string fName
 		 * convert index to string to be used as dataset name
 		 * because dataset can not be renamed once created in hdf
 		 */
-//		char * sampleName = (char *)malloc(sizeof(char)*MAXLEN);
-//		snprintf(sampleName, MAXLEN, "%d", sampleIndx);
 		std::string sampleName = boost::lexical_cast<std::string>(sampleIndx);
 		/*
 		 * Open the file and the dataset.
@@ -205,8 +206,9 @@ Rcpp::NumericVector readSlice_cpp(std::string fName
 			nEvents = dims[1];
 
 
-			PROTECT(ans = Rf_allocVector(REALSXP, nEvents * chCount));
-			double *data_out = REAL(ans);
+//			PROTECT(ans = Rf_allocVector(REALSXP, nEvents * chCount));
+			res = Rcpp::NumericVector(nEvents * chCount);
+			double *data_out = REAL(res.get__());
 
 			/*
 			 * Define the memory dataspace.
@@ -265,8 +267,9 @@ Rcpp::NumericVector readSlice_cpp(std::string fName
 		else
 		{
 			nEvents = 0;
-			PROTECT(ans = Rf_allocVector(REALSXP, nEvents * chCount));
-			double *data_out = REAL(ans);
+
+			res = Rcpp::NumericVector(nEvents * chCount);
+
 		}
 
 	}
@@ -275,8 +278,7 @@ Rcpp::NumericVector readSlice_cpp(std::string fName
 
 	H5Fclose(file);
 
-//	Rcpp::NumericMatrix res(nEvents, chCount); //(ans);
-	Rcpp::NumericVector res(ans);
+
 	//set dims
 	Rcpp::IntegerVector dims(2);
 	dims[0] = nEvents;
@@ -287,7 +289,6 @@ Rcpp::NumericVector readSlice_cpp(std::string fName
 	res.attr("dimnames") = dimnms;
 
 
-    UNPROTECT(1);
     return(res);
 }
 
@@ -453,11 +454,39 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 
 	      Rcpp::NumericVector mat = readSlice_cpp(file, chIndx, samplePos, ch_selected);
 
-//	      if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
-//
-//	      subset data by indices if neccessary
-//	      if(subByIndice&&mat.size() > 0)
-//	        mat<-mat[getIndices(x,sampleName),,drop=FALSE]
+
+//	      subset data by indices if necessary
+	      if(subByIndice){
+	    	  /*
+	    	   * convert bytes to bool vector
+	    	   */
+	    	  Rcpp::RawVector bytes(Indice.get__());
+	    	  unsigned len = bytes.attr("bitlen");
+	    	  Rcpp::LogicalVector indx(len * nCh);
+
+			  unsigned byteIndex, bitIndex;
+			  for(unsigned i =0 ; i < len; i++)
+			  {
+				  byteIndex = i / 8;
+				  bitIndex = i % 8;
+				  //mark the event index for each col
+				  for(unsigned j = 0; j < nCh; j++)
+					  indx[i+ j * len] = IS_SET(bytes, byteIndex, bitIndex);
+			  }
+
+			 mat = mat[indx];
+
+			 //set dims
+			Rcpp::IntegerVector dims(2);
+			dims[0] = mat.size()/nCh;
+			dims[1]=  nCh;
+			mat.attr("dim") = dims;
+			// attach column names
+			Rcpp::List dimnms = Rcpp::List::create(R_NilValue, ch_selected);
+			mat.attr("dimnames") = dimnms;
+
+	      }
+
 
 
 
