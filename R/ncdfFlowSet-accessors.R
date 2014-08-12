@@ -360,9 +360,6 @@ setMethod("[[",
 		signature=signature(x="ncdfFlowSet"),
 		definition=function(x, i, j, use.exprs = TRUE, ...)
 		{
-         .test(x,i,j, use.exprs, ...)
-	})
-.test <- function(x, i, j, use.exprs = TRUE, ...){
   
   if(length(i) != 1)
     stop("subscript out of bounds (index must have length 1)")
@@ -420,8 +417,9 @@ setMethod("[[",
       
       
       fr@exprs <- mat
-      fr
-    }	
+      
+    }
+    fr
   }else{
     if(missing(j))
       j <- NULL
@@ -433,7 +431,7 @@ setMethod("[[",
 
   }
   
-}
+})
 
 #' write the flow data from a \code{flowFrame} to \code{ncdfFlowSet}
 #'  

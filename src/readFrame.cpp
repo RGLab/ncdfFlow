@@ -46,11 +46,11 @@ herr_t custom_print_cb(hid_t estack, void *client_data)
 
 
 // [[Rcpp::plugins(hdf5)]]
+// [[Rcpp::depends(BH)]]
 Rcpp::NumericVector readSlice_cpp(std::string fName
 								, std::vector<unsigned> chIndx
 								, unsigned sampleIndx
 								, Rcpp::StringVector colnames
-//								, SEXP _colnames
 								)
 {
 
@@ -340,23 +340,30 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 	 {
 		 ch_selected = colnames;
 	 }
-//	 else if(j_type == LGLSXP)
-//	 {
-//		 Rcpp::LogicalVector j_val = Rcpp::LogicalVector(j_obj.get__());
-//		 ch_selected = Rcpp::StringVector(colnames[j_val]);
-//	 }
-//	 else if(j_type == INTSXP)
-//	 {
-//		 Rcpp::IntegerVector j_val = Rcpp::IntegerVector(j_obj.get__());
-//		 j_val = j_val - 1; //convert to 0-based index
-//		 ch_selected = Rcpp::StringVector(colnames[j_val]);
-//	 }
-//	 else if(j_type == REALSXP)
-//	 {
-//		 Rcpp::NumericVector j_val = Rcpp::NumericVector(j_obj.get__());
-//		 j_val = j_val - 1;
-//		 ch_selected = Rcpp::StringVector(colnames[j_val]);
-//	 }
+	 else if(j_type == LGLSXP)
+	 {
+		 Rcpp::LogicalVector j_val(j_obj.get__());
+		 //convert to integer vector
+		 unsigned nSel = Rcpp::sum(j_val);
+		 unsigned thisCount = 0;
+		 j_indx = Rcpp::IntegerVector(nSel);
+		 for(unsigned i = 0; i < j_val.size(); i++){
+			 if(j_val(i)){
+				 j_indx(thisCount++) = i;
+			 }
+
+		 }
+
+		 ch_selected = colnames[j_indx];
+	 }
+	 else if(j_type == INTSXP || j_type == REALSXP)
+	 {
+		 Rcpp::IntegerVector j_val(j_obj.get__());
+		 j_indx = j_val - 1; //convert to 0-based index
+		 ch_selected = colnames[j_indx];
+	 }
+	 else
+		 Rcpp::stop("unsupported j expression!");
 	/*
 	 * update annotationDataFrame
 	 * we don't update description slot(i.e. keywords) as flowCore does
@@ -486,12 +493,8 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 			mat.attr("dimnames") = dimnms;
 
 	      }
-
-
-
-
+	      //update exprs slot
 	      fr.slot("exprs") = mat;
-
 
 	    }
 	return(fr);
