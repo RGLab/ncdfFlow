@@ -297,11 +297,38 @@ Rcpp::NumericVector readSlice_cpp(std::string fName
 
 // [[Rcpp::export]]
 Rcpp::S4 readFrame(Rcpp::S4 x
-					, std::string sampleName
+					, Rcpp::RObject i_obj
 					, Rcpp::RObject j_obj
 					, bool useExpr
 					)
 {
+	/*
+	 * parse i index (sample name)
+	 */
+	std::string sampleName;
+	unsigned short i_type = i_obj.sexp_type();
+
+	if(i_type  == STRSXP)
+	{
+		sampleName = Rcpp::as<std::string>(i_obj.get__());
+	}
+	else if(i_type == REALSXP || i_type == INTSXP)
+	{
+		unsigned s_ind = Rcpp::as<unsigned>(i_obj.get__());
+		s_ind = s_ind - 1;
+		//get local sample vec
+		Rcpp::S4 fspd = x.slot("phenoData");
+		Rcpp::DataFrame fsdata = fspd.slot("data");
+		Rcpp::CharacterVector sn = fsdata["name"];
+		sampleName =  sn(s_ind);
+	}
+	else
+		Rcpp::stop("unsupported i type!");
+
+
+	/*
+	 * parse j index (channel names)
+	 */
 	Rcpp::Environment frEnv = x.slot("frames");
 	Rcpp::S4 frObj = frEnv.get(sampleName);
 	Rcpp::S4 fr = Rcpp::clone(frObj);

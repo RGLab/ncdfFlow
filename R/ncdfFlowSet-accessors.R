@@ -361,19 +361,15 @@ setMethod("[[",
 		definition=function(x, i, j, use.exprs = TRUE, ...)
 		{
   
-  if(length(i) != 1)
-    stop("subscript out of bounds (index must have length 1)")
-  
-  sampleName<-if(is.numeric(i)) sampleNames(x)[[i]] else i
-  
-  
-  
     
     cppflag <- globalenv()[["ncdfFlow.[[.cpp"]]
     if(is.null(cppflag))
       cppflag <- FALSE  
     
   if(!cppflag){
+    if(length(i) != 1)
+      stop("subscript out of bounds (index must have length 1)")
+    sampleName<-if(is.numeric(i)) sampleNames(x)[[i]] else i
     fr <- x@frames[[sampleName]]
     
     #get channel index 
@@ -423,8 +419,8 @@ setMethod("[[",
   }else{
     if(missing(j))
       j <- NULL
-    
-    readFrame(x, sampleName, j, use.exprs)
+#    browser()
+    readFrame(x, i, j, use.exprs)
 #    dd <- readFrame(x, sampleName, j, use.exprs)
 #    dd
 #    head(exprs(dd))
