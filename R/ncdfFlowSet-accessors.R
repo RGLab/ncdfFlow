@@ -423,7 +423,7 @@ setMethod("[[",
   }else{
     if(missing(j))
       j <- NULL
-#    browser()
+    
     readFrame(x, sampleName, j, use.exprs)
 #    dd <- readFrame(x, sampleName, j, use.exprs)
 #    dd

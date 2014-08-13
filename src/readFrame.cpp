@@ -50,7 +50,7 @@ herr_t custom_print_cb(hid_t estack, void *client_data)
 Rcpp::NumericVector readSlice_cpp(std::string fName
 								, std::vector<unsigned> chIndx
 								, unsigned sampleIndx
-								, Rcpp::StringVector colnames
+//								, Rcpp::StringVector colnames
 								)
 {
 
@@ -206,7 +206,7 @@ Rcpp::NumericVector readSlice_cpp(std::string fName
 			nEvents = dims[1];
 
 
-//			PROTECT(ans = Rf_allocVector(REALSXP, nEvents * chCount));
+
 			res = Rcpp::NumericVector(nEvents * chCount);
 			double *data_out = REAL(res.get__());
 
@@ -279,15 +279,15 @@ Rcpp::NumericVector readSlice_cpp(std::string fName
 	H5Fclose(file);
 
 
-	//set dims
-	Rcpp::IntegerVector dims(2);
-	dims[0] = nEvents;
-	dims[1]=  chCount;
-	res.attr("dim") = dims;
-	// attach column names
-	Rcpp::List dimnms = Rcpp::List::create(R_NilValue, colnames);
-	res.attr("dimnames") = dimnms;
-
+//	//set dims
+//	Rcpp::IntegerVector dims(2);
+//	dims[0] = nEvents;
+//	dims[1]=  chCount;
+//	res.attr("dim") = dims;
+//	// attach column names
+//	Rcpp::List dimnms = Rcpp::List::create(R_NilValue, colnames);
+//	res.attr("dimnames") = dimnms;
+//
 
     return(res);
 }
@@ -373,18 +373,21 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 		Rcpp::S4 pheno = fr.slot("parameters");
 		Rcpp::DataFrame pData = pheno.slot("data");
 
+		Rcpp::CharacterVector pd_rn = pData.attr("row.names");
 		Rcpp::CharacterVector pd_name = pData["name"];
 		Rcpp::CharacterVector pd_desc = pData["desc"];
 		Rcpp::NumericVector pd_range = pData["range"];
 		Rcpp::NumericVector pd_minRange = pData["minRange"];
 		Rcpp::NumericVector pd_maxRange = pData["maxRange"];
 
-		Rcpp::DataFrame plist = Rcpp::DataFrame::create(Rcpp::Named("name") = pd_name[j_indx]
+		Rcpp::List plist = Rcpp::List::create(Rcpp::Named("name") = pd_name[j_indx]
 													,Rcpp::Named("desc") = pd_desc[j_indx]
 													,Rcpp::Named("range") = pd_range[j_indx]
 													,Rcpp::Named("minRange") = pd_minRange[j_indx]
 													,Rcpp::Named("maxRange") = pd_maxRange[j_indx]
 													);
+		plist.attr("class") = "data.frame";
+		plist.attr("row.names") = pd_rn[j_indx];
 		pheno.slot("data") = plist;
 	 }
 
@@ -459,7 +462,7 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 	      }
 	      Rcpp::String file = x.slot("file");
 
-	      Rcpp::NumericVector mat = readSlice_cpp(file, chIndx, samplePos, ch_selected);
+	      Rcpp::NumericVector mat = readSlice_cpp(file, chIndx, samplePos);
 
 
 //	      subset data by indices if necessary
@@ -478,23 +481,23 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 				  bitIndex = i % 8;
 				  //mark the event index for each col
 				  for(unsigned j = 0; j < nCh; j++)
-					  indx[i+ j * len] = IS_SET(bytes, byteIndex, bitIndex);
+					  indx[i+ j * len] = bytes[byteIndex] & 1 << bitIndex;//IS_SET(bytes, byteIndex, bitIndex);
 			  }
 
 			 mat = mat[indx];
 
-			 //set dims
-			Rcpp::IntegerVector dims(2);
-			dims[0] = mat.size()/nCh;
-			dims[1]=  nCh;
-			mat.attr("dim") = dims;
-			// attach column names
-			Rcpp::List dimnms = Rcpp::List::create(R_NilValue, ch_selected);
-			mat.attr("dimnames") = dimnms;
-
 	      }
-	      //update exprs slot
-	      fr.slot("exprs") = mat;
+
+		//set dims
+		Rcpp::IntegerVector dims(2);
+		dims[0] = mat.size()/nCh;
+		dims[1]=  nCh;
+		mat.attr("dim") = dims;
+		// attach column names
+		Rcpp::List dimnms = Rcpp::List::create(R_NilValue, ch_selected);
+		mat.attr("dimnames") = dimnms;
+		//update exprs slot
+		fr.slot("exprs") = mat;
 
 	    }
 	return(fr);
