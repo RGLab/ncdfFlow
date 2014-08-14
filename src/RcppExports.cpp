@@ -5,22 +5,6 @@
 
 using namespace Rcpp;
 
-// Vec_subset_Rcpp
-NumericVector Vec_subset_Rcpp(NumericVector input, LogicalVector i);
-RcppExport SEXP ncdfFlow_Vec_subset_Rcpp(SEXP inputSEXP, SEXP iSEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericVector >::type input(inputSEXP );
-        Rcpp::traits::input_parameter< LogicalVector >::type i(iSEXP );
-        NumericVector __result = Vec_subset_Rcpp(input, i);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
 // readFrame
 Rcpp::S4 readFrame(Rcpp::S4 x, Rcpp::RObject i_obj, Rcpp::RObject j_obj, bool useExpr);
 RcppExport SEXP ncdfFlow_readFrame(SEXP xSEXP, SEXP i_objSEXP, SEXP j_objSEXP, SEXP useExprSEXP) {

@@ -1,7 +1,18 @@
-#include <Rcpp.h>
-#include <Rinternals.h>
-#include "wrappers.h"
+#include "hdf5.h"
+
+#define DATASETNAME3d "/exprsMat"
+#define MAXLEN 100//max character length of sample index
+
+#define TRUE            1
+#define FALSE           0
+
+herr_t _createFile3d(const char * fName, unsigned nSample, unsigned nChnl, unsigned nEvt, unsigned nRatio);
+
+herr_t _readSlice(const char * fName, unsigned * chnlIndx, unsigned chCount, unsigned sampleIndx, double * data_out);
+
+
 #include <boost/lexical_cast.hpp>
+#include <RcppArmadillo.h>
 
 typedef std::vector<std::string> strVec;
 typedef std::vector<int> intVec;
@@ -46,11 +57,11 @@ herr_t custom_print_cb(hid_t estack, void *client_data)
 
 
 // [[Rcpp::plugins(hdf5)]]
-// [[Rcpp::depends(BH)]]
+// [[Rcpp::depends(BH,RcppArmadillo)]]
 Rcpp::NumericVector readSlice_cpp(std::string fName
 								, std::vector<unsigned> chIndx
 								, unsigned sampleIndx
-//								, Rcpp::StringVector colnames
+								, unsigned & nEvents
 								)
 {
 
@@ -66,7 +77,7 @@ Rcpp::NumericVector readSlice_cpp(std::string fName
 	hid_t       file, dataset,dataspace, memspace;         /* handles */
 	hsize_t 	dimsm[2]; //dimenstions
 	herr_t      status;
-	unsigned nEvents;
+
 	file = H5Fopen(fName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
 	status = H5Lexists(file, DATASETNAME3d, H5P_DEFAULT);
 
@@ -277,18 +288,6 @@ Rcpp::NumericVector readSlice_cpp(std::string fName
 
 
 	H5Fclose(file);
-
-
-//	//set dims
-//	Rcpp::IntegerVector dims(2);
-//	dims[0] = nEvents;
-//	dims[1]=  chCount;
-//	res.attr("dim") = dims;
-//	// attach column names
-//	Rcpp::List dimnms = Rcpp::List::create(R_NilValue, colnames);
-//	res.attr("dimnames") = dimnms;
-//
-
     return(res);
 }
 
@@ -422,6 +421,7 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 	  * read data from hdf
 	  */
 	if(useExpr){
+		unsigned nrows;
 		Rcpp::StringVector origChNames = x.slot("origColnames");
 		unsigned nCh = ch_selected.size();
 		unsigned nOrig = origChNames.size();
@@ -489,7 +489,7 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 	      }
 	      Rcpp::String file = x.slot("file");
 
-	      Rcpp::NumericVector mat = readSlice_cpp(file, chIndx, samplePos);
+	      Rcpp::NumericVector mat = readSlice_cpp(file, chIndx, samplePos, nrows);
 
 
 //	      subset data by indices if necessary
@@ -499,34 +499,39 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 	    	   */
 	    	  Rcpp::RawVector bytes(Indice.get__());
 	    	  unsigned len = bytes.attr("bitlen");
-	    	  Rcpp::LogicalVector indx(len * nCh);
-
+	    	  uintVec indx;
 			  unsigned byteIndex, bitIndex;
 			  for(unsigned i =0 ; i < len; i++)
 			  {
 				  byteIndex = i / 8;
 				  bitIndex = i % 8;
-				  //mark the event index for each col
-				  for(unsigned j = 0; j < nCh; j++)
-					  indx[i+ j * len] = bytes[byteIndex] & 1 << bitIndex;//IS_SET(bytes, byteIndex, bitIndex);
+				  if(bytes[byteIndex] & 1 << bitIndex)
+					  indx.push_back(i);
 			  }
 
-			 mat = mat[indx];
+			  //use armadillo to subset mat
+			  arma::mat mat1 = arma::mat(mat.begin(), len, nCh, false);
+//			  Rcpp::Rcout << indx.size() << std::endl;
+			  arma::uvec uindx = Rcpp::as<arma::uvec>(Rcpp::wrap(indx));
+			  arma::mat subMat = mat1.rows(uindx);
 
+			  mat = Rcpp::as<Rcpp::NumericVector>(Rcpp::wrap(subMat));
+			  //update nrows
+			  nrows = uindx.size();
 	      }
 
-		//set dims
+
+	  //set dims
 		Rcpp::IntegerVector dims(2);
-		dims[0] = mat.size()/nCh;
+		dims[0] = nrows;
 		dims[1]=  nCh;
 		mat.attr("dim") = dims;
-		// attach column names
+	  // attach column names
 		Rcpp::List dimnms = Rcpp::List::create(R_NilValue, ch_selected);
 		mat.attr("dimnames") = dimnms;
 		//update exprs slot
 		fr.slot("exprs") = mat;
-
-	    }
+	}
 	return(fr);
 
 }
