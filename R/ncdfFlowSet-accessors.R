@@ -364,7 +364,7 @@ setMethod("[[",
     
     cppflag <- globalenv()[["ncdfFlow.[[.cpp"]]
     if(is.null(cppflag))
-      cppflag <- FALSE  
+      cppflag <- TRUE  
     
   if(!cppflag){
     if(length(i) != 1)
