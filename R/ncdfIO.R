@@ -346,7 +346,6 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE, dim = 2,
 			for(i in sampleNames(ncfs))
 			{
 				
-#			updateIndices(ncfs,i,rep(TRUE,length(eval(parse(text=paste("orig$'",i,"'",sep=""))))))
 				updateIndices(ncfs,i,NA)
 			}
 		}else
@@ -357,7 +356,8 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE, dim = 2,
 			for(i in ls(orig))
 			{
 				if(class(orig[[i]])=="raw"){
-					updateIndices(x=ncfs,y=i,z=.getBitStatus(orig[[i]]))
+                  assign(i, orig[[i]], ncfs@indices)
+					
 				}else{
 					updateIndices(x=ncfs,y=i,z=orig[[i]])
 				}

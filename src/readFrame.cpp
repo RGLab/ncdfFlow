@@ -6,10 +6,6 @@
 #define TRUE            1
 #define FALSE           0
 
-herr_t _createFile3d(const char * fName, unsigned nSample, unsigned nChnl, unsigned nEvt, unsigned nRatio);
-
-herr_t _readSlice(const char * fName, unsigned * chnlIndx, unsigned chCount, unsigned sampleIndx, double * data_out);
-
 
 #include <boost/lexical_cast.hpp>
 #include <RcppArmadillo.h>

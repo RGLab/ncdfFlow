@@ -163,7 +163,7 @@ setMethod("getIndices",
 		
 			ret<-get(y,obj@indices)
 			if(all(!is.na(ret)))
-				ret<-.getBitStatus(ret)
+				ret <- toLogical(ret)
 			ret			
 		})
 #' initialize the event indices for the entire ncdfFlowSet with NA
@@ -195,7 +195,7 @@ setMethod("updateIndices",
 		{
 		
 			if(all(!is.na(z)))
-				z<-.makeBitVec(length(z),z)
+				z <- toBitVec(z)
 			assign(y,z,x@indices)
 		})
 
