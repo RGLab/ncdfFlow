@@ -95,7 +95,7 @@ setMethod("split",
 			
 			for(p in seq_along(population)){
 				tp <- population[p]
-#				res <- vector(mode="list", length=lf)
+
 				ncfs<-clone.ncdfFlowSet(x,isNew = FALSE)
 				for(i in 1:lf){
 					tp <- unlist(tp)

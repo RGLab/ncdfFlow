@@ -25,8 +25,24 @@ test_that("[[", {
       fr1 <- fs[[sn, chnls]]
       is_equal_flowFrame(fr1, fr)
       
+      #subset by int
+      chnls <- c(3,5,1)
+      fr <- ncfs[[sn, chnls]]
+      fr1 <- fs[[sn, chnls]]
+      is_equal_flowFrame(fr1, fr)
+      
+      #subset by single channel 
+      chnls <- c(3)
+      fr <- ncfs[[sn, chnls]]
+      fr1 <- fs[[sn, chnls]]
+      is_equal_flowFrame(fr1, fr)
+      
     })
-
+test_that("as.flowSet", {
+      #Subset by gate
+      is_equal_flowSet(Subset(ncfs, rectGate), Subset(fs, rectGate))
+      
+    })      
 test_that("as.flowSet", {
   fs1 <- as.flowSet(ncfs)
   expect_is(fs1, "flowSet")
@@ -81,20 +97,20 @@ test_that("[", {
       
     })
 
-test_that("[[", {
-      sn <- samples[1]
-      #return the entire flowFrame
-      is_equal_flowFrame(fs[[sn]], ncfs[[sn]])
+test_that("subset", {
       
-      #access the flowFrame meta data without loading the raw event data from disk
-      fr <- ncfs[[sn, use.exprs = FALSE]]
-      is_equal_flowFrame(fs[[sn]], fr, exprs = FALSE)
+      nc_sub <- subset(ncfs, as.integer(Visit) <= 3)
+      is_equal_flowSet(nc_sub, fs[1:3])
       
-      #only read a subset of channels (more efficient than reading entire data set)
-      fr <- ncfs[[sn, 1:2]]
-      is_equal_flowFrame(fs[[sn]][, 1:2], fr)
+      nc_sub <- subset(ncfs, as.integer(Visit) <= 3 & Days >=0)
+      is_equal_flowSet(nc_sub, fs[2:3])
+      
+      nc_sub <- subset(ncfs, as.integer(Visit) < 3 | Days == 12)
+      is_equal_flowSet(nc_sub, fs[c(1,2,4)])
       
     })
+
+
 
 test_that("[[<-", {
 

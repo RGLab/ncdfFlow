@@ -77,6 +77,7 @@ test_that("[[", {
       is_equal_flowFrame(nc_merge[[sn]], nclist[[sn]])
     })
 
+
 test_that("[", {
       sn <- sampleNames(nc_merge)[1:2]
       
@@ -84,6 +85,19 @@ test_that("[", {
       expect_is(nclist1, "ncdfFlowList")
       
       expect_equal(sampleNames(nclist1), sn)
+      
+    })
+
+test_that("subset", {
+      
+      nc_sub <- subset(nclist, as.integer(Visit) <= 3)
+      is_equal_flowSet(nc_sub, nclist[1:3])
+      
+      nc_sub <- subset(nclist, as.integer(Visit) <= 3 & Days >=0)
+      is_equal_flowSet(nc_sub, nclist[2:3])
+      
+      nc_sub <- subset(nclist, as.integer(Visit) < 3 | Days == 12)
+      is_equal_flowSet(nc_sub, nclist[c(1,2,4)])
       
     })
 

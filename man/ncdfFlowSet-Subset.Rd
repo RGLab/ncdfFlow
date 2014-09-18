@@ -16,12 +16,15 @@
 
 \S4method{Subset}{ncdfFlowList,filter}(x, subset, ...)
 
-\S4method{Subset}{ncdfFlowSet,list}(x, subset, select, ...)
+\S4method{Subset}{ncdfFlowSet,list}(x, subset, select, validityCheck = TRUE,
+  ...)
 }
 \arguments{
 \item{x}{\code{ncdfFlowSet} or \code{ncdfFlowList}}
 
 \item{subset,select,...}{see \code{\link[flowCore]{Subset-methods}}}
+
+\item{validityCheck}{\code{logical} whether to skip validity check for speed.}
 }
 \value{
 one or more \code{ncdfFlowSet} objects which share the same hdf5 file with the original one.
