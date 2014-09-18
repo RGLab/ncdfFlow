@@ -11,7 +11,7 @@
 #include "hdfFlow.h"
 
 
-#define IS_SET(b, i, bit) ((b)[i] != 0 && ((b)[i] & (1 << (bit))))
+
 
 
 herr_t custom_print_cb(hid_t estack, void *client_data);

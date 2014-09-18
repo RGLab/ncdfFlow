@@ -163,7 +163,7 @@ setMethod("getIndices",
 		
 			ret<-get(y,obj@indices)
 			if(all(!is.na(ret)))
-				ret<-.getBitStatus(ret)
+				ret <- toLogical(ret)
 			ret			
 		})
 #' initialize the event indices for the entire ncdfFlowSet with NA
@@ -195,7 +195,7 @@ setMethod("updateIndices",
 		{
 		
 			if(all(!is.na(z)))
-				z<-.makeBitVec(length(z),z)
+				z <- toBitVec(z)
 			assign(y,z,x@indices)
 		})
 
@@ -305,8 +305,31 @@ setMethod("[",
 #			
 			return(ncfs)
 		})
-
-
+        
+#' subset the ncdfFlowSet/ncdfFlowList based on 'pData'
+#' 
+#' @param x \code{ncdfFlowSet} or \code{ncdfFlowList}
+#' @param subset logical expression(within the context of pData) indicating samples to keep. see \code{\link[base:subset]{subset}}
+#' @param ... other arguments. (not used)
+#' @return a subset of code{ncdfFlowSet} or \code{ncdfFlowList} object
+#' @rdname subset
+#' @export 
+subset.ncdfFlowSet <- function (x, subset, ...) 
+{
+  
+  pd <- pData(x)
+  r <- if (missing(subset)) 
+        rep_len(TRUE, nrow(x))
+      else {
+        e <- substitute(subset)
+        r <- eval(e, pd, parent.frame())
+        if (!is.logical(r)) 
+          stop("'subset' must be logical")
+        r & !is.na(r)
+      }
+  
+  x[as.character(pd[r, "name"])]
+}
 #' extract a \code{flowFrame} object from \code{ncdfFlowSet}
 #' 
 #' Simliar to \code{\link[=[[,flowSet-method]{[[}}, and there are cerntain ways to 
@@ -337,59 +360,74 @@ setMethod("[[",
 		signature=signature(x="ncdfFlowSet"),
 		definition=function(x, i, j, use.exprs = TRUE, ...)
 		{
-			if(length(i) != 1)
-				stop("subscript out of bounds (index must have length 1)")
-			
-			sampleName<-if(is.numeric(i)) sampleNames(x)[[i]] else i
-			fr <- x@frames[[sampleName]]
+  
+    
+    cppflag <- globalenv()[["ncdfFlow.[[.cpp"]]
+    if(is.null(cppflag))
+      cppflag <- TRUE  
+    
+  if(!cppflag){
+    if(length(i) != 1)
+      stop("subscript out of bounds (index must have length 1)")
+    sampleName<-if(is.numeric(i)) sampleNames(x)[[i]] else i
+    fr <- x@frames[[sampleName]]
+    
+    #get channel index 
+    
+    localChNames <-colnames(x)
+    
+    
+    #subset by channel
+    if(!missing(j)){
+      if(is.character(j)){
+        j <- match(j, localChNames)
+        if(any(is.na(j)))
+          stop("subscript out of bounds")
+      }  
+      #we don't update description slot(i.e. keywords) as flowCore does 
+      fr@parameters <- fr@parameters[j, , drop = FALSE]
+      localChNames <- localChNames[j]
+    }
+    
+    if(use.exprs){
+      origChNames <-x@origColnames ##    
+      chIndx <- match(localChNames,origChNames)#only fetch the subset of channels
+      
+      Indice <- x@indices[[sampleName]]
+      if(is.null(Indice))
+        stop("Invalid sample name '",sampleName, "'! It is not found in 'indices' slot!")
+      subByIndice <- all(!is.na(Indice))
+      
+      #get sample index
+      samplePos <- which(x@origSampleVector==sampleName)
+      if(length(samplePos) == 0)
+        stop("Invalid sample name '", sampleName, "'! It is not found in 'origSampleVector' slot!")
+      
+      mat <- .Call(C_ncdfFlow_readSlice, x@file, as.integer(chIndx), as.integer(samplePos), localChNames)
+      if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
+      
+      #subset data by indices if neccessary	
+      if(subByIndice&&nrow(mat)>0)
+        mat<-mat[getIndices(x,sampleName),,drop=FALSE]  
+      
+      
+      
+      fr@exprs <- mat
+      
+    }
+    fr
+  }else{
+    if(missing(j))
+      j <- NULL
+#    browser()
+    readFrame(x, i, j, use.exprs)
+#    dd <- readFrame(x, sampleName, j, use.exprs)
+#    dd
+#    head(exprs(dd))
 
-            #get channel index 
-            origChNames <-x@origColnames ##
-            localChNames <-colnames(x)
-            
-            #subset by channel
-            if(!missing(j)){
-              if(is.character(j)){
-                j <- match(j, localChNames)
-                if(any(is.na(j)))
-                  stop("subscript out of bounds")
-              }
-             
-              #we don't update description slot(i.e. keywords) as flowCore does 
-              fr@parameters <- fr@parameters[j, , drop = FALSE]
-              localChNames <- localChNames[j]
-            }
-             
-            
-
-            
-            if(use.exprs){
-                
-                chIndx <- match(localChNames,origChNames)#only fetch the subset of channels
-                
-                Indice <- x@indices[[sampleName]]
-                if(is.null(Indice))
-                  stop("Invalid sample name '",sampleName, "'! It is not found in 'indices' slot!")
-    			subByIndice <- all(!is.na(Indice))
-                
-    			#get sample index
-    			samplePos <- which(x@origSampleVector==sampleName)
-                if(length(samplePos) == 0)
-                  stop("Invalid sample name '", sampleName, "'! It is not found in 'origSampleVector' slot!")
-                
-    			mat <- .Call(C_ncdfFlow_readSlice, x@file, as.integer(chIndx), as.integer(samplePos), localChNames)
-    			if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
-    			
-                #subset data by indices if neccessary	
-                if(subByIndice&&nrow(mat)>0)
-                  mat<-mat[getIndices(x,sampleName),,drop=FALSE]  
-                
-    			
-    			
-    			fr@exprs <- mat
-          }			
-		return(fr)
-	})
+  }
+  
+})
 
 #' write the flow data from a \code{flowFrame} to \code{ncdfFlowSet}
 #'  
