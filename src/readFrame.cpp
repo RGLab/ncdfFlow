@@ -313,7 +313,8 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 		s_ind = s_ind - 1;
 		//get local sample vec
 		Rcpp::S4 fspd = x.slot("phenoData");
-		Rcpp::DataFrame fsdata = fspd.slot("data");
+		Rcpp::S4 fspdObj = fspd.slot("data");
+		Rcpp::DataFrame fsdata = Rcpp::DataFrame(fspdObj.get__());
 		Rcpp::CharacterVector sn = fsdata["name"];
 		sampleName =  sn(s_ind);
 	}
@@ -393,7 +394,11 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 	 if(j_type != NILSXP)
 	 {
 		Rcpp::S4 pheno = fr.slot("parameters");
-		Rcpp::DataFrame pData = pheno.slot("data");
+		Rcpp::S4 pd = pheno.slot("data");
+		Rcpp::DataFrame pData = Rcpp::DataFrame(pd.get__());
+		//this implicit construction works for g++ and llvm-g++
+		//but fails on clang++
+//		Rcpp::DataFrame pData =pheno.slot("data");
 
 		Rcpp::CharacterVector pd_rn = pData.attr("row.names");
 		Rcpp::CharacterVector pd_name = pData["name"];
