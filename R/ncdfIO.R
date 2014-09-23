@@ -370,5 +370,167 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE, dim = 2,
 	ncfs
 }
 
+#' @title save/load a ncdfFlowSet object to/from disk.
+#'
+#' @description
+#' The \code{ncdfFlowSet} object contains two parts: R object and cdf file.
+#' Save/load a ncdfFlowSet mainly involves the R part using saveRDS/readRDS. 
+#'
+#' @param ncfs A \code{ncdfFlowSet}
+#' @param path A character scalar giving the path to save/load the ncdfFlowSet to/from.
+#' @param overwrite A logical scalar specifying whether to overwrite the existing folder.
+#' @param cdf a character scalar. The valid options are :"copy","move","skip","symlink","link" specifying what to do with the cdf data file.
+#'              Sometime it is more efficient to move or create a link of the existing cdf file to the archived folder.
+#'
+#'
+#' @return
+#' \code{load_ncfs} returns a ncdfFlowSet object
+#'
+#' @seealso \code{\link{ncdfFlowSet-class}}
+#'
+#' @examples
+#' \dontrun{
+#' 	#ncfs is a ncdfFlowSet
+#' 	save_ncfs(fs, path = "tempFolder")
+#' 	fs1 <- load_ncfs(path = "tempFolder")
+#'
+#' }
+#' @rdname save_ncfs
+#' @export
+#' @aliases save_ncfs load_ncfs
+save_ncfs <- function(ncfs, path, overwrite = FALSE
+    , cdf = c("copy", "move","link", "skip","symlink")){
+  
+  cdf <- match.arg(cdf)
+  
+  id <- basename(ncfs@flowSetId)
+  rds_toSave <- paste(id,"rds",sep=".")
+#  browser()
+  if(file.exists(path)){
+    path <- normalizePath(path,mustWork = TRUE)
+    if(overwrite){
+      this_files <- list.files(path)
+      #validity check for non-empty folder
+      if(length(this_files)!=0)
+      {
+        rds_ind <- grep("\\.rds$",this_files)
+        
+        if(length(rds_ind)!=1){
+          stop("Not a valid ncdfFlowSet archiving folder!")
+        }else{
+          this_rds <- this_files[rds_ind]
 
+          if(this_rds!=rds_toSave){
+            stop("The ncdfFlowSet doesn't match the archived files in: ", path)
+          }
+        }
+      }
+      
+      #validity check for cdf
+      
+      if(length(this_files)!=0){
+        cdf_ind <- grep("\\.nc$",this_files)
+        if(length(cdf_ind) != 1){
+          stop("Not a valid ncdfFlowSet archiving folder!")
+        }
+      }
+      
+      
+      if(length(this_files)!=0)
+      {
+        #start to delete the old files in path
+        file.remove(file.path(path,rds_toSave))
+        
 
+        #check if the target path is the same as current cdf path
+        this_cdf <- file.path(path,this_files[cdf_ind])
+        if(normalizePath(ncfs@file) == this_cdf){
+          cdf <- "skip"
+        }
+        if(cdf != "skip"){
+          file.remove(this_cdf)
+        }
+
+      }
+      
+    }else{
+      stop(path,"' already exists!")
+    }
+    
+  }else{
+    dir.create(path = path)
+    #do the dir normalization again after it is created
+    path <- normalizePath(path,mustWork = TRUE)
+    
+  }
+  
+  
+  rds.file <- file.path(path,paste(id,"rds",sep="."))
+  
+  #save ncdf file
+  if(cdf != "skip")
+  {
+    from <- ncfs@file
+  #      browser()
+    if(cdf == "move"){
+      message("moving ncdf...")
+      ncFile <- file.path(path,basename(from))
+      res <- file.rename(from,ncFile)
+    }else{
+      
+      ncFile <- tempfile(tmpdir = path, fileext = ".nc")
+      
+      if(cdf == "copy"){
+        message("saving ncdf...")
+        res <- file.copy(from=from,to=ncFile)
+      }
+      else if(cdf == "symlink"){
+        message("creating the symbolic link to ncdf...")
+        res <- file.symlink(from=from,to=ncFile)
+      }else if(cdf == "link"){
+        message("creating the hard link to ncdf...")
+        res <- file.link(from=from,to=ncFile)
+      }
+    }
+    if(!res){
+      stop("failed to ",cdf," ",from,"!")
+    }
+  }
+  
+  message("saving R object...")
+  saveRDS(ncfs, rds.file)
+  
+  message("Done\nTo reload it, use 'load_ncfs' function\n")
+  
+}
+
+#' @rdname save_ncfs
+#' @export
+#' @aliases load_ncfs
+load_ncfs<-function(path){
+#  browser()
+  path <- normalizePath(path,mustWork = TRUE)
+  if(!file.exists(path))
+    stop(path,"' not found!")
+  files <- list.files(path)
+#   browser()
+  
+  rds.file <- file.path(path,files[grep(".rds$",files)])
+  nc.file<-file.path(path,files[grep(".nc$|.nc.trans$",files)])
+  if(length(rds.file)==0)
+    stop(".rds file missing in ",path)
+  if(length(rds.file)>1)
+    stop("multiple .rds files found in ",path)
+  
+  message("loading R object...")
+  ncfs <- readRDS(rds.file)
+  id <- basename(ncfs@flowSetId)
+  
+  if(length(nc.file)==0)
+    stop(".nc file missing in ",path)
+  ncfs@file <- nc.file
+  
+  message("Done")
+  ncfs
+  
+}
