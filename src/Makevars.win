@@ -1,4 +1,5 @@
 PKG_CFLAGS += -IincludeWin$(arch) -DWINDOWS
+PKG_CXXFLAGS += -IincludeWin$(arch) -DWINDOWS
 PKG_LIBS += -L. -llibhdf5ForBioC-7
 
 .PHONY: all libhdf5ForBioC
