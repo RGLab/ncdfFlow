@@ -15,7 +15,7 @@ test_that("save_ncfs/load_ncfs", {
       expect_message(save_ncfs(nc, path = output, overwrite = T), "Done")
       
       #save to the non-existing folder
-      suppressWarnings(expect_error(save_ncfs(nc, path = "/faked/folder"), "No such file"))
+      suppressWarnings(expect_error(save_ncfs(nc, path = "/faked/folder")))
       
       rdsFile <- list.files(output, pattern = ".rds")
       cdfFile <- list.files(output, pattern = ".nc")
