@@ -33,5 +33,12 @@ CHANGES IN 1.3.2
 CHANGES IN 1.5.32
 	1.add "file" argument to allow user to specify file path
 	2.add "rbind" method to allow combining more than two ncdfFlowSets once,
-		
-		 		 
+
+CHANGES IN 2.11.39
+Enhancement
++ update 'samples' slot of 'ncdfFlowList' class from 'character' to 'named integer' to speed up look up
++ replace 'coerce' method with 'ncdfFlowList' constructor function
++ update validity check of 'ncdfFlowList' class
++ add 'subset.ncdfFlowList' and 'subset.ncdfFlowSet' S3 functions to subset the ncdfFlowSet/ncdfFlowList based on 'pData'
++ wrap "[[" logic into c++ to speed it up
++ add 'save_ncfs' and 'load_ncfs' functions to save/load a ncdfFlowSet object to/from disk.	 
