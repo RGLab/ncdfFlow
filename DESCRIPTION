@@ -1,7 +1,7 @@
 Package: ncdfFlow
 Title: ncdfFlow: A package that provides ncdf based storage for flow cytometry
     data.
-Version: 2.12.0
+Version: 2.13.0
 Author: Mike Jiang,Greg Finak,N. Gopalakrishnan
 Description: Provides netCDF storage based methods and functions for
     manipulation of flow cytometry data.
