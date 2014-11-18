@@ -404,6 +404,9 @@ save_ncfs <- function(ncfs, path, overwrite = FALSE
   cdf <- match.arg(cdf)
   
   id <- basename(ncfs@flowSetId)
+  if(id==""){
+  	warning("flowSetId is empty string, no .rds file saved. Please set a flowSetId on the ncdfFlowSet")
+  }
   rds_toSave <- paste(id,"rds",sep=".")
 #  browser()
   if(file.exists(path)){
