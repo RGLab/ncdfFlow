@@ -62,7 +62,7 @@ setMethod("ncdfFlowSet",
           
 			if(missing(ncdfFile))
 				ncdfFile <-tempfile(pattern = "ncfs") 
-			flowSetId = ncdfFile
+			flowSetId = flowCore:::guid()
 			
 			
 			if (!length(grep(".", ncdfFile, fixed = TRUE)))  
@@ -681,7 +681,6 @@ setMethod("show",
 		definition=function(object)
 		{ 
 			cat("An ncdfFlowSet with", length(sampleNames(object)),"samples.\n")
-			cat("flowSetId :", object@flowSetId, "\n") 
 			cat("NCDF file :", object@file, "\n")
 
 				show(object@phenoData)

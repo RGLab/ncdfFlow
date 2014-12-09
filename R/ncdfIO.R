@@ -47,7 +47,8 @@
 #' @export 
 #' @importFrom flowCore read.FCS read.FCSheader
 read.ncdfFlowSet <- function(files = NULL
-								,ncdfFile,flowSetId=""
+								,ncdfFile
+                                ,flowSetId = flowCore:::guid()
 								,isWriteSlice= TRUE
 								,phenoData
 								,channels=NULL
@@ -403,10 +404,7 @@ save_ncfs <- function(ncfs, path, overwrite = FALSE
   
   cdf <- match.arg(cdf)
   
-  id <- basename(ncfs@flowSetId)
-  if(id==""){
-  	warning("flowSetId is empty string, no .rds file saved. Please set a flowSetId on the ncdfFlowSet")
-  }
+  id <- ncfs@flowSetId
   rds_toSave <- paste(id,"rds",sep=".")
 #  browser()
   if(file.exists(path)){
@@ -527,7 +525,6 @@ load_ncfs<-function(path){
   
   message("loading R object...")
   ncfs <- readRDS(rds.file)
-  id <- basename(ncfs@flowSetId)
   
   if(length(nc.file)==0)
     stop(".nc file missing in ",path)
