@@ -87,7 +87,7 @@ setMethod("rbind2",
   					,colnames = collist[[1]] 
   					,frames = frameEnv
   					,maxEvents=max(unlist(lapply(nclist,function(ncfs)ncfs@maxEvents, level = 1)))
-  					,flowSetId = ""
+  					,flowSetId = flowCore:::guid()
   					,phenoData=newPd
   					,indices=indiceEnv
   					,origSampleVector=sn##need to assign the sample vector before add the actual frame
