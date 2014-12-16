@@ -24,6 +24,21 @@ test_that("rbind2", {
       expect_false(getFileName(nc_merge) == getFileName(nc1))
       expect_false(getFileName(nc_merge) == getFileName(nc2))
       expect_false(getFileName(nc_merge) == getFileName(nc3))
+      
+      # merge by using existing cdf
+      origFile <- nc_merge@file
+      sub1 <- nc_merge[3]
+      sub2 <- nc_merge[1]
+      tmp <- ncdfFlowList(list(sub1, sub2))
+      expect_error(rbind2(tmp, ncdfFile = origFile), "must be provided")
+      merge1 <- rbind2(tmp, ncdfFile = origFile, samples = nc_merge@origSampleVector)
+      expect_equal(merge1@file, origFile)
+      expect_equal(merge1@origSampleVector, nc_merge@origSampleVector)
+      is_equal_flowFrame(merge1[[1]], sub1[[1]])
+      is_equal_flowFrame(merge1[[2]], sub2[[1]])
+      expect_equal(sampleNames(merge1), sampleNames(tmp))
+      
+      
     })
 
 test_that("lapply", {

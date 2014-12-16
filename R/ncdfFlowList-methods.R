@@ -41,13 +41,12 @@ setMethod("fsApply",
       selectMethod("fsApply", signature = c("flowSet"))(x, FUN, ..., simplify = simplify, use.exprs = use.exprs)
       })
   
-#' @rdname ncdfFlowList-class
-##' @param x \code{ncdfFlowList} object
-##' @param filter \code{filter} to be applied
-##' @param method \code{missing} not used
-##' @param sides \code{missing} not used
-##' @param circular \code{missing} not used
-##' @param init \code{missing} not used
+#' @rdname flowSet-accessor
+#' @param filter \code{filter} to be applied
+#' @param method \code{missing} not used
+#' @param sides \code{missing} not used
+#' @param circular \code{missing} not used
+#' @param init \code{missing} not used
 #' @export 
 #' @aliases 
 #' filter,ncdfFlowList,filter-method
@@ -59,73 +58,19 @@ setMethod("filter",
       selectMethod("filter", signature = c("flowSet", "filter"))(x, filter)
     })
 
-#' @rdname ncdfFlowList-class
-#' @param i \code{numeric} index
-#' @param j column index
-#' @aliases [[,ncdfFlowList,numeric-method
-setMethod("[[",c(x="ncdfFlowList",i="numeric"),function(x,i,j, ...){
-      
-      #convert non-character indices to character
-      this_samples <- sampleNames(x)
-      nSamples <- length(this_samples)
-      if(i > nSamples){
-        stop(i, " is larger than the number of samples: ", nSamples)
-      }
-      
-      if(missing(j))#somehow missing j causes trouble for S4 dispatching
-        x[[this_samples[i], ...]]
-      else
-        x[[this_samples[i], j, ...]]
-      
-    })
-#' @rdname ncdfFlowList-class
-#' @aliases [[,ncdfFlowList,logical-method
-setMethod("[[",c(x="ncdfFlowList",i="logical"),function(x,i, j, ...){
-      #convert non-character indices to character
-      if(missing(j))
-        x[[sampleNames(x)[i], ...]]
-      else
-        x[[sampleNames(x)[i], j, ...]]
-      
-    })
-#' @rdname ncdfFlowList-class
-#' @aliases [[,ncdfFlowList,character,missing-method
-setMethod("[[",c(x="ncdfFlowList",i="character"),function(x,i, j, ...){
-      #convert non-character indices to character
-      
-      res <- NULL
-      object_ind <- tryCatch(
-                              {
-                                x@samples[[i]]
-                              }
-                            , error = function(cond){
-                              stop("'", i, "' not found in ", class(x), "!")
-                            }
-                          )
-#      browser()
-      
-      object <- x@data[[object_ind]]
-
-      if(missing(j))
-        res <- object[[i, ...]]
-      else
-        res <- object[[i, j, ...]]
-      
-
-    })
-
 
 
 
 #' @aliases 
 #' length,ncdfFlowList-method
-#' @rdname ncdfFlowList-class
+#' @rdname flowSet-accessor
 setMethod("length",
     signature=signature(x="ncdfFlowList"),
     definition=function(x){
       selectMethod("length", signature = c("ncdfFlowSet"))(x) 
     })
 #' @rdname ncdfFlowList-class
+#' @param object \code{ncdfFlowList}
 #' @aliases 
 #' show,ncdfFlowList-method
 setMethod("show",
@@ -136,7 +81,7 @@ setMethod("show",
       cat("\n")
     })
 
-#' @rdname ncdfFlowList-class
+#' @rdname flowSet-accessor
 #' @aliases 
 #' sampleNames,ncdfFlowList-method
 setMethod("sampleNames", 
@@ -145,90 +90,10 @@ setMethod("sampleNames",
       names(object@samples)      
     })
 
-#' @rdname subset
-#' @export 
-subset.ncdfFlowList <- function (x, subset, ...) 
-{
-  pd <- pData(x)
-  r <- if (missing(subset)) 
-        rep_len(TRUE, nrow(x))
-      else {
-        e <- substitute(subset)
-        r <- eval(e, pd, parent.frame())
-        if (!is.logical(r)) 
-          stop("'subset' must be logical")
-        r & !is.na(r)
-      }
-  
-  x[as.character(pd[r, "name"])]
-}
-
-#' @rdname ncdfFlowList-class
-setMethod("[",c(x="ncdfFlowList"),function(x,i,j,...){
-      
-      if(missing(i) && missing(j)) 
-        return(x)
-      
-      samples <- sampleNames(x)
-      
-      if(missing(i)){
-        sampInd <- NULL
-        matchInd <- NULL
-      }else{
-        
-        if(is.numeric(i) || is.logical(i)) {
-          sampInd <- sampleNames(x)[i]
-        }else
-          sampInd <- i
-        
-        noFound <- is.na(sampInd)
-        if(any(noFound)){
-          stop("sample index out of boundary!")
-        }
-        matchInd <- match(sampInd,samples)
-        noFound <- is.na(matchInd)
-        if(length(matchInd) == 0)
-          stop("no sample selected!")
-        
-        if(any(noFound)){
-          stop(paste(i[noFound], collapse = " "), " not found in ", class(x), "!")
-        }
-      }
-        
-      if(missing(j))
-        j <- NULL
-      
-      res <- lapply(x,function(object){
-      
-            this_samples <- sampleNames(object)
-            if(is.null(sampInd)){
-              this_subset <- this_samples
-            }else{
-              ind <- match(sampInd,this_samples)
-              this_subset <- sampInd[!is.na(ind)]  
-            }
-             
-            if(length(this_subset)>0){
-              if(is.null(j))
-                return (object[this_subset, ...])
-              else
-                return (object[this_subset, j, ...])
-            }else{
-              NULL
-            }
-          }, level =1)
-      res <- res[!unlist(lapply(res,is.null))]
-      
-      
-      if(is.null(matchInd))
-        ncdfFlowList(res, x@samples)
-      else
-        ncdfFlowList(res, names(x@samples[matchInd]))
-    })
 
 
 #' @export 
-#' @rdname ncdfFlowList-class
+#' @rdname ncdfFlowSet-split
 #' @aliases split,ncdfFlowList,factor-method
 setMethod("split",signature=signature(x="ncdfFlowList",f="factor"),definition=function(x, f, ...)
     {
@@ -236,7 +101,7 @@ setMethod("split",signature=signature(x="ncdfFlowList",f="factor"),definition=fu
       selectMethod("split", signature = c("ncdfFlowSet", "factor"))(x, f, ...)
       
     })
-#' @rdname ncdfFlowList-class
+#' @rdname ncdfFlowSet-split
 #' @aliases split,ncdfFlowList,character-method
 setMethod("split", signature=signature(x="ncdfFlowList", f="character"), definition=function(x, f, ...)
     {
@@ -246,7 +111,7 @@ setMethod("split", signature=signature(x="ncdfFlowList", f="character"), definit
 #' phenoData,ncdfFlowList-method
 #' phenoData<-,ncdfFlowList,AnnotatedDataFrame-method
 #' @export 
-#' @rdname ncdfFlowList-class
+#' @rdname flowSet-accessor
 setMethod("phenoData","ncdfFlowList",function(object){
       res <- phenoData(object@data[[1]])
       pData(res) <- pData(object)
@@ -270,7 +135,8 @@ setReplaceMethod("phenoData",c("ncdfFlowList","AnnotatedDataFrame"),function(obj
 #' @aliases
 #' pData,ncdfFlowList-method
 #' pData<-,ncdfFlowList,data.frame-method
-#' @rdname ncdfFlowList-class
+#' @param object \code{ncdfFlowList}
+#' @rdname flowSet-accessor
 #' @export 
 setMethod("pData","ncdfFlowList",function(object){
       
@@ -280,6 +146,8 @@ setMethod("pData","ncdfFlowList",function(object){
       rownames(res) <- res[, "name"]
       res[sampleNames(object),,drop=FALSE]
     })
+
+#' @rdname flowSet-accessor
 #' @exportMethod pData<-
 setReplaceMethod("pData",c("ncdfFlowList","data.frame"),function(object,value){
       
@@ -313,7 +181,7 @@ setReplaceMethod("pData",c("ncdfFlowList","data.frame"),function(object,value){
 #			return(object)
 #		})
 
-#' @rdname ncdfFlowList-class
+#' @rdname flowSet-accessor
 #' @export 
 setMethod("colnames",
         signature = signature(x = "ncdfFlowList"),

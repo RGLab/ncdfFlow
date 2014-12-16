@@ -1,6 +1,6 @@
 #' @export 
 setGeneric("updateIndices", 
-		function(x,y,z)
+		function(obj,y,z)
 			standardGeneric("updateIndices"))
 #' @export 
 setGeneric("getIndices",function(obj,y,...){
@@ -8,7 +8,7 @@ setGeneric("getIndices",function(obj,y,...){
 		})
 #' @export 
 setGeneric("initIndices", 
-		function(x)
+		function(obj)
 			standardGeneric("initIndices"))
 
 #' @export 
