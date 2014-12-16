@@ -28,7 +28,7 @@ setMethod("Subset",
 						rawIndice<-localIndice
 					else
 						rawIndice[which(rawIndice)]<-localIndice
-					updateIndices(x=ncfs,y=i,z=rawIndice)
+					updateIndices(ncfs,y=i,z=rawIndice)
 					#update channel info if necessary
 					if(!missing(select))
 					{
