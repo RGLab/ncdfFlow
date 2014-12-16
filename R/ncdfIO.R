@@ -360,7 +360,7 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=TRUE,isNew=TRUE, dim = 2,
                   assign(i, orig[[i]], ncfs@indices)
 					
 				}else{
-					updateIndices(x=ncfs,y=i,z=orig[[i]])
+					updateIndices(ncfs,y=i,z=orig[[i]])
 				}
 
 			}	

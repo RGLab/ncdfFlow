@@ -85,7 +85,6 @@ setClass("ncdfFlowSet",
 						phenoData=new("AnnotatedDataFrame",
 								data=data.frame(),
 								varMetadata=data.frame()),
-#				colnames=character(0),
 				file = character(0),
 				maxEvents=integer(0),
 				flowSetId = character(0),
@@ -93,9 +92,6 @@ setClass("ncdfFlowSet",
 				origSampleVector=character(0),
 				origColnames=character(0)
 				)
-#		,validity=function(object){
-#		return(TRUE)
-#		}
 		)
 		
 #' a class that stores multiple ncdfFlowSet objects
@@ -156,6 +152,7 @@ setClass("ncdfFlowList"
 #'                                    If not given then reconstruct the index.
 #' @return \code{ncdfFlowList-class} 
 #' @rdname ncdfFlowList-class
+#' @param x \code{list} of \code{ncdfFlowSet} objects
 #' @export 
 ncdfFlowList <- function(x, samples = NULL){
   
