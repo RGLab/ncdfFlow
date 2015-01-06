@@ -78,7 +78,7 @@ read.ncdfFlowSet <- function(files = NULL
 	
 	ncdfFile<-path.expand(ncdfFile)
 	
-	file.names<-basename(files)
+	
 #	browser()
 	nFile<-length(files)
 	events<-vector("integer",nFile)
@@ -136,39 +136,41 @@ read.ncdfFlowSet <- function(files = NULL
 
 	tmp <- read.FCSheader(files[1])[[1]]
     
-	
-	#make a dummy parameters slot for every frames to pass the validity check of flowSet class
-	params <- flowCore:::makeFCSparameters(chnls_common,tmp, transformation=F, scale=F,decades=0, realMin=-111)		
+    #make a dummy parameters slot for every frames to pass the validity check of flowSet class
+	params <- flowCore:::makeFCSparameters(chnls_common,tmp, transformation=F, scale=F,decades=0, realMin=-111)
+    
+    #determine guids
+    if(!missing(phenoData)){
+      pd<-phenoData
+      guids <- sampleNames(pd)
+    }else{
+      guids <- basename(files)
+      
+      pd <- AnnotatedDataFrame(data = data.frame(name=guids
+              ,row.names=guids
+              ,stringsAsFactors=FALSE
+          )
+          ,varMetadata = data.frame(labelDescription="Name"
+              ,row.names="name")
+      )
+      
+    }
+    
+    if(any(duplicated(guids)))
+      guids <- make.unique(guids)
+    
+    
 	#assign metaData to two environment slots
 	e1<-new.env(hash=TRUE, parent=emptyenv())
 	e2<-new.env(hash=TRUE, parent=emptyenv())
 	for(i in seq_len(nFile)) {
-		assign(x=file.names[i]
+		assign(x=guids[i]
 				,value=new("flowFrame",parameters=params)
 				,envir=e1
 				) 
-        assign(file.names[i], NA, e2)
-#		assign(file.names[i],rep(TRUE,maxEvents),e2)
+        assign(guids[i], NA, e2)
 	}
 	
-	if(!missing(phenoData)){
-		pd<-phenoData
-		guids <- sampleNames(pd)
-	}else{
-		guids <- basename(files)
-#		
-		pd <- AnnotatedDataFrame(data = data.frame(name=guids
-											,row.names=guids
-											,stringsAsFactors=FALSE
-											)
-						,varMetadata = data.frame(labelDescription="Name"
-													,row.names="name")
-						)
-						
-	}
-	
-	if(any(duplicated(guids)))
-		guids <- make.unique(guids)
 	
 	#create ncdf ncdf object 
 	ncfs<-new("ncdfFlowSet"
