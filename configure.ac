@@ -45,12 +45,16 @@ AC_INIT([ncdfFlow],1.5.10,wjiang2@fhcrc.org)
 	if test -z "${HDF5_LIBS}"; then
 			AC_MSG_ERROR([hdf5 library not found in "${HDF5_PREFIX}"])
 	fi
+
+# add mpi header path when hdf5 is built with parallel enabled
+# otherwise the H5public.h will fail to find mpi.h	
+if test -n "`h5cc -showconfig|grep 'Parallel HDF5'|grep yes`"; then
+	MPI_CPPFLAGS="`mpicc -showme:compile`"
+fi
 	
 
-	
 
-
-PKG_CPPFLAGS=${HDF5_CFLAGS}
+PKG_CPPFLAGS="${HDF5_CFLAGS} ${MPI_CPPFLAGS}"
 PKG_LIBS="${HDF5_LIBS}"
 
 
