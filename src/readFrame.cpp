@@ -289,7 +289,13 @@ Rcpp::NumericVector readSlice_cpp(std::string fName
 
 
 
-
+/*
+ * The reason we have to inline the code from _readSlice is two fold:
+ * 1. in order to use the memory buffer dynamically allocated by R, which is transient within the call
+ *    and its size if decided by the events number stored in hdf
+ * 2. we want to query the hdf format in order to dispatch to the different logic of IO
+ * Both requires the hdf query, which causes disk IO, thus we do it here directly so that hdf only needs to be opened once
+ */
 // [[Rcpp::export]]
 Rcpp::S4 readFrame(Rcpp::S4 x
 					, Rcpp::RObject i_obj
