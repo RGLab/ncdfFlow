@@ -1,4 +1,4 @@
-#include "wrappers.h"
+#include "hdfFlow.h"
 
 static const R_CallMethodDef CallEntries[] = {
     {"createFile", (DL_FUNC)&createFile, 6},

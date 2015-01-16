@@ -1,5 +1,5 @@
-#ifndef WRAPPERS_H_
-#define WRAPPERS_H_
+#ifndef HDFFLOW_H_
+#define HDFFLOW_H_
 
 #include "hdf5.h"
 #include <stdlib.h>
@@ -29,4 +29,4 @@ SEXP writeSlice(SEXP _fileName, SEXP _mat, SEXP _chIndx, SEXP _sampleIndx, SEXP 
 SEXP readSlice(SEXP _fileName, SEXP _chIndx, SEXP _sampleIndx, SEXP _colnames);
 
 
-#endif /* WRAPPERS_H_ */
+#endif /* HDFFLOW_H_ */
