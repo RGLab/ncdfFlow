@@ -6,7 +6,7 @@
 \usage{
 read.ncdfFlowSet(files = NULL, ncdfFile, flowSetId = flowCore:::guid(),
   isWriteSlice = TRUE, phenoData, channels = NULL, dim = 2,
-  compress = 0, ...)
+  compress = 0, mc.cores = NULL, ...)
 }
 \arguments{
 \item{files}{A character vector giving the source FCS raw file paths.}
@@ -35,6 +35,8 @@ Default is 2, which stores each FCS data as a seperate 2d dataset.
 Normally, user shouldn't need to change this but dim can also be set to 3, which stores all FCS data as one single 3d dataset.}
 
 \item{compress}{\code{integer} the HDF5 compression ratio (from 0 to 9). Default is 0, which does not compress the data and is recommeneded (especially for 2d format) because the speed loss usually outweights the disk saving.}
+
+\item{mc.cores}{\code{numeric} passed to parallel::mclapply. Default is NULL, which read FCS files in serial mode.}
 
 \item{...}{extra arguments to be passed to \code{\link{read.FCS}}.}
 }
