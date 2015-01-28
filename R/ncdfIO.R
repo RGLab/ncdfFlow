@@ -21,6 +21,7 @@
 #'                            Default is 2, which stores each FCS data as a seperate 2d dataset. 
 #'                            Normally, user shouldn't need to change this but dim can also be set to 3, which stores all FCS data as one single 3d dataset. 
 #' @param compress \code{integer} the HDF5 compression ratio (from 0 to 9). Default is 0, which does not compress the data and is recommeneded (especially for 2d format) because the speed loss usually outweights the disk saving.                              
+#' @param mc.cores \code{numeric} passed to parallel::mclapply. Default is NULL, which read FCS files in serial mode.
 #' @param ... extra arguments to be passed to \code{\link{read.FCS}}.
 #' @return   A ncdfFlowSet object
 #' @seealso \code{\link{clone.ncdfFlowSet}}
@@ -54,6 +55,7 @@ read.ncdfFlowSet <- function(files = NULL
 								,channels=NULL
                                 ,dim = 2
                                 ,compress = 0
+                                , mc.cores = NULL
 								,...) #dots to be passed to read.FCS
 {
     dim <- as.integer(match.arg(as.character(dim), c("2","3")))
@@ -81,30 +83,49 @@ read.ncdfFlowSet <- function(files = NULL
 	
 #	browser()
 	nFile<-length(files)
-	events<-vector("integer",nFile)
-	channels.all<-vector("character",nFile)
-    
     maxEvents <- 0L
-#	message("Determine the max total events by reading FCS headers ...")
-	for(i in 1:nFile){
-		curFile<-files[i]
-		txt <- read.FCSheader(curFile)[[1]]
-		nChannels <- as.integer(txt[["$PAR"]])
-		channelNames <- unlist(lapply(1:nChannels,function(i)flowCore:::readFCSgetPar(txt,paste("$P",i,"N",sep="")))) 
-		channelNames<- unname(channelNames)
-		if(!is.null(channels))#check if channel names contains the specified one 
-		{
-			channel.notFound<-!is.element(channels,channelNames)
-			if(any(channel.notFound))
-				stop(channels[channel.notFound],"not Found in ",basename(curFile)," !")
-		}else
-			channels.all[i]<-paste(channelNames,collapse="|") #save the channel names to list to find common ones later
-		
-		events[i]<-as.integer(txt[["$TOT"]])
-	}
+    fileIds <- seq_len(nFile)
+    
+    getChnlEvt <- function(curFile){
+      txt <- read.FCSheader(curFile)[[1]]
+      nChannels <- as.integer(txt[["$PAR"]])
+      channelNames <- unlist(lapply(1:nChannels,function(i)flowCore:::readFCSgetPar(txt,paste("$P",i,"N",sep="")))) 
+      channelNames<- unname(channelNames)
+      if(!is.null(channels))#check if channel names contains the specified one 
+      {
+        channel.notFound<-!is.element(channels,channelNames)
+        if(any(channel.notFound))
+          stop(channels[channel.notFound],"not Found in ",basename(curFile)," !")
+      }
+      
+      c(chnl = paste(channelNames,collapse="|"), evt = txt[["$TOT"]])  
+    }
+    
+    #channel names check
+    if(is.null(mc.cores)){
+      chnlEvt <- lapply(files, getChnlEvt)  
+      
+    }else{
+      #loadedNamespace may show the package that is loaded but not attached
+      if(!any(grepl("parallel", search())))
+        require("parallel")
+      #parallel at higher granule level to reduce the overhead of dispatching 
+      #since each taskgetChnlEvt) is relative small 
+      groups <- split(files,ceiling(fileIds/(nFile/mc.cores)))
+      
+      chnlEvt <- mclapply(groups, function(group){
+                                lapply(group, getChnlEvt)
+                        }, mc.cores = mc.cores)
+        
+      chnlEvt <- unlist(chnlEvt, recursive = FALSE)
+    }
+    
+    channels.all <- sapply(chnlEvt, "[[", "chnl")
+    events <- as.integer(sapply(chnlEvt, "[[", "evt"))
+    
     if(dim == 3)
       maxEvents <- max(events)
-#    message("Maximum total events: ",maxEvents)
+
     
 	#try to find common channels among fcs files
 	if(is.null(channels))
@@ -201,16 +222,45 @@ read.ncdfFlowSet <- function(files = NULL
         #escape all the meta characters within channal names
         colPattern <- .escapeMeta(chnls_common)
         colPattern <- paste(colPattern,collapse="|")
-		lapply(seq_len(nFile), function(i, verbose)
-				{
-					curFile<-files[i]
-                    this_fr <- read.FCS(curFile
-                        ,column.pattern = colPattern
-                        ,...)
-                    #we need to reorder columns in order to make them identical across samples
-                    this_fr <- this_fr[,chnls_common]
-					ncfs[[guids[i], compress = compress]] <- this_fr
-				}, verbose = TRUE)
+        
+        my.read.FCS <- function(i)
+        {
+          curFile<-files[i]
+          this_fr <- read.FCS(curFile
+              ,column.pattern = colPattern
+              ,...)
+          #we need to reorder columns in order to make them identical across samples
+          this_fr[,chnls_common]
+        }
+        
+        if(is.null(mc.cores)){
+          #serial read
+          for(i in fileIds)
+            ncfs[[guids[i], compress = compress]] <- my.read.FCS(i)
+            
+        }else{
+          #parallel read
+          #split into groups of files with group size = mc.ores
+          groups <- split(fileIds,ceiling(fileIds/mc.cores))
+          #read each group with multicore
+          for(group in groups){
+            
+              frList <-  mclapply(group, my.read.FCS, mc.cores = mc.cores)
+
+              #then serial write (because phdf5 is not implemented yet)
+              for(j in seq_along(group)){
+                
+                i <- group[j]
+                ncfs[[guids[i], compress = compress]] <- frList[[j]]
+              }
+                 
+              
+              
+          }
+           
+          
+        }
+        
 	}
 	
 	
