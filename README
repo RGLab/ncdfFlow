@@ -3,7 +3,7 @@ Unix/Linux/Mac users
 
 To build the ncdfFlow package from source, make sure that HDF5 Library is present on your system:
 
-If HDF5 is installed to some non-standard location , you may pass the environment variable --with-hdf5 
+If HDF5 is installed to some non-standard location, you may pass the environment variable --with-hdf5 
 to point to the correct location of HDF5, for example,
 R CMD INSTALL ncdfFlow_x.y.z.tar.gz --configure-args="--with-hdf5='/path/to'"
 under '/path/to', you should find "include" and "lib" sub-folders that contain HDF5 headers and shared libraries. 
@@ -28,7 +28,7 @@ to avoid this you may simply use the short forms (8.3 DOS file names) found by t
 For example, the following may be added to the "Path" environment variable: C:/PROGRA~1/netcdf4/bin , and the symbol ";" is used to separate it from existing paths.
 
 Also in order to build ncdfFlow from source using Rtools, you need to tell ncdfFlow where your netcdf library and header files are. 
-You can do that by setting up tje environment variable LIB_NETCDF with the correct path to the library files and header files. 
+You can do that by setting up the environment variable LIB_NETCDF with the correct path to the library files and header files. 
 You can do this by going to the "Environment Variables" dialog box as instructed above and 
 then clicking the "New" button. Enter "LIB_NETCDF" in the "Variable name" field, and lib directory (e.g. "c:/netcdf4") in the "Variable value" field.  
 Remember to use "/" instead of "\" as the directory delimiter.
