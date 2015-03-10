@@ -20,7 +20,7 @@ subset.ncdfFlowSet <- function (x, subset, ...)
         r & !is.na(r)
       }
   
-  x[as.character(pd[r, "name"])]
+  x[as.character(rownames(pd[r, ]))]
 }
 
 
@@ -39,5 +39,5 @@ subset.ncdfFlowList <- function (x, subset, ...)
         r & !is.na(r)
       }
   
-  x[as.character(pd[r, "name"])]
+  x[as.character(rownames(pd[r, ]))]
 }

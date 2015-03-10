@@ -143,7 +143,6 @@ setMethod("pData","ncdfFlowList",function(object){
       res <- lapply(object,pData, level =1)
 
       res <- do.call(rbind,res)
-      rownames(res) <- res[, "name"]
       res[sampleNames(object),,drop=FALSE]
     })
 
@@ -154,13 +153,13 @@ setReplaceMethod("pData",c("ncdfFlowList","data.frame"),function(object,value){
       if(!.isValidSamples(rownames(value),object))
         stop("The sample names in data.frame are not consistent with the ",class(x), "!")
       
-      res <- lapply(object,function(gs){
-            this_pd <- subset(value,name%in%sampleNames(gs))
-            pData(gs) <- this_pd
-            gs
+      res <- lapply(object,function(fs){
+            this_pd <- subset(value,rownames(value)%in%sampleNames(fs))
+            pData(fs) <- this_pd
+            fs
           }, level =1)
       
-      ncdfFlowList(res)        
+      ncdfFlowList(res)[sampleNames(object)]        
     })
 #setReplaceMethod("sampleNames",
 #		signature = signature(object = "ncdfFlowList"),
