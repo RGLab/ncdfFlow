@@ -321,7 +321,7 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 		Rcpp::S4 fspd = x.slot("phenoData");
 		Rcpp::RObject fspdObj = fspd.slot("data");
 		Rcpp::DataFrame fsdata = Rcpp::DataFrame(fspdObj.get__());
-		Rcpp::CharacterVector sn = fsdata["name"];
+		Rcpp::CharacterVector sn = fsdata.attr("row.names");
 		sampleName =  sn(s_ind);
 	}
 	else
