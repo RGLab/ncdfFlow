@@ -42,7 +42,7 @@ setMethod("histogram",
     {
       
       #construct lattice object
-      thisTrellisObj <- .histogram.adapor(x, data, ...) 
+      thisTrellisObj <- flowViz:::.histogram.adapor(x, data, ...) 
       
       #subset data on channel
       chnl <- thisTrellisObj[["panel.args.common"]][["channel.name"]]
