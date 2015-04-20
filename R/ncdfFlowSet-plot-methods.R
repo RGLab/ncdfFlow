@@ -30,6 +30,40 @@ setMethod("densityplot",
       selectMethod("densityplot", signature = c("formula", "ncdfFlowSet"))(x, data, ...)
     })
 
+#override flowSet-version methods to pass data instead of data@frames
+#' @aliases histogram,formula,ncdfFlowSet-method
+#' @rdname plot
+#' @export 
+#' @importMethodsFrom flowViz histogram xyplot
+setMethod("histogram",
+    signature(x = "formula", data = "ncdfFlowSet"),
+    function(x, data, ...)
+    {
+      
+      #construct lattice object
+      thisTrellisObj <- flowViz:::.histogram.adapor(x, data, ...) 
+      
+      #subset data on channel
+      chnl <- thisTrellisObj[["panel.args.common"]][["channel.name"]]
+      thisData <- thisTrellisObj[["panel.args.common"]][["frames"]]
+      thisData <- thisData[,chnl]
+      #update frames
+      thisTrellisObj[["panel.args.common"]][["frames"]] <- thisData
+      thisTrellisObj
+      
+    })
+
+#' @aliases histogram,formula,ncdfFlowList-method
+#' @rdname plot
+setMethod("histogram",
+    signature(x = "formula", data = "ncdfFlowList"),
+    function(x, data, ...)
+    {
+      
+      selectMethod("histogram", signature = c("formula", "ncdfFlowSet"))(x, data, ...)
+    })
+
+
 #' flowViz plot methods.
 #' 
 #' @aliases xyplot,formula,ncdfFlowSet-method
