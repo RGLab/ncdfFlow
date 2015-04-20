@@ -35,7 +35,6 @@ setMethod("densityplot",
 #' @rdname plot
 #' @export 
 #' @importMethodsFrom flowViz histogram xyplot
-#' @importFrom flowViz panel.histogram.flowset
 setMethod("histogram",
     signature(x = "formula", data = "ncdfFlowSet"),
     function(x, data, ...)
