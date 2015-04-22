@@ -1,15 +1,15 @@
 Package: ncdfFlow
 Title: ncdfFlow: A package that provides HDF5 based storage for flow cytometry
     data.
-Version: 2.15.1
+Version: 2.15.2
 Author: Mike Jiang,Greg Finak,N. Gopalakrishnan
 Description: Provides HDF5 storage based methods and functions for
     manipulation of flow cytometry data.
 Maintainer: Mike Jiang <wjiang2@fhcrc.org>
 Depends:
     R (>= 2.14.0),
-    flowCore (>= 1.33.13),
-    flowViz (>= 1.31.4),
+    flowCore,
+    flowViz,
     RcppArmadillo,
     BH
 Imports:

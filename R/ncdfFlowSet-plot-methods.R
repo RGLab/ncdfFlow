@@ -3,7 +3,6 @@
 #' @rdname plot
 #' @export 
 #' @importMethodsFrom flowViz densityplot xyplot
-#' @importFrom flowViz flowViz.par.get panel.densityplot.flowset
 setMethod("densityplot",
 		signature(x = "formula", data = "ncdfFlowSet"),
 		function(x, data, ...)
@@ -39,17 +38,7 @@ setMethod("histogram",
     signature(x = "formula", data = "ncdfFlowSet"),
     function(x, data, ...)
     {
-      
-      #construct lattice object
-      thisTrellisObj <- flowViz:::.histogram.adapor(x, data, ...) 
-      
-      #subset data on channel
-      chnl <- thisTrellisObj[["panel.args.common"]][["channel.name"]]
-      thisData <- thisTrellisObj[["panel.args.common"]][["frames"]]
-      thisData <- thisData[,chnl]
-      #update frames
-      thisTrellisObj[["panel.args.common"]][["frames"]] <- thisData
-      thisTrellisObj
+      densityplot(x, data, plotType = "histogram", ...)
       
     })
 
