@@ -7,7 +7,7 @@
 \title{apply method for ncdfFlowSet (for internal use)}
 \usage{
 \S4method{ncfsApply}{ncdfFlowSet}(x, FUN, ..., use.exprs = FALSE,
-  newNcFile = NULL)
+  ncdfFile = NULL)
 }
 \arguments{
 \item{x}{\code{ncdfFlowSet}}
@@ -18,7 +18,7 @@
 
 \item{use.exprs}{\code{logical} see \code{\link{fsApply}}}
 
-\item{newNcFile}{\code{logical} wether to create a new hdf file or simply overwrite the existing file.}
+\item{ncdfFile}{\code{logical} wether to create a new hdf file or simply overwrite the existing file.}
 }
 \description{
 It is equivalent to \code{\link{fsApply}}. But the latter could cause memory issue

@@ -377,7 +377,7 @@ setReplaceMethod("[[",
 #' @param FUN \code{function} to apply
 #' @param ... other arguments to pass to \code{FUN}
 #' @param use.exprs \code{logical} see \code{\link{fsApply}}
-#' @param newNcFile \code{logical} wether to create a new hdf file or simply overwrite the existing file.
+#' @param ncdfFile \code{logical} wether to create a new hdf file or simply overwrite the existing file.
 #' @export 
 #' @aliases ncfsApply
 #' @examples 
@@ -394,7 +394,7 @@ setReplaceMethod("[[",
 setMethod("ncfsApply",
 		signature=signature(x="ncdfFlowSet",
 				FUN="ANY"),
-		definition=function(x,FUN,...,use.exprs=FALSE,newNcFile=NULL)
+		definition=function(x,FUN,...,use.exprs=FALSE,ncdfFile=NULL)
 		{
 			
 			if(missing(FUN))
@@ -402,7 +402,7 @@ setMethod("ncfsApply",
 			FUN <- match.fun(FUN)
 			if(!is.function(FUN))
 				stop("This is not a function!")
-			x<-clone.ncdfFlowSet(x,newNcFile,isEmpty=FALSE)
+			x<-clone.ncdfFlowSet(x,ncdfFile,isEmpty=FALSE)
 #						
 			lapply(sampleNames(x),function(n) {
 								y <- as(x[[n]],"flowFrame")
@@ -423,9 +423,7 @@ setMethod("compensate",
 				spillover="ANY"),
 		definition=function(x, spillover)
 		{
-#			
-			newNcFile<-paste(x@file,"comp",sep=".")
-			ncfsApply(x, compensate, spillover,newNcFile=newNcFile)
+			ncfsApply(x, compensate, spillover)
 			
 		}
 
@@ -438,9 +436,8 @@ setMethod("transform",
     signature=signature(`_data`="ncdfFlowSet"),
     definition=function(`_data`,...)
     {
-#			
-      newNcFile<-paste(`_data`@file,"trans",sep=".")
-      ncfsApply(`_data`,transform,...,newNcFile=newNcFile)
+
+      ncfsApply(`_data`,transform,...)
     })
 
 
