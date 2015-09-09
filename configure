@@ -588,6 +588,8 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 PKG_LIBS
 PKG_CPPFLAGS
+H5CC
+PKG_CONFIG
 target_alias
 host_alias
 build_alias
@@ -1681,7 +1683,7 @@ if test "${with_hdf5+set}" = set; then :
 
 fi
 
-	HDF5_FILE_TOTEST="libhdf5.so"
+	HDF5_LIB_TOTEST="libhdf5.so"
 	#if prefix is set by user then search for libhdf5 under that path
 	if test -n "${HDF5_PREFIX}"; then
 			for HDF5_LIB_PATH in lib lib64
@@ -1698,28 +1700,87 @@ $as_echo "$as_me: found hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&6;}
 				break;
 			fi
 			done
-	# if prefix not provided,then search some default standard location
+
 	else
-		for HDF5_PREFIX in "/usr" "/usr/local"
-		do
-			for HDF5_LIB_PATH in lib lib64
+		# if prefix not provided, try pkg-config
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: No directory was specified for --with-hdf5. Trying to find hdf5 using pkg-config." >&5
+$as_echo "$as_me: No directory was specified for --with-hdf5. Trying to find hdf5 using pkg-config." >&6;}
+		if test -z "${PKG_CONFIG}"; then
+			# Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+	    fi
+	    if ! test -z "${PKG_CONFIG}" ; then
+            HDF_CONFIG="${PKG_CONFIG} hdf5"
+            HDF5_CFLAGS="`${HDF_CONFIG} --cflags`"
+		fi
+
+		if test -z "${HDF5_CFLAGS}" ; then
+        	{ $as_echo "$as_me:${as_lineno-$LINENO}: pkg-config was not able to find the hdf5 library." >&5
+$as_echo "$as_me: pkg-config was not able to find the hdf5 library." >&6;}
+        	{ $as_echo "$as_me:${as_lineno-$LINENO}: Trying some default standard locations.\"" >&5
+$as_echo "$as_me: Trying some default standard locations.\"" >&6;}
+			#still not detected, then search some default standard location
+			for HDF5_PREFIX in "/usr" "/usr/local"
 			do
-			HDF5_LIB_PATH_ABS=${HDF5_PREFIX}/${HDF5_LIB_PATH}
-			{ $as_echo "$as_me:${as_lineno-$LINENO}: search for hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&5
+				for HDF5_LIB_PATH in lib lib64
+				do
+				HDF5_LIB_PATH_ABS=${HDF5_PREFIX}/${HDF5_LIB_PATH}
+				{ $as_echo "$as_me:${as_lineno-$LINENO}: search for hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&5
 $as_echo "$as_me: search for hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&6;}
-			if test -e ${HDF5_LIB_PATH_ABS}/${HDF5_LIB_TOTEST}; then
-				HDF5_LIBS="-L${HDF5_LIB_PATH_ABS}"
-				HDF5_LIBS="${HDF5_LIBS} -lhdf5"
-				HDF5_CFLAGS="-I${HDF5_PREFIX}/include"
-				{ $as_echo "$as_me:${as_lineno-$LINENO}: found hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&5
+				if test -e ${HDF5_LIB_PATH_ABS}/${HDF5_LIB_TOTEST}; then
+					HDF5_LIBS="-L${HDF5_LIB_PATH_ABS}"
+					HDF5_LIBS="${HDF5_LIBS} -lhdf5"
+					HDF5_CFLAGS="-I${HDF5_PREFIX}/include"
+					{ $as_echo "$as_me:${as_lineno-$LINENO}: found hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&5
 $as_echo "$as_me: found hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&6;}
-				break;
+					break;
+				fi
+				done
+			if test -n "${HDF5_LIBS}"; then
+				break
 			fi
 			done
-		if test -n "${HDF5_LIBS}"; then
-			break
+		else
+			HDF5_LIBS="`${HDF_CONFIG} --libs`"
 		fi
-		done
 	fi
 
 	if test -z "${HDF5_LIBS}"; then
@@ -1728,8 +1789,52 @@ $as_echo "$as_me: found hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&6;}
 
 # add mpi header path when hdf5 is built with parallel enabled
 # otherwise the H5public.h will fail to find mpi.h
-if test -n "`h5cc -showconfig|grep 'Parallel HDF5'|grep yes`"; then
-	MPI_CPPFLAGS="`mpicc -showme:compile`"
+if test -z "${H5CC}"; then
+			# Extract the first word of "h5cc", so it can be a program name with args.
+set dummy h5cc; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_H5CC+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $H5CC in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_H5CC="$H5CC" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_H5CC="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+H5CC=$ac_cv_path_H5CC
+if test -n "$H5CC"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $H5CC" >&5
+$as_echo "$H5CC" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if ! test -z "${H5CC}" ; then
+	if test -n "`h5cc -showconfig|grep 'Parallel HDF5'|grep yes`"; then
+		MPI_CPPFLAGS="`mpicc -showme:compile`"
+	fi
 fi
 
 
