@@ -1755,12 +1755,12 @@ fi
 		if test -z "${HDF5_CFLAGS}" ; then
         	{ $as_echo "$as_me:${as_lineno-$LINENO}: pkg-config was not able to find the hdf5 library." >&5
 $as_echo "$as_me: pkg-config was not able to find the hdf5 library." >&6;}
-        	{ $as_echo "$as_me:${as_lineno-$LINENO}: Trying some default standard locations.\"" >&5
-$as_echo "$as_me: Trying some default standard locations.\"" >&6;}
+        	{ $as_echo "$as_me:${as_lineno-$LINENO}: Trying some common locations.\"" >&5
+$as_echo "$as_me: Trying some common locations.\"" >&6;}
 			#still not detected, then search some default standard location
-			for HDF5_PREFIX in "/usr" "/usr/local"
+			for HDF5_PREFIX in "/usr/local" #skip searching/usr since it is standard system path
 			do
-				for HDF5_LIB_PATH in lib lib64
+				for HDF5_LIB_PATH in lib lib64 lib/x86_64-linux-gnu lib64/x86_64-linux-gnu
 				do
 				HDF5_LIB_PATH_ABS=${HDF5_PREFIX}/${HDF5_LIB_PATH}
 				{ $as_echo "$as_me:${as_lineno-$LINENO}: search for hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&5
@@ -1783,8 +1783,10 @@ $as_echo "$as_me: found hdf5 library in: ${HDF5_LIB_PATH_ABS}" >&6;}
 		fi
 	fi
 
+	#fail to detect hdf5 lib, use the standard system path (which can be ommited)
 	if test -z "${HDF5_LIBS}"; then
-			as_fn_error $? "hdf5 library not found in \"${HDF5_PREFIX}\"" "$LINENO" 5
+			HDF5_LIBS="-lhdf5"
+			HDF5_CFLAGS=""
 	fi
 
 # add mpi header path when hdf5 is built with parallel enabled
@@ -1842,6 +1844,10 @@ fi
 PKG_CPPFLAGS="${HDF5_CFLAGS} ${MPI_CPPFLAGS}"
 PKG_LIBS="${HDF5_LIBS}"
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: PKG_CPPFLAGS = ${PKG_CPPFLAGS}" >&5
+$as_echo "$as_me: PKG_CPPFLAGS = ${PKG_CPPFLAGS}" >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}: PKG_LIBS = ${PKG_LIBS}" >&5
+$as_echo "$as_me: PKG_LIBS = ${PKG_LIBS}" >&6;}
 
 
 

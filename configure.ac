@@ -34,11 +34,11 @@ AC_INIT([ncdfFlow],1.5.10,wjiang2@fhcrc.org)
 		
 		if test -z "${HDF5_CFLAGS}" ; then
         	AC_MSG_NOTICE([pkg-config was not able to find the hdf5 library.])
-        	AC_MSG_NOTICE([Trying some default standard locations."])
+        	AC_MSG_NOTICE([Trying some common locations."])
 			#still not detected, then search some default standard location
-			for HDF5_PREFIX in "/usr" "/usr/local"
+			for HDF5_PREFIX in "/usr/local" #skip searching/usr since it is standard system path
 			do
-				for HDF5_LIB_PATH in lib lib64
+				for HDF5_LIB_PATH in lib lib64 lib/x86_64-linux-gnu lib64/x86_64-linux-gnu
 				do
 				HDF5_LIB_PATH_ABS=${HDF5_PREFIX}/${HDF5_LIB_PATH}
 				AC_MSG_NOTICE([search for hdf5 library in: ${HDF5_LIB_PATH_ABS}])
@@ -59,8 +59,10 @@ AC_INIT([ncdfFlow],1.5.10,wjiang2@fhcrc.org)
 		fi
 	fi
 	
+	#fail to detect hdf5 lib, use the standard system path (which can be ommited) 
 	if test -z "${HDF5_LIBS}"; then
-			AC_MSG_ERROR([hdf5 library not found in "${HDF5_PREFIX}"])
+			HDF5_LIBS="-lhdf5"
+			HDF5_CFLAGS="" 
 	fi
 
 # add mpi header path when hdf5 is built with parallel enabled
@@ -79,6 +81,8 @@ fi
 PKG_CPPFLAGS="${HDF5_CFLAGS} ${MPI_CPPFLAGS}"
 PKG_LIBS="${HDF5_LIBS}"
 
+AC_MSG_NOTICE([PKG_CPPFLAGS = ${PKG_CPPFLAGS}])
+AC_MSG_NOTICE([PKG_LIBS = ${PKG_LIBS}])
 
 AC_SUBST(PKG_CPPFLAGS)
 AC_SUBST(PKG_LIBS)
