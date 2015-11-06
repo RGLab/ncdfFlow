@@ -5,6 +5,7 @@
 #' @param ... other arguments. (not used)
 #' @return a subset of code{ncdfFlowSet} or \code{ncdfFlowList} object
 #' @rdname subset-functions
+#' @method subset ncdfFlowSet
 #' @export 
 subset.ncdfFlowSet <- function (x, subset, ...) 
 {
@@ -25,6 +26,7 @@ subset.ncdfFlowSet <- function (x, subset, ...)
 
 
 #' @rdname subset-functions
+#' @method subset ncdfFlowList
 #' @export 
 subset.ncdfFlowList <- function (x, subset, ...) 
 {

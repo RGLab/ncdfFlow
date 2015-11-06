@@ -447,7 +447,6 @@ setMethod("transform",
 #' @param object \code{ncdfFlowSet}
 #' show,ncdfFlowSet-method
 #' @rdname ncdfFlowSet-class
-#' @importMethodsFrom methods show
 setMethod("show",
 		signature=signature(object="ncdfFlowSet"),
 		definition=function(object)
