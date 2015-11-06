@@ -68,10 +68,9 @@ NULL
 #' @rdname ncdfFlowSet-class
 #' @importClassesFrom Biobase AnnotatedDataFrame
 #' @importClassesFrom flowCore flowFrame flowSet
-#' @importClassesFrom methods ANY character environment factor formula integer list logical
 #' @importMethodsFrom Biobase description description<- exprs exprs<- pData pData<- phenoData phenoData<- sampleNames sampleNames<- varLabels varMetadata varMetadata<- AnnotatedDataFrame
 #' @importMethodsFrom flowCore colnames colnames<- compensate filter fsApply identifier %in% ncol nrow parameters parameters<- split Subset transform
-#' @importFrom methods as is new
+#' @import methods BiocGenerics
 setClass("ncdfFlowSet",                   
 		representation=representation(
 				file = "character",
