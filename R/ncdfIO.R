@@ -58,6 +58,8 @@ read.ncdfFlowSet <- function(files = NULL
                                 , mc.cores = NULL
 								,...) #dots to be passed to read.FCS
 {
+    dots <- list(...)
+    emptyValue <- ifelse("emptyValue" %in% names(dots), dots[["emptyValue"]], TRUE)
     dim <- as.integer(match.arg(as.character(dim), c("2","3")))
 	#remove nonexisting files
 	fileInd<-file.exists(files)
@@ -87,7 +89,7 @@ read.ncdfFlowSet <- function(files = NULL
     fileIds <- seq_len(nFile)
     
     getChnlEvt <- function(curFile){
-      txt <- read.FCSheader(curFile)[[1]]
+      txt <- read.FCSheader(curFile, emptyValue = emptyValue)[[1]]
       nChannels <- as.integer(txt[["$PAR"]])
       channelNames <- unlist(lapply(1:nChannels,function(i)flowCore:::readFCSgetPar(txt,paste("$P",i,"N",sep="")))) 
       channelNames<- unname(channelNames)
@@ -155,7 +157,7 @@ read.ncdfFlowSet <- function(files = NULL
 		}
 	}
 
-	tmp <- read.FCSheader(files[1])[[1]]
+	tmp <- read.FCSheader(files[1], emptyValue = emptyValue)[[1]]
     
     #make a dummy parameters slot for every frames to pass the validity check of flowSet class
 	params <- flowCore:::makeFCSparameters(chnls_common,tmp, transformation=F, scale=F,decades=0, realMin=-111)
