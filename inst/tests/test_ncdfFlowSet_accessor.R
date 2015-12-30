@@ -297,6 +297,15 @@ test_that("read.ncdfFlowSet", {
   expect_equal(nrow(nc1[[1]]), 1e4)
   expect_equal(nrow(nc1[[2]]), 0)
   unlink(nc1)
+  
+  #test double delimiter issue
+  fr <- read.FCS(files[1])
+  tmp <- tempfile()
+  write.FCS(fr, tmp, delimiter = "/")
+  expect_error(read.ncdfFlowSet(tmp), "Empty keyword name")
+  nc1 <- read.ncdfFlowSet(tmp, emptyValue = FALSE)
+  expect_equal(exprs(fr), exprs(nc1[[1]]), tolerance = 3e-08, check.attributes = F)
+  unlink(nc1)
 })
 
 test_that("clone.ncdfFlowSet", {
