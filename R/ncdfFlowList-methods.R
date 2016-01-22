@@ -225,14 +225,22 @@ setMethod("markernames",
             }, level = 1)
             
             markers <- unlist(markers, recursive = FALSE)
-            markers <- lapply(markers, sort)
-            markers <- unique(markers)
+            markers.sort <- lapply(markers, sort)
+            markers.sort <- unique(markers.sort)
             
-            if(length(markers) > 1)
+            if(length(markers.sort) > 1){
               warning("marker names not unique across data sets!")
-            else
-              markers <- markers[[1]]
-            markers
+              markers.sort
+            }else{
+              markers <- unique(markers)
+              if(length(markers) > 1){
+                warning("markers are in different orders!")
+                markers
+              }else
+                markers[[1]]
+            }
+              
+            
           })
 
 #' @rdname flowSet-accessor

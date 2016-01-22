@@ -165,5 +165,5 @@ test_that("markernames", {
   
   #setter
   markernames(nclist) <- markers
-  expect_equivalent(markernames(nclist)[c(2,1)], markers)
+  expect_equivalent(markernames(nclist)[c(1,3)], markers)
 })
