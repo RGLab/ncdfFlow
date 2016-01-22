@@ -229,7 +229,7 @@ setMethod("markernames",
             markers <- unique(markers)
             
             if(length(markers) > 1)
-              warning("colnames not unique across data sets!")
+              warning("marker names not unique across data sets!")
             else
               markers <- markers[[1]]
             markers
