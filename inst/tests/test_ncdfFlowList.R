@@ -61,7 +61,25 @@ test_that("length", {
     })
 
 test_that("colnames", {
-      expect_equal(colnames(nclist), colnames(nc_merge))
+      chnls <- colnames(nc_merge)
+      expect_equal(colnames(nclist), chnls)
+      
+      chnls.new <- chnls
+      chnls.new[c(1,2)] <- c("fsc", "ssc")
+      
+      #create discrepancy
+      colnames(nclist@data[[1]]) <- chnls.new
+      expect_error(colnames(nclist), "not unique")
+      
+      expect_error(colnames(nclist) <- chnls.new, "not safe")
+      
+      #test the different order
+      colnames(nclist@data[[1]]) <- sort(chnls)
+      expect_warning(colnames(nclist), "different orders")
+      
+      #restore original chnls
+      colnames(nclist@data[[1]]) <- chnls
+      expect_equal(colnames(nclist), chnls)
       
     })
 
