@@ -189,13 +189,27 @@ setMethod("colnames",
             cols <- lapply(x, function(k) {
                     colnames(k)
                     }, level = 1)
+            cols.sort <- lapply(cols, sort)    
+            cols.sort <- unique(cols.sort)
+            if(length(cols.sort) > 1)
+              stop("colnames not unique across data sets!")
             cols <- unique(cols)
-            if(length(cols) > 1)
-              stop("colnames not unique across ncdfFlowSets!")
-            cols[[1]]
+            if(length(cols)>1){
+              warning("colnames are in different orders!")
+              cols 
+            } 
+            else
+              cols[[1]]
 
         })
-
+    
+#' @rdname flowSet-accessor
+#' @export
+    setReplaceMethod("colnames",
+        signature=signature(x="ncdfFlowList", value="ANY"), function(x, value){
+          stop("It is not safe to change colnames of the entire list of flow objects because the original channels can potentially be in different orders.")
+        })
+    
 #' @rdname flowSet-accessor
 #' @importFrom flowCore markernames
 #' @export
@@ -215,7 +229,7 @@ setMethod("markernames",
             markers <- unique(markers)
             
             if(length(markers) > 1)
-              warning("colnames not unique across ncdfFlowSets!")
+              warning("colnames not unique across data sets!")
             else
               markers <- markers[[1]]
             markers
@@ -231,3 +245,4 @@ setReplaceMethod("markernames",
                    }
                    object
                  })
+             

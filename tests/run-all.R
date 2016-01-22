@@ -14,7 +14,7 @@ is_equal_flowFrame <- function(orig, new, exprs = TRUE, description = TRUE){
   }
   
   
-  expect_equal(orig@parameters, new@parameters, tol = 1e-07)
+  expect_equal(orig@parameters, new@parameters, tol = 1e-07, check.attributes = FALSE)
   
   #keyword may have minor change
   if(description)

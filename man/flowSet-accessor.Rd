@@ -4,6 +4,7 @@
 \name{filter,ncdfFlowList,filter-method}
 \alias{colnames,ncdfFlowList-method}
 \alias{colnames<-}
+\alias{colnames<-,ncdfFlowList-method}
 \alias{colnames<-,ncdfFlowSet,ANY-method}
 \alias{colnames<-,ncdfFlowSet-method}
 \alias{compensate,ncdfFlowSet,ANY-method}
@@ -35,6 +36,8 @@
 \S4method{pData}{ncdfFlowList,data.frame}(object) <- value
 
 \S4method{colnames}{ncdfFlowList}(x)
+
+\S4method{colnames}{ncdfFlowList}(x) <- value
 
 \S4method{markernames}{ncdfFlowList}(object)
 
