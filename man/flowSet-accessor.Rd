@@ -9,6 +9,8 @@
 \alias{compensate,ncdfFlowSet,ANY-method}
 \alias{filter,ncdfFlowList,filter-method}
 \alias{length,ncdfFlowList-method}
+\alias{markernames,ncdfFlowList-method}
+\alias{markernames<-,ncdfFlowList-method}
 \alias{pData,ncdfFlowList-method}
 \alias{pData<-,ncdfFlowList,data.frame-method}
 \alias{phenoData,ncdfFlowList-method}
@@ -33,6 +35,10 @@
 \S4method{pData}{ncdfFlowList,data.frame}(object) <- value
 
 \S4method{colnames}{ncdfFlowList}(x)
+
+\S4method{markernames}{ncdfFlowList}(object)
+
+\S4method{markernames}{ncdfFlowList}(object) <- value
 
 \S4method{compensate}{ncdfFlowSet,ANY}(x, spillover)
 
