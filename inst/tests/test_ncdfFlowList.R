@@ -65,6 +65,7 @@ test_that("colnames", {
       
     })
 
+
 test_that("sampleNames", {
       expect_equal(sampleNames(nclist), sampleNames(nc_merge))
       
@@ -125,3 +126,26 @@ test_that("split", {
       is_equal_flowSet(nclist1[[1]],nclist[c(1,3,5)])
       is_equal_flowSet(nclist1[[2]],nclist[c(2,4,6)])
     })
+
+test_that("markernames", {
+  expect_true(setequal(markernames(nclist), markernames(nc_merge)))
+  
+  #create discrepancy within fs
+  chnls <- c("FL1-H", "FL3-H")
+  markers <- c("CD15", "CD14")
+  names(markers) <- chnls
+  markernames(nclist@data[[1]][[1]]) <- markers
+  expect_warning(res <- markernames(nclist), "not unique")
+  suppressWarnings(tmp <- markernames(nclist@data[[1]]))
+  tmp <- lapply(tmp, sort)
+  expect_equal(res, tmp)
+  
+  #create discrepancy across fs
+  markernames(nclist@data[[1]]) <- markers
+  expect_warning(res <- markernames(nclist), "not unique")
+  expect_equal(res, tmp)
+  
+  #setter
+  markernames(nclist) <- markers
+  expect_equivalent(markernames(nclist)[c(2,1)], markers)
+})

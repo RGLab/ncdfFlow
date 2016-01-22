@@ -195,3 +195,39 @@ setMethod("colnames",
             cols[[1]]
 
         })
+
+#' @rdname flowSet-accessor
+#' @importFrom flowCore markernames
+#' @export
+setMethod("markernames",
+          signature=signature(object="ncdfFlowList"),
+          definition=function(object){
+            
+            markers <- lapply(object, function(k) {
+              res <- suppressWarnings(markernames(k))
+              if(!is.list(res))
+                res <- list(res)
+              res
+            }, level = 1)
+            
+            markers <- unlist(markers, recursive = FALSE)
+            markers <- lapply(markers, sort)
+            markers <- unique(markers)
+            
+            if(length(markers) > 1)
+              warning("colnames not unique across ncdfFlowSets!")
+            else
+              markers <- markers[[1]]
+            markers
+          })
+
+#' @rdname flowSet-accessor
+#' @importFrom flowCore markernames<-
+#' @export
+setReplaceMethod("markernames",
+                 signature=signature(object="ncdfFlowList", value="ANY"), function(object, value){
+                   for(i in seq_along(object@data)){
+                     markernames(object@data[[i]]) <- value
+                   }
+                   object
+                 })
