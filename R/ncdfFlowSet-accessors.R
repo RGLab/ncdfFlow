@@ -402,14 +402,14 @@ setMethod("ncfsApply",
 			FUN <- match.fun(FUN)
 			if(!is.function(FUN))
 				stop("This is not a function!")
-			x<-clone.ncdfFlowSet(x,ncdfFile,isEmpty=FALSE)
+			fs.clone <- clone.ncdfFlowSet(x,ncdfFile,isEmpty = TRUE)
 #						
 			lapply(sampleNames(x),function(n) {
-								y <- as(x[[n]],"flowFrame")
-								y<-FUN(if(use.exprs) exprs(y) else y,...)
-    							x[[n]]<-y
+								fr <- as(x[[n]],"flowFrame")
+								fr <- FUN(if(use.exprs) exprs(fr) else fr,...)
+                                fs.clone[[n]]<- fr
 							})
-			x
+            fs.clone
 		})
 
 
