@@ -390,7 +390,8 @@ setReplaceMethod("[[",
 #' 
 #' #use ncfsApply when FUN returns a flowFrame
 #' lgcl <- logicleTransform( w = 0.5, t= 10000, m =4.5)
-#' nc1 <- ncfsApply(nc, transform, `FL1-H` = lgcl(`FL1-H`), `FL2-H` = lgcl(`FL2-H`))
+#' translist <- transformList(c("FL1-H", "FL2-H"), lgcl)
+#' nc1 <- ncfsApply(nc, transform, translist)
 setMethod("ncfsApply",
 		signature=signature(x="ncdfFlowSet",
 				FUN="ANY"),
@@ -404,11 +405,12 @@ setMethod("ncfsApply",
 				stop("This is not a function!")
 			fs.clone <- clone.ncdfFlowSet(x,ncdfFile,isEmpty = TRUE)
 #						
-			lapply(sampleNames(x),function(n) {
-								fr <- as(x[[n]],"flowFrame")
-								fr <- FUN(if(use.exprs) exprs(fr) else fr,...)
-                                fs.clone[[n]]<- fr
-							})
+			for(n in sampleNames(x))
+            {
+  	    		fr <- as(x[[n]],"flowFrame")
+  		    	fr <- FUN(if(use.exprs) exprs(fr) else fr,...)
+                fs.clone[[n]]<- fr
+            }           
             fs.clone
 		})
 

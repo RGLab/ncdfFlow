@@ -39,6 +39,7 @@ fsApply(nc, range)
 
 #use ncfsApply when FUN returns a flowFrame
 lgcl <- logicleTransform( w = 0.5, t= 10000, m =4.5)
-nc1 <- ncfsApply(nc, transform, `FL1-H` = lgcl(`FL1-H`), `FL2-H` = lgcl(`FL2-H`))
+translist <- transformList(c("FL1-H", "FL2-H"), lgcl)
+nc1 <- ncfsApply(nc, transform, translist)
 }
 
