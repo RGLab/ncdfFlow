@@ -33,5 +33,5 @@ is_equal_flowSet <- function(fs_orig, fs_new, ...){
 }  
 test_package("ncdfFlow")
 
-#test_file("~/rglab/workspace/ncdfFlow/inst/tests/test_ncdfFlowSet_accessor.R")
-#test_file("~/rglab/workspace/ncdfFlow/inst/tests/test_ncdfFlowList.R")
+#test_file("/home/wjiang2/rglab/workspace/ncdfFlow/inst/tests/test_ncdfFlowSet_accessor.R")
+#test_file("/home/wjiang2/rglab/workspace/ncdfFlow/inst/tests/test_ncdfFlowList.R")
