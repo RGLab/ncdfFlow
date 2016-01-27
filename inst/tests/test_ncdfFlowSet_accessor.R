@@ -175,18 +175,6 @@ test_that("ncfsApply", {
       expect_equal(trans_range[, c("FL2-H")], c(0.6312576, 3.7131872))
       expect_false(getFileName(nc1) == getFileName(ncfs))
       
-      #parallel
-      suppressMessages(nc1 <- ncdfFlow:::ncfsApply(ncfs, transform, translist, mc.cores = 4))
-      expect_is(nc1, "ncdfFlowSet")
-      expect_equal(sampleNames(ncfs), sampleNames(nc1))
-      expect_equal(colnames(ncfs), colnames(nc1))
-      #the other channels remain the same
-      is_equal_flowSet(ncfs[, -c(3:4)], nc1[, -c(3:4)], description = FALSE)
-      #tow channels are tranformed
-      trans_range <- apply(exprs(nc1[[sn]]), 2, range)
-      expect_equal(trans_range[, c("FL1-H")], c(0.6312576, 4.0774226)) 
-      expect_equal(trans_range[, c("FL2-H")], c(0.6312576, 3.7131872))
-      expect_false(getFileName(nc1) == getFileName(ncfs))
     })    
 
 test_that("sampleNames<-", {
