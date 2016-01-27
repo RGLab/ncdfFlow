@@ -15,7 +15,7 @@ setGeneric("initIndices",
 setGeneric("ncdfFlowSet", function(x,...) standardGeneric("ncdfFlowSet"))
 
 #' @export 
-setGeneric("ncfsApply",function(x,FUN,...,use.exprs=FALSE,ncdfFile=NULL, mc.cores = NULL)
+setGeneric("ncfsApply",function(x,FUN,...,use.exprs=FALSE,ncdfFile=NULL)
 			standardGeneric("ncfsApply"))    
 #' @export 
 setGeneric("unlink")

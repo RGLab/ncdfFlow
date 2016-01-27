@@ -394,7 +394,7 @@ setReplaceMethod("[[",
 setMethod("ncfsApply",
 		signature=signature(x="ncdfFlowSet",
 				FUN="ANY"),
-		definition=function(x,FUN,...,use.exprs=FALSE,ncdfFile=NULL, mc.cores = NULL)
+		definition=function(x,FUN,...,use.exprs=FALSE,ncdfFile=NULL)
 		{
 			
 			if(missing(FUN))
@@ -403,36 +403,12 @@ setMethod("ncfsApply",
 			if(!is.function(FUN))
 				stop("This is not a function!")
 			fs.clone <- clone.ncdfFlowSet(x,ncdfFile,isEmpty = TRUE)
-            samples <- sampleNames(x)
-            
-            if(!is.null(mc.cores)){
-              
-              if(!any(grepl("parallel", search())))
-                require("parallel")
-              #this is at cost of increasing memory usage
-              #mclapply does not keep element name
-              frlist <- mcmapply(function(sn){
-                                      fr <- as(x[[sn]],"flowFrame")
-                                      FUN(if(use.exprs) exprs(fr) else fr,...)
-                                      }
-                                  ,samples
-                                  , mc.cores = mc.cores
-                                  )
-              #then write in serial                                  
-              for(sn in samples)
-              {
-                fs.clone[[sn]]<- frlist[[sn]]
-               }                   
-                  
-            }else{
-              for(sn in samples)
-              {
-                fr <- as(x[[sn]],"flowFrame")
-                fr <- FUN(if(use.exprs) exprs(fr) else fr,...)
-                fs.clone[[sn]]<- fr
-              }  
-            }
-			
+#						
+			lapply(sampleNames(x),function(n) {
+								fr <- as(x[[n]],"flowFrame")
+								fr <- FUN(if(use.exprs) exprs(fr) else fr,...)
+                                fs.clone[[n]]<- fr
+							})
             fs.clone
 		})
 
@@ -445,9 +421,9 @@ setMethod("ncfsApply",
 setMethod("compensate",
 		signature=signature(x="ncdfFlowSet",
 				spillover="ANY"),
-		definition=function(x, spillover, ...)
+		definition=function(x, spillover)
 		{
-			ncfsApply(x, compensate, spillover, ...)
+			ncfsApply(x, compensate, spillover)
 			
 		}
 
