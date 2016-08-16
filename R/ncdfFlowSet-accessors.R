@@ -430,6 +430,35 @@ setMethod("compensate",
 		}
 
 )
+
+#' @rdname flowSet-accessor
+setMethod("compensate",
+    signature=signature(x="flowSet",
+        spillover="data.frame"),
+    definition=function(x, spillover)
+      selectMethod("compensate"
+          , signature=signature(x="ncdfFlowSet",spillover="ANY"))(x, spillover)
+)
+
+
+#' @rdname flowSet-accessor
+setMethod("compensate",
+    signature=signature(x="ncdfFlowSet",
+        spillover="list"),
+    definition=function(x, spillover)
+    {
+      samples <- sampleNames(x)
+      if(!setequal(names(spillover), samples))
+        stop("names of the compensation list must match the sample names of 'ncdfFlowSet'!")
+      
+      fs.clone <- clone.ncdfFlowSet(x, isEmpty = FALSE)
+      for(sn in samples)
+      {
+        fs.clone[[sn]]<- compensate(fs.clone[[sn]], spillover[[sn]])
+      }           
+      fs.clone
+    })
+
 #' @param _data \code{ncdfFlowSet}
 #' @param ... other arguments
 #' @rdname flowSet-accessor
