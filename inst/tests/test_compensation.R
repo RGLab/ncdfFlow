@@ -32,4 +32,11 @@ test_that("compensate", {
       comp.fs4 <- compensate(comp.fs, comp)
       expect_failure(expect_equal(fsApply(comp.fs4, colMeans, use.exprs = TRUE)
               , expectRes[["trans.comp"]]), regexp = "8.399298e-06")
+      
+      #extra comp element
+      comp <- sapply(sampleNames(comp.fs), function(sn)comp.mat, simplify = FALSE)
+      comp[["dd"]] <- 1:10
+      comp.fs5 <- compensate(comp.fs, comp)
+      expect_equal(fsApply(comp.fs5, colMeans, use.exprs = TRUE), expectRes[["trans.comp"]])
+      
 })
