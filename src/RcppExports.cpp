@@ -10,47 +10,35 @@ using namespace Rcpp;
 Rcpp::RawVector toBitVec(Rcpp::LogicalVector indx);
 RcppExport SEXP ncdfFlow_toBitVec(SEXP indxSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type indx(indxSEXP );
-        Rcpp::RawVector __result = toBitVec(indx);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type indx(indxSEXP);
+    __result = Rcpp::wrap(toBitVec(indx));
+    return __result;
 END_RCPP
 }
 // toLogical
 Rcpp::LogicalVector toLogical(Rcpp::RawVector bytes);
 RcppExport SEXP ncdfFlow_toLogical(SEXP bytesSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< Rcpp::RawVector >::type bytes(bytesSEXP );
-        Rcpp::LogicalVector __result = toLogical(bytes);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Rcpp::RawVector >::type bytes(bytesSEXP);
+    __result = Rcpp::wrap(toLogical(bytes));
+    return __result;
 END_RCPP
 }
 // readFrame
 Rcpp::S4 readFrame(Rcpp::S4 x, Rcpp::RObject i_obj, Rcpp::RObject j_obj, bool useExpr);
 RcppExport SEXP ncdfFlow_readFrame(SEXP xSEXP, SEXP i_objSEXP, SEXP j_objSEXP, SEXP useExprSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< Rcpp::S4 >::type x(xSEXP );
-        Rcpp::traits::input_parameter< Rcpp::RObject >::type i_obj(i_objSEXP );
-        Rcpp::traits::input_parameter< Rcpp::RObject >::type j_obj(j_objSEXP );
-        Rcpp::traits::input_parameter< bool >::type useExpr(useExprSEXP );
-        Rcpp::S4 __result = readFrame(x, i_obj, j_obj, useExpr);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Rcpp::S4 >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type i_obj(i_objSEXP);
+    Rcpp::traits::input_parameter< Rcpp::RObject >::type j_obj(j_objSEXP);
+    Rcpp::traits::input_parameter< bool >::type useExpr(useExprSEXP);
+    __result = Rcpp::wrap(readFrame(x, i_obj, j_obj, useExpr));
+    return __result;
 END_RCPP
 }
