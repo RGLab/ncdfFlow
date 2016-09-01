@@ -312,7 +312,7 @@ test_that("clone.ncdfFlowSet", {
       
       nc1 <- ncfs[1:2]
       ##clone the ncdfFlowSet object,by default the actual raw data is not added
-      nc2 <- clone.ncdfFlowSet(nc1,"clone.nc")
+      nc2 <- clone.ncdfFlowSet(nc1,"clone.nc", isEmpty = TRUE)
       expect_equal(nrow(nc2[[1]]), 0)
       expect_equal(getFileName(nc2), "clone.nc")
       
@@ -320,7 +320,7 @@ test_that("clone.ncdfFlowSet", {
       suppressMessages(nc2[[1]] <- nc1[[1]])
       is_equal_flowFrame(nc1[[1]], nc2[[1]])
       
-      suppressMessages(nc2 <- clone.ncdfFlowSet(nc1, "clone.nc", isEmpty = FALSE))
+      suppressMessages(nc2 <- clone.ncdfFlowSet(nc1, "clone.nc"))
       is_equal_flowSet(nc1, nc2)
       expect_equal(getFileName(nc2), "clone.nc")
       expect_false(identical(nc2@frames, nc1@frames))

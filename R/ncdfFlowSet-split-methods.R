@@ -96,7 +96,7 @@ setMethod("split",
 			for(p in seq_along(population)){
 				tp <- population[p]
 
-				ncfs<-clone.ncdfFlowSet(x,isNew = FALSE)
+				ncfs<-clone.ncdfFlowSet(x,isNew = FALSE, isEmpty = TRUE)
 				for(i in 1:lf){
 					tp <- unlist(tp)
 					curMultiFilterResult<-f[[i]]
@@ -119,7 +119,7 @@ setMethod("split",
 				}
 				np <- names(population)[p]
 				if(isNew)
-					ncfs<-clone.ncdfFlowSet(ncfs,isEmpty = FALSE,isNew=TRUE)
+					ncfs<-clone.ncdfFlowSet(ncfs)
 				
 				finalRes[[np]] <- ncfs
 				phenoData(finalRes[[np]])$population <- np
@@ -152,7 +152,7 @@ setMethod("split",
 			for(g in seq_along(gind)){
 				ncfs<-x[sampleNames(x)[gind[[g]]]]
 				if(isNew)
-					ncfs<-clone.ncdfFlowSet(ncfs,isEmpty=FALSE,isNew=TRUE)
+					ncfs<-clone.ncdfFlowSet(ncfs)
 				res[[g]] <-ncfs
 				
 #				phenoData(res[[g]])$split <- levels(f)[g]
