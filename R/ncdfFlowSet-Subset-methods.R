@@ -16,7 +16,7 @@ setMethod("Subset",
 		{
 			flowCore:::validFilterResultList(subset, x, strict=FALSE)
 
-			ncfs<-clone.ncdfFlowSet(x,isNew=FALSE)
+			ncfs<-clone.ncdfFlowSet(x,isNew=FALSE,isEmpty = TRUE)
 
 			for(i in names(subset)) {
 					
@@ -115,7 +115,7 @@ setMethod("Subset",
           }else
             used <- nn
           
-		ncfs<-clone.ncdfFlowSet(x,isNew=FALSE)
+		ncfs<-clone.ncdfFlowSet(x,isNew=FALSE,isEmpty = TRUE)
 		for(i in used) {
 #				
 			rawIndice<-getIndices(x,i)

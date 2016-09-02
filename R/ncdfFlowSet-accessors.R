@@ -451,10 +451,10 @@ setMethod("compensate",
       if(!all(samples %in% names(spillover)))
         stop("names of the compensation list must match the sample names of 'ncdfFlowSet'!")
       
-      fs.clone <- clone.ncdfFlowSet(x, isEmpty = FALSE)
+      fs.clone <- clone.ncdfFlowSet(x, isEmpty = TRUE)
       for(sn in samples)
       {
-        fs.clone[[sn]]<- compensate(fs.clone[[sn]], spillover[[sn]])
+        fs.clone[[sn]]<- compensate(x[[sn]], spillover[[sn]])
       }           
       fs.clone
     })

@@ -4,7 +4,7 @@
 \alias{clone.ncdfFlowSet}
 \title{Clone a ncdfFlowSet}
 \usage{
-clone.ncdfFlowSet(ncfs, ncdfFile = NULL, isEmpty = TRUE, isNew = TRUE,
+clone.ncdfFlowSet(ncfs, ncdfFile = NULL, isEmpty = FALSE, isNew = TRUE,
   dim = 2, compress = 0)
 }
 \arguments{
@@ -39,9 +39,12 @@ files<-list.files(path,full.names=TRUE)[1:3]
 #create ncdfFlowSet from fcs
 nc1  <- read.ncdfFlowSet(files=files,ncdfFile="ncfsTest.nc",flowSetId="fs1",isWriteSlice= TRUE)
 
-##clone the ncdfFlowSet object,by default the actual raw data is not added
+##clone the ncdfFlowSet object
 nc2<-clone.ncdfFlowSet(nc1,"clone.nc")
 nc2[[1]]
+
+#optionally create the empty hdf file without writting the acutal flow data into it
+nc2 <- clone.ncdfFlowSet(nc1,"clone.nc", isEmpty = TRUE)
 
 #add the actual raw data
 fs1  <- read.flowSet(files=files)
