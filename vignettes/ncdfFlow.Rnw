@@ -35,6 +35,7 @@
 \author{Mike Jiang,Greg Finak,N. Gopalakrishnan}
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 \maketitle
 
 \begin{abstract}
@@ -90,7 +91,7 @@ We provide a function to read FCS files into a \Rclass{ncdfFlowSet} object:
 <<ncdfFlowSet, echo=true, results=verbatim>>=
 path<-system.file("extdata","compdata","data",package="flowCore")
 files<-list.files(path,full.names=TRUE)[1:3]
-nc1 <- read.ncdfFlowSet(files=files,ncdfFile="ncfsTest.nc")
+nc1 <- read.ncdfFlowSet(files=files)
 nc1
 @
 
@@ -111,7 +112,7 @@ rm(nc1)
 Users can also create an empty ncdfFlowSet first and add data slices later by assigning argument isWriteSlice as FALSE.
 
 <<ncdfFlowSet, echo=true,results=verbatim>>=
-nc1  <- read.ncdfFlowSet(files=files,ncdfFile="ncfsTest.nc",isWriteSlice= FALSE)
+nc1  <- read.ncdfFlowSet(files=files, isWriteSlice= FALSE)
 nc1[[1]]
 @
 
@@ -131,7 +132,7 @@ Because the sample name is the identifier used to index the data matrix.
 Sometime it is helpful to copy the structure from an existing ncdfFlow object and then add the data slice to the empty ncdfFlow cloned by
  \Rfunction{clone.ncdfFlowSet}.
 <<ncdfFlowSet, echo=true,results=hide>>=
-nc2<-clone.ncdfFlowSet(nc1,"clone.nc")
+nc2 <- clone.ncdfFlowSet(nc1, isEmpty = TRUE)
 nc2[[1]]
 nc2[[sampleNames(fs1)[1]]] <- fs1[[1]]
 nc2[[1]]
