@@ -558,7 +558,7 @@ setReplaceMethod("colnames",
         stop("length of new colnames doesn't match with the old one",call.=FALSE)
       
       #get the index of the colnames in the original colnames vector
-      colIndex<-which(x@origColnames%in%x@colnames)
+      colIndex <- match(x@colnames, x@origColnames)
       x@colnames <- value#update colnames slot
       x@origColnames[colIndex]<-value#update the original colnames baed on the inex
       
