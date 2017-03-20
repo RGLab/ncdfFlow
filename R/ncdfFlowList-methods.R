@@ -58,8 +58,25 @@ setMethod("filter",
       selectMethod("filter", signature = c("flowSet", "filter"))(x, filter)
     })
 
+#' @rdname flowSet-accessor
+#' @export 
+setMethod("filter",
+    signature=signature(x="ncdfFlowList",
+        filter="filterList"),
+    definition=function(x, filter, method = "missing", sides = "missing", circular = "missing", init = "missing")
+    {
+      selectMethod("filter", signature = c("flowSet", "filterList"))(x, filter)
+    })
 
-
+#' @rdname flowSet-accessor
+#' @export 
+setMethod("filter",
+    signature=signature(x="ncdfFlowList",
+        filter="list"),
+    definition=function(x, filter, method = "missing", sides = "missing", circular = "missing", init = "missing")
+    {
+      selectMethod("filter", signature = c("flowSet", "list"))(x, filter)
+    })
 
 #' @aliases 
 #' length,ncdfFlowList-method

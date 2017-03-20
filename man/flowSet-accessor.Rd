@@ -11,6 +11,8 @@
 \alias{compensate,ncdfFlowSet,ANY-method}
 \alias{compensate,ncdfFlowSet,list-method}
 \alias{filter,ncdfFlowList,filter-method}
+\alias{filter,ncdfFlowList,filterList-method}
+\alias{filter,ncdfFlowList,list-method}
 \alias{length,ncdfFlowList-method}
 \alias{markernames,ncdfFlowList-method}
 \alias{markernames<-,ncdfFlowList-method}
@@ -25,6 +27,12 @@
 \title{Accessors compatible with those for \code{flowSet}}
 \usage{
 \S4method{filter}{ncdfFlowList,filter}(x, filter, method = "missing",
+  sides = "missing", circular = "missing", init = "missing")
+
+\S4method{filter}{ncdfFlowList,filterList}(x, filter, method = "missing",
+  sides = "missing", circular = "missing", init = "missing")
+
+\S4method{filter}{ncdfFlowList,list}(x, filter, method = "missing",
   sides = "missing", circular = "missing", init = "missing")
 
 \S4method{length}{ncdfFlowList}(x)
