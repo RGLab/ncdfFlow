@@ -89,7 +89,7 @@ setMethod("ncdfFlowSet",
             
             
 			#create new ncdf file			
-			msgCreate <-.Call(C_ncdfFlow_createFile, ncdfFile, as.integer(ncfs@maxEvents), 
+			msgCreate <- createFile(ncdfFile, as.integer(ncfs@maxEvents), 
 							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)), dim, as.integer(compress))
 			if(!msgCreate)stop()
                         initIndices(ncfs)			
@@ -344,7 +344,7 @@ setReplaceMethod("[[",
           
         }
         #write to disk
-        msgWrite <- .Call(C_ncdfFlow_writeSlice, ncfs@file, newData, as.integer(chIndx), as.integer(sampleInd), as.integer(compress))
+        msgWrite <- writeSlice(ncfs@file, newData, as.integer(chIndx), as.integer(sampleInd), as.integer(compress))
         
         if(!msgWrite)
         {

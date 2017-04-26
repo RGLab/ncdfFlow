@@ -9,6 +9,30 @@ toLogical <- function(bytes) {
     .Call('ncdfFlow_toLogical', PACKAGE = 'ncdfFlow', bytes)
 }
 
+createFile <- function(filename, nEvent, nChannel, nSample, nDim, nCompressionRatio) {
+    .Call('ncdfFlow_createFile', PACKAGE = 'ncdfFlow', filename, nEvent, nChannel, nSample, nDim, nCompressionRatio)
+}
+
+open_hdf <- function(filename, flags, fileid, dataset, dataspace, is3d) {
+    invisible(.Call('ncdfFlow_open_hdf', PACKAGE = 'ncdfFlow', filename, flags, fileid, dataset, dataspace, is3d))
+}
+
+writeSlice <- function(filename, data, chIndx, sampleIndx, nRatio) {
+    .Call('ncdfFlow_writeSlice', PACKAGE = 'ncdfFlow', filename, data, chIndx, sampleIndx, nRatio)
+}
+
+get_event_number <- function(fileid, dataset, dataspace, sampleIndx, is3d) {
+    .Call('ncdfFlow_get_event_number', PACKAGE = 'ncdfFlow', fileid, dataset, dataspace, sampleIndx, is3d)
+}
+
+close_hdf <- function(fileid) {
+    invisible(.Call('ncdfFlow_close_hdf', PACKAGE = 'ncdfFlow', fileid))
+}
+
+readSlice <- function(fileid, dataset, dataspace, chIndx, sampleIndx, nEvents, data_out, is3d) {
+    invisible(.Call('ncdfFlow_readSlice', PACKAGE = 'ncdfFlow', fileid, dataset, dataspace, chIndx, sampleIndx, nEvents, data_out, is3d))
+}
+
 readFrame <- function(x, i_obj, j_obj, useExpr) {
     .Call('ncdfFlow_readFrame', PACKAGE = 'ncdfFlow', x, i_obj, j_obj, useExpr)
 }

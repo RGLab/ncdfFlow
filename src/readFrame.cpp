@@ -1,301 +1,9 @@
-#include "hdf5.h"
-
-#define DATASETNAME3d "/exprsMat"
-#define MAXLEN 100//max character length of sample index
-
-#define TRUE            1
-#define FALSE           0
-
-
-#include <boost/lexical_cast.hpp>
-#include <RcppArmadillo.h>
-
+#include "hdfFlow.h"
 typedef std::vector<std::string> strVec;
 typedef std::vector<int> intVec;
 typedef std::vector<unsigned> uintVec;
 typedef std::vector<bool> boolVec;
 
-#define MSG_SIZE       1024
-herr_t my_hdf5_error_handler(unsigned n, const H5E_error2_t *err_desc, void *client_data)
-{
-	char                maj[MSG_SIZE];
-	char                min[MSG_SIZE];
-
-	const int		indent = 4;
-
-	if(H5Eget_msg(err_desc->maj_num, NULL, maj, MSG_SIZE)<0)
-		return -1;
-
-	if(H5Eget_msg(err_desc->min_num, NULL, min, MSG_SIZE)<0)
-		return -1;
-
-	REprintf("%*s error #%03d: in %s(): line %u\n",
-		 indent, "", n, err_desc->func_name, err_desc->line);
-	REprintf("%*smajor: %s\n", indent*2, "", maj);
-	REprintf("%*sminor: %s\n", indent*2, "", min);
-
-   return 0;
-}
-
-/*
- * customize the printing function so that it print to R error console
- * also raise the R error once the error stack printing is done
- */
-herr_t custom_print_cb(hid_t estack, void *client_data)
-{
-	hid_t estack_id = H5Eget_current_stack();//copy stack before it is corrupted by my_hdf5_error_handler
-	H5Ewalk2(estack_id, H5E_WALK_DOWNWARD, my_hdf5_error_handler, client_data);
-	H5Eclose_stack(estack_id);
-	Rcpp::stop("hdf Error");
-    return 0;
-
-}
-
-
-// [[Rcpp::plugins(hdf5)]]
-// [[Rcpp::depends(BH,RcppArmadillo)]]
-Rcpp::NumericVector readSlice_cpp(std::string fName
-								, std::vector<unsigned> chIndx
-								, unsigned sampleIndx
-								, unsigned & nEvents
-								)
-{
-
-	H5Eset_auto2(H5E_DEFAULT, (H5E_auto2_t)custom_print_cb, NULL);
-
-
-    Rcpp::NumericVector res;
-
-	int chCount = chIndx.size();
-    /*
-     * determine the dataset format
-     */
-	hid_t       file, dataset,dataspace, memspace;         /* handles */
-	hsize_t 	dimsm[2]; //dimenstions
-	herr_t      status;
-
-	file = H5Fopen(fName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
-	status = H5Lexists(file, DATASETNAME3d, H5P_DEFAULT);
-
-	int is3d;
-	dataset = -1;
-
-	if(status == TRUE){
-		dataset = H5Dopen2(file, DATASETNAME3d, H5P_DEFAULT);
-		dataspace = H5Dget_space(dataset);    /* dataspace handle */
-		int nDim = H5Sget_simple_extent_ndims(dataspace);
-		is3d = nDim == 3;
-	}
-	else
-		is3d = 0;
-	/*
-	 * read data from 3d mat
-	 */
-	if(is3d)
-	{
-
-		/*
-		 * get the total number of events for the current sample
-		 */
-		hsize_t dims[3];
-		hid_t attrID;
-		status  = H5Sget_simple_extent_dims(dataspace, dims, NULL); //get dimensions of datset
-		unsigned nSample = dims[0];//get total number of samples
-		if(sampleIndx >= nSample)
-			Rcpp::stop("readSlice error!sample index exceeds the boundary.");
-		unsigned * eCount = (unsigned *) malloc(sizeof(unsigned) * nSample);
-		attrID = H5Aopen(dataset, "eventCount", H5P_DEFAULT);
-		status = H5Aread(attrID, H5T_NATIVE_UINT32, eCount);
-		nEvents = eCount[sampleIndx];
-		free(eCount);
-		H5Aclose(attrID);
-
-		/*
-		 * these two lines is the reason for the _readSlice to be inline code
-		 * because we need to open hdf file to get events info
-		 *
-		 */
-
-		res = Rcpp::NumericVector(nEvents * chCount);
-		double *data_out = REAL(res.get__());
-
-
-		/*
-		 * Define the memory dataspace.
-		 */
-		dimsm[0] = chCount;
-		dimsm[1] = nEvents;
-		memspace = H5Screate_simple(2,dimsm,NULL);
-
-
-		/*
-		 * Define hyperslab in the dataset.
-		 */
-		hsize_t      count[3];              /* size of the hyperslab in the file */
-		hsize_t      offset[3];             /* hyperslab offset in the file */
-		hsize_t      count_out[2];          /* size of the hyperslab in memory */
-		hsize_t      offset_out[2];         /* hyperslab offset in memory */
-
-		unsigned i;
-		for(i = 0; i < chCount; i++){
-			int colStart = chIndx.at(i);
-			offset[0] = sampleIndx;//start from sampleIndx-th sample
-			offset[1] = colStart; //start from colStart-th channel
-			offset[2] = 0; //start from the first event
-
-			count[0]  = 1;//get one sample
-			count[1]  = 1;//get one channel
-			count[2]  = nEvents; //get all events
-
-
-			status = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, offset, NULL,
-												count, NULL);
-
-
-			/*
-			 * Define memory hyperslab.
-			 */
-			offset_out[0] = i;//start from ith column
-			offset_out[1] = 0;//start from 0th event
-
-			count_out[0]  = 1;//one channel
-			count_out[1]  = nEvents; //all events
-			status = H5Sselect_hyperslab(memspace, H5S_SELECT_SET, offset_out, NULL,
-						 count_out, NULL);
-
-			/*
-			 * Read data from hyperslab in the file into the hyperslab in
-			 * memory .
-			 */
-			status = H5Dread(dataset, H5T_NATIVE_DOUBLE, memspace, dataspace,
-					 H5P_DEFAULT, data_out);
-
-		}
-		H5Dclose(dataset);
-		H5Sclose(dataspace);
-		H5Sclose(memspace);
-	}
-	else
-	{
-		/*
-		 * read 2d format
-		 */
-
-		/*
-		 * convert index to string to be used as dataset name
-		 * because dataset can not be renamed once created in hdf
-		 */
-		std::string sampleName = boost::lexical_cast<std::string>(sampleIndx);
-		/*
-		 * Open the file and the dataset.
-		 */
-		if(dataset>0)
-		{
-			//close it if it was previously opened for checking dimension
-			H5Dclose(dataset);
-			H5Sclose(dataspace);
-		}
-
-		status = H5Lexists(file, sampleName.c_str(), H5P_DEFAULT);
-		if(status == TRUE)
-		{
-
-			dataset = H5Dopen2(file, sampleName.c_str(), H5P_DEFAULT);
-			dataspace = H5Dget_space(dataset);    /* dataspace handle */
-
-
-			/*
-			 * get the total number of events for the current sample
-			 */
-			hsize_t dims[2];
-
-			status  = H5Sget_simple_extent_dims(dataspace, dims, NULL); //get dimensions of datset
-			nEvents = dims[1];
-
-
-
-			res = Rcpp::NumericVector(nEvents * chCount);
-			double *data_out = REAL(res.get__());
-
-			/*
-			 * Define the memory dataspace.
-			 */
-			dimsm[0] = chCount;
-			dimsm[1] = nEvents;
-			memspace = H5Screate_simple(2,dimsm,NULL);
-
-
-			/*
-			 * Define hyperslab in the dataset.
-			 */
-			hsize_t      count[2];              /* size of the hyperslab in the file */
-			hsize_t      offset[2];             /* hyperslab offset in the file */
-			hsize_t      count_out[2];          /* size of the hyperslab in memory */
-			hsize_t      offset_out[2];         /* hyperslab offset in memory */
-
-			unsigned i;
-			for(i = 0; i < chCount; i++){
-				int colStart = chIndx.at(i);
-				offset[0] = colStart; //start from colStart-th channel
-				offset[1] = 0; //start from the first event
-
-				count[0]  = 1;//get one channel
-				count[1]  = nEvents; //get all events
-
-
-				status = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, offset, NULL,
-													count, NULL);
-
-
-				/*
-				 * Define memory hyperslab.
-				 */
-				offset_out[0] = i;//start from ith column
-				offset_out[1] = 0;//start from 0th event
-
-				count_out[0]  = 1;//one channel
-				count_out[1]  = nEvents; //all events
-				status = H5Sselect_hyperslab(memspace, H5S_SELECT_SET, offset_out, NULL,
-							 count_out, NULL);
-
-				/*
-				 * Read data from hyperslab in the file into the hyperslab in
-				 * memory .
-				 */
-				status = H5Dread(dataset, H5T_NATIVE_DOUBLE, memspace, dataspace,
-						 H5P_DEFAULT, data_out);
-
-			}
-
-			H5Sclose(dataspace);
-			H5Sclose(memspace);
-			H5Dclose(dataset);
-		}
-		else
-		{
-			nEvents = 0;
-
-			res = Rcpp::NumericVector(nEvents * chCount);
-
-		}
-
-	}
-
-
-
-	H5Fclose(file);
-    return(res);
-}
-
-
-
-/*
- * The reason we have to inline the code from _readSlice is two fold:
- * 1. in order to use the memory buffer dynamically allocated by R, which is transient within the call
- *    and its size if decided by the events number stored in hdf
- * 2. we want to query the hdf format in order to dispatch to the different logic of IO
- * Both requires the hdf query, which causes disk IO, thus we do it here directly so that hdf only needs to be opened once
- */
 // [[Rcpp::export]]
 Rcpp::S4 readFrame(Rcpp::S4 x
 					, Rcpp::RObject i_obj
@@ -428,7 +136,7 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 	  * read data from hdf
 	  */
 	if(useExpr){
-		unsigned nrows;
+
 		Rcpp::StringVector origChNames = x.slot("origColnames");
 		unsigned nCh = ch_selected.size();
 		unsigned nOrig = origChNames.size();
@@ -496,8 +204,18 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 	      }
 	      Rcpp::String file = x.slot("file");
 
-	      Rcpp::NumericVector mat = readSlice_cpp(file, chIndx, samplePos, nrows);
+	      //open hdf
+	      bool is3d;
+	      hid_t fileid, dataset, dataspace;
+	      open_hdf(file, H5F_ACC_RDONLY, fileid, dataset, dataspace, is3d);
 
+	      //query nrows
+	      unsigned nEvents = get_event_number(fileid, dataset, dataspace, samplePos, is3d);
+	      //allocate buffer
+	      Rcpp::NumericVector mat(nEvents * nCh);
+	      if(dataset>0)//make sure the dataset is opened before making readSlice call
+	    	readSlice(fileid, dataset, dataspace, chIndx, samplePos, nEvents, mat, is3d);//read data from hdf to buffer
+	      close_hdf(fileid);
 
 //	      subset data by indices if necessary
 	      if(subByIndice){
@@ -524,13 +242,13 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 
 			  mat = Rcpp::as<Rcpp::NumericVector>(Rcpp::wrap(subMat));
 			  //update nrows
-			  nrows = uindx.size();
+			  nEvents = uindx.size();
 	      }
 
 
 	  //set dims
 		Rcpp::IntegerVector dims(2);
-		dims[0] = nrows;
+		dims[0] = nEvents;
 		dims[1]=  nCh;
 		mat.attr("dim") = dims;
 	  // attach column names

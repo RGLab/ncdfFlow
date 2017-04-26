@@ -25,6 +25,7 @@
 								<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.466841969" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.777348436" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/home/wjiang2/R/r-devel/build/library/Rcpp/include"/>
+									<listOptionValue builtIn="false" value="/app/hdf5/1.8.13/include"/>
 									<listOptionValue builtIn="false" value="/home/wjiang2/R/r-devel/build/library/RcppArmadillo/include"/>
 									<listOptionValue builtIn="false" value="/home/wjiang2/R/r-release/build/include"/>
 								</option>

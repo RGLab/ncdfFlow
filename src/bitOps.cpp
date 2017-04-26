@@ -20,7 +20,7 @@ Rcpp::RawVector toBitVec(Rcpp::LogicalVector indx) {
 Rcpp::LogicalVector toLogical(Rcpp::RawVector bytes) {
 
 	unsigned nBit = bytes.attr("bitlen");
-	unsigned nByte = bytes.size();
+//	unsigned nByte = bytes.size();
     Rcpp::LogicalVector ans(nBit);//default are all 0s
 
     unsigned byteIndex, bitIndex;
