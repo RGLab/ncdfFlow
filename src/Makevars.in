@@ -1,18 +1,17 @@
-PKG_CPPFLAGS=@PKG_CPPFLAGS@
-PKG_LIBS=@PKG_LIBS@
+PKG_LIBS=`${R_HOME}/bin/Rscript -e 'rhdf5:::LdFlags()'`
 
-#USERDIR = ${R_PACKAGE_DIR}/lib${R_ARCH}
-#USERLIB = ${USERDIR}/libncdfFlow.a
+USERDIR = ${R_PACKAGE_DIR}/lib${R_ARCH}
+USERLIB = ${USERDIR}/libncdfFlow.a
 
  
-#all:  $(SHLIB)
+all:  $(SHLIB)
 
-#$(SHLIB): $(USERLIB)
+$(SHLIB): $(USERLIB)
 
 #expose static lib for other package to link to 
-#$(USERLIB): $(OBJECTS)
-#	mkdir -p "${USERDIR}"
-#	$(AR) rs "${USERLIB}" $(OBJECTS)
+$(USERLIB): $(OBJECTS)
+	mkdir -p "${USERDIR}"
+	$(AR) rs "${USERLIB}" $(OBJECTS)
 
 
 
