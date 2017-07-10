@@ -21,8 +21,7 @@ Imports:
 Suggests:
     testthat,parallel
 License: Artistic-2.0
-SystemRequirements: hdf5 (>= 1.8.0)
 biocViews: FlowCytometry
 Packaged: 2011-04-04 18:33:38 UTC; Jiang
-LinkingTo: Rcpp,RcppArmadillo,BH, rhdf5(>= 2.19.7)
+LinkingTo: Rcpp,RcppArmadillo,BH, Rhdf5lib
 RoxygenNote: 5.0.1
