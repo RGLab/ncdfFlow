@@ -3,8 +3,15 @@ PKG_CXXFLAGS += -IincludeWin$(arch) -DWINDOWS
 PKG_LIBS += -L. -llibhdf5ForBioC-7
 
 .PHONY: all libhdf5ForBioC
-all: libhdf5ForBioC $(SHLIB)
+
+all: libhdf5ForBioC $(SHLIB) #$(USERLIB)
 ##dll has to be copied to the src root in order for R to install it properly
 libhdf5ForBioC:
 	cp includeWin${R_ARCH}/* includeWin/
-	cp libwin${R_ARCH}/*.dll .
+#	cp libwin${R_ARCH}/*.dll .
+	
+#expose static lib for other package to link to 
+#$(USERLIB): $(OBJECTS)
+#	mkdir -p "${USERDIR}"
+#	$(AR) rs "${USERLIB}" $(OBJECTS)
+	

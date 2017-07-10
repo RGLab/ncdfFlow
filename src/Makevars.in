@@ -1,7 +1,18 @@
 PKG_CPPFLAGS=@PKG_CPPFLAGS@
 PKG_LIBS=@PKG_LIBS@
 
+#USERDIR = ${R_PACKAGE_DIR}/lib${R_ARCH}
+#USERLIB = ${USERDIR}/libncdfFlow.a
 
+ 
+#all:  $(SHLIB)
+
+#$(SHLIB): $(USERLIB)
+
+#expose static lib for other package to link to 
+#$(USERLIB): $(OBJECTS)
+#	mkdir -p "${USERDIR}"
+#	$(AR) rs "${USERLIB}" $(OBJECTS)
 
 
 

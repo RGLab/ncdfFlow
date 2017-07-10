@@ -1,13 +1,14 @@
-#include "hdfFlow.h"
+#include <Rconfig.h>
+#include <Rinternals.h>
+#include <R_ext/Rdynload.h>
+#include "../inst/include/ncdfFlowAPI.h"
 
-static const R_CallMethodDef CallEntries[] = {
-    {"createFile", (DL_FUNC)&createFile, 6},
-    {"writeSlice", (DL_FUNC)&writeSlice, 5},
-    {NULL, NULL, 0}
-};
 
 void R_init_ncdfFlow(DllInfo *dll)
 {
-    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
 
+	R_RegisterCCallable("ncdfFlow","ncdfFlow_open_hdf",(DL_FUNC) &ncdfFlow_open_hdf);
+	R_RegisterCCallable("ncdfFlow","ncdfFlow_get_event_number",(DL_FUNC) &ncdfFlow_get_event_number);
+	R_RegisterCCallable("ncdfFlow","ncdfFlow_readSlice",(DL_FUNC) &ncdfFlow_readSlice);
+	R_RegisterCCallable("ncdfFlow","ncdfFlow_close_hdf",(DL_FUNC) &ncdfFlow_close_hdf);
 }

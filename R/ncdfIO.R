@@ -210,7 +210,7 @@ read.ncdfFlowSet <- function(files = NULL
 
 
 	#create empty cdf file
-	msgCreate <- .Call(C_ncdfFlow_createFile, ncdfFile, as.integer(maxEvents), 
+	msgCreate <- createFile(ncdfFile, as.integer(maxEvents), 
 					length(chnls_common), as.integer(nFile), dim, as.integer(compress))
 	if(!msgCreate)stop()
 #	
@@ -369,7 +369,7 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=FALSE,isNew=TRUE, dim = 2
 		}
 
 		
-		msgCreate <- .Call(C_ncdfFlow_createFile, ncdfFile, as.integer(ncfs@maxEvents), 
+		msgCreate <- createFile(ncdfFile, as.integer(ncfs@maxEvents), 
 				as.integer(length(colnames(ncfs))), as.integer(length(ncfs)), dim, as.integer(compress))
 		if(!msgCreate)stop("make sure the file does not exist already or your have write permission to the folder!")
 #		
