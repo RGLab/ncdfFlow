@@ -21,4 +21,3 @@ when level = 2 (default value),\code{FUN} is applied to each sample. When level 
 Depending on \code{level} parameter, loop either iterates through the list of ncdfFlowSet objects 
 or every\code{flowFrame} objects.
 }
-

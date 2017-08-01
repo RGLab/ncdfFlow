@@ -39,4 +39,3 @@ ncfslist <- ncdfFlowList(list(nc1,nc2,nc3))
 nc4 <- rbind2(ncfslist)
 nc4
 }
-

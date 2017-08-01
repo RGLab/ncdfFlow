@@ -2,8 +2,8 @@
 % Please edit documentation in R/AllClasses.R, R/ncdfFlowList-methods.R
 \docType{class}
 \name{ncdfFlowList-class}
-\alias{ncdfFlowList}
 \alias{ncdfFlowList-class}
+\alias{ncdfFlowList}
 \alias{show,ncdfFlowList-method}
 \title{a class that stores multiple ncdfFlowSet objects}
 \usage{
@@ -44,6 +44,7 @@ as("ncdfFlowList",nclist = .... #a list of ncdfFlowSet objects)
                        be different from the physical storing order.}
 }
 }
+
 \examples{
 data(GvHD)
 nc1 <- ncdfFlowSet(GvHD[1])
@@ -60,4 +61,3 @@ collapsedData
 \seealso{
 \code{\link{ncdfFlowSet}}
 }
-

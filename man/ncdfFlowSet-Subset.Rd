@@ -2,10 +2,10 @@
 % Please edit documentation in R/ncdfFlowSet-Subset-methods.R
 \docType{methods}
 \name{Subset,ncdfFlowSet,filterResultList-method}
-\alias{Subset,ncdfFlowList,filter-method}
+\alias{Subset,ncdfFlowSet,filterResultList-method}
 \alias{Subset,ncdfFlowList,filterResultList-method}
 \alias{Subset,ncdfFlowSet,filter-method}
-\alias{Subset,ncdfFlowSet,filterResultList-method}
+\alias{Subset,ncdfFlowList,filter-method}
 \alias{Subset,ncdfFlowSet,list-method}
 \title{subset a ncdfFlowSet by filter}
 \usage{
@@ -33,4 +33,3 @@ one or more \code{ncdfFlowSet} objects which share the same hdf5 file with the o
 \description{
 Equivalent to \code{Subset} method for \code{flowSet}.
 }
-

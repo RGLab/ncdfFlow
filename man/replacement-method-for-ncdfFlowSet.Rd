@@ -2,9 +2,9 @@
 % Please edit documentation in R/ncdfFlowSet-accessors.R
 \docType{methods}
 \name{replacement method for ncdfFlowSet}
-\alias{[[<-,ncdfFlowSet,ANY,ANY,flowFrame-method}
-\alias{[[<-,ncdfFlowSet,flowFrame-method}
 \alias{replacement method for ncdfFlowSet}
+\alias{[[<-,ncdfFlowSet,flowFrame-method}
+\alias{[[<-,ncdfFlowSet,ANY,ANY,flowFrame-method}
 \title{write the flow data from a \code{flowFrame} to \code{ncdfFlowSet}
  
 flowFrame can have less channels than ncdfFlowSet,which is used for partial updating(useful for \code{normalization})}
@@ -63,4 +63,3 @@ colnames(fr_trans)[3:4] <- c("<FL1-H>", "<FL2-H>")
 #write data without matching up the colnames  
 nc[[sn, only.exprs = TRUE]] <- fr_trans
 }
-

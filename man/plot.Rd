@@ -2,12 +2,12 @@
 % Please edit documentation in R/ncdfFlowSet-plot-methods.R
 \docType{methods}
 \name{densityplot,formula,ncdfFlowSet-method}
-\alias{densityplot,formula,ncdfFlowList-method}
 \alias{densityplot,formula,ncdfFlowSet-method}
-\alias{histogram,formula,ncdfFlowList-method}
+\alias{densityplot,formula,ncdfFlowList-method}
 \alias{histogram,formula,ncdfFlowSet-method}
-\alias{xyplot,formula,ncdfFlowList-method}
+\alias{histogram,formula,ncdfFlowList-method}
 \alias{xyplot,formula,ncdfFlowSet-method}
+\alias{xyplot,formula,ncdfFlowList-method}
 \title{flowViz plot methods.}
 \usage{
 \S4method{densityplot}{formula,ncdfFlowSet}(x, data, ...)
@@ -32,4 +32,3 @@
 \description{
 flowViz plot methods.
 }
-

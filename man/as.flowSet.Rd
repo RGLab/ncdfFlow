@@ -23,4 +23,3 @@ data(GvHD)
 nc1 <- ncdfFlowSet(GvHD[1:4])
 fs <- as.flowSet(nc1)
 }
-

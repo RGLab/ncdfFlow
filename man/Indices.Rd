@@ -2,12 +2,12 @@
 % Please edit documentation in R/ncdfFlowSet-accessors.R
 \docType{methods}
 \name{getIndices,ncdfFlowSet,character-method}
-\alias{getIndices}
 \alias{getIndices,ncdfFlowSet,character-method}
-\alias{initIndices}
+\alias{getIndices}
 \alias{initIndices,ncdfFlowSet-method}
-\alias{updateIndices}
+\alias{initIndices}
 \alias{updateIndices,ncdfFlowSet,character,logical-method}
+\alias{updateIndices}
 \title{\code{getIndices} extracts the event indices of one or multiple samples from ncdfFlowSet}
 \usage{
 \S4method{getIndices}{ncdfFlowSet,character}(obj, y)
@@ -47,4 +47,3 @@ all.equal(sum(ind), nrow(nc1[[sn]]))
 initIndices(nc1)
 getIndices(nc1, sn) #reset indices
 }
-

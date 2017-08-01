@@ -29,4 +29,3 @@ nc <- ncdfFlowSet(GvHD[1:2])
 nc[[1]] # data is loaded from cdf file
 unlink(nc)
 }
-

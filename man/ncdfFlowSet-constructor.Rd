@@ -2,8 +2,8 @@
 % Please edit documentation in R/ncdfFlowSet-accessors.R
 \docType{methods}
 \name{ncdfFlowSet,flowSet-method}
-\alias{ncdfFlowSet}
 \alias{ncdfFlowSet,flowSet-method}
+\alias{ncdfFlowSet}
 \title{create ncdfFlowSet from flowSet}
 \usage{
 \S4method{ncdfFlowSet}{flowSet}(x, ncdfFile, dim = 2, compress = 0)
@@ -26,4 +26,3 @@ data(GvHD)
 fs <- GvHD[1:2]
 ncfs <- ncdfFlowSet(fs)
 }
-

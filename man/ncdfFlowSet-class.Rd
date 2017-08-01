@@ -3,8 +3,8 @@
 \docType{class}
 \name{ncdfFlowSet-class}
 \alias{ncdfFlowSet-class}
-\alias{show}
 \alias{show,ncdfFlowSet-method}
+\alias{show}
 \title{a class for storing flow cytometry raw data in HDF5 format}
 \usage{
 \S4method{show}{ncdfFlowSet}(object)
