@@ -61,4 +61,3 @@ rm(nc1)
 \seealso{
 \code{\link{read.ncdfFlowSet}}
 }
-

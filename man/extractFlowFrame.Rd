@@ -2,11 +2,11 @@
 % Please edit documentation in R/extractFlowFrame.R
 \docType{methods}
 \name{[[,ncdfFlowSet,ANY-method}
-\alias{[[,ncdfFlowList,character,missing-method}
-\alias{[[,ncdfFlowList,character-method}
-\alias{[[,ncdfFlowList,logical-method}
-\alias{[[,ncdfFlowList,numeric-method}
 \alias{[[,ncdfFlowSet,ANY-method}
+\alias{[[,ncdfFlowList,numeric-method}
+\alias{[[,ncdfFlowList,logical-method}
+\alias{[[,ncdfFlowList,character-method}
+\alias{[[,ncdfFlowList,character,missing-method}
 \title{extract a \code{flowFrame} object from \code{ncdfFlowSet}}
 \usage{
 \S4method{[[}{ncdfFlowSet,ANY}(x, i, j, use.exprs = TRUE, ...)
@@ -47,4 +47,3 @@ nc[[sn, use.exprs = FALSE]]
 nc[[sn, 1:2]]
 
 }
-

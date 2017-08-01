@@ -2,8 +2,8 @@
 % Please edit documentation in R/ncdfFlowSet-accessors.R
 \docType{methods}
 \name{ncfsApply,ncdfFlowSet-method}
-\alias{ncfsApply}
 \alias{ncfsApply,ncdfFlowSet-method}
+\alias{ncfsApply}
 \title{apply method for ncdfFlowSet (for internal use)}
 \usage{
 \S4method{ncfsApply}{ncdfFlowSet}(x, FUN, ..., use.exprs = FALSE,
@@ -42,4 +42,3 @@ lgcl <- logicleTransform( w = 0.5, t= 10000, m =4.5)
 translist <- transformList(c("FL1-H", "FL2-H"), lgcl)
 nc1 <- ncfsApply(nc, transform, translist)
 }
-

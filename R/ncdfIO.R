@@ -17,6 +17,7 @@
 #'                  Thus this argument is used to select those common channels that are of interests.
 #'                  Default value is NULL and the function will try to scan the FCS headers of all files
 #'                  and determine the common channels.
+#' @param alter.names see \link{read.FCS}                  
 #' @param dim \code{integer} the number of dimensions that specifies the physical storage format of hdf5 dataset.
 #'                            Default is 2, which stores each FCS data as a seperate 2d dataset. 
 #'                            Normally, user shouldn't need to change this but dim can also be set to 3, which stores all FCS data as one single 3d dataset. 
@@ -53,6 +54,7 @@ read.ncdfFlowSet <- function(files = NULL
 								,isWriteSlice= TRUE
 								,phenoData
 								,channels=NULL
+								, alter.names = FALSE
                                 ,dim = 2
                                 ,compress = 0
                                 , mc.cores = NULL
@@ -93,6 +95,8 @@ read.ncdfFlowSet <- function(files = NULL
       nChannels <- as.integer(txt[["$PAR"]])
       channelNames <- unlist(lapply(1:nChannels,function(i)flowCore:::readFCSgetPar(txt,paste("$P",i,"N",sep="")))) 
       channelNames<- unname(channelNames)
+      if(alter.names)
+        channelNames <- make.names(channelNames)
       if(!is.null(channels))#check if channel names contains the specified one 
       {
         channel.notFound<-!is.element(channels,channelNames)
@@ -230,6 +234,7 @@ read.ncdfFlowSet <- function(files = NULL
           curFile<-files[i]
           this_fr <- read.FCS(curFile
               ,column.pattern = colPattern
+              , alter.names = alter.names
               ,...)
           #we need to reorder columns in order to make them identical across samples
           this_fr[,chnls_common]
