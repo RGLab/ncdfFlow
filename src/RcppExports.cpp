@@ -9,7 +9,7 @@ using namespace Rcpp;
 
 // toBitVec
 Rcpp::RawVector toBitVec(Rcpp::LogicalVector indx);
-RcppExport SEXP ncdfFlow_toBitVec(SEXP indxSEXP) {
+RcppExport SEXP _ncdfFlow_toBitVec(SEXP indxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -20,7 +20,7 @@ END_RCPP
 }
 // toLogical
 Rcpp::LogicalVector toLogical(Rcpp::RawVector bytes);
-RcppExport SEXP ncdfFlow_toLogical(SEXP bytesSEXP) {
+RcppExport SEXP _ncdfFlow_toLogical(SEXP bytesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -31,7 +31,7 @@ END_RCPP
 }
 // createFile
 bool createFile(std::string filename, int nEvent, int nChannel, int nSample, int nDim, int nCompressionRatio);
-RcppExport SEXP ncdfFlow_createFile(SEXP filenameSEXP, SEXP nEventSEXP, SEXP nChannelSEXP, SEXP nSampleSEXP, SEXP nDimSEXP, SEXP nCompressionRatioSEXP) {
+RcppExport SEXP _ncdfFlow_createFile(SEXP filenameSEXP, SEXP nEventSEXP, SEXP nChannelSEXP, SEXP nSampleSEXP, SEXP nDimSEXP, SEXP nCompressionRatioSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -47,7 +47,7 @@ END_RCPP
 }
 // open_hdf
 void open_hdf(std::string filename, unsigned flags, hid_t& fileid, hid_t& dataset, hid_t& dataspace, bool& is3d);
-RcppExport SEXP ncdfFlow_open_hdf(SEXP filenameSEXP, SEXP flagsSEXP, SEXP fileidSEXP, SEXP datasetSEXP, SEXP dataspaceSEXP, SEXP is3dSEXP) {
+RcppExport SEXP _ncdfFlow_open_hdf(SEXP filenameSEXP, SEXP flagsSEXP, SEXP fileidSEXP, SEXP datasetSEXP, SEXP dataspaceSEXP, SEXP is3dSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
@@ -62,7 +62,7 @@ END_RCPP
 }
 // writeSlice
 bool writeSlice(std::string filename, Rcpp::NumericMatrix data, std::vector<int> chIndx, int sampleIndx, int nRatio);
-RcppExport SEXP ncdfFlow_writeSlice(SEXP filenameSEXP, SEXP dataSEXP, SEXP chIndxSEXP, SEXP sampleIndxSEXP, SEXP nRatioSEXP) {
+RcppExport SEXP _ncdfFlow_writeSlice(SEXP filenameSEXP, SEXP dataSEXP, SEXP chIndxSEXP, SEXP sampleIndxSEXP, SEXP nRatioSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -77,7 +77,7 @@ END_RCPP
 }
 // get_event_number
 unsigned get_event_number(hid_t fileid, hid_t& dataset, hid_t& dataspace, unsigned sampleIndx, bool is3d);
-RcppExport SEXP ncdfFlow_get_event_number(SEXP fileidSEXP, SEXP datasetSEXP, SEXP dataspaceSEXP, SEXP sampleIndxSEXP, SEXP is3dSEXP) {
+RcppExport SEXP _ncdfFlow_get_event_number(SEXP fileidSEXP, SEXP datasetSEXP, SEXP dataspaceSEXP, SEXP sampleIndxSEXP, SEXP is3dSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -92,7 +92,7 @@ END_RCPP
 }
 // close_hdf
 void close_hdf(hid_t fileid);
-RcppExport SEXP ncdfFlow_close_hdf(SEXP fileidSEXP) {
+RcppExport SEXP _ncdfFlow_close_hdf(SEXP fileidSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< hid_t >::type fileid(fileidSEXP);
@@ -102,7 +102,7 @@ END_RCPP
 }
 // readSlice
 void readSlice(hid_t fileid, hid_t dataset, hid_t dataspace, std::vector<unsigned> chIndx, unsigned sampleIndx, unsigned nEvents, Rcpp::NumericVector data_out, bool is3d);
-RcppExport SEXP ncdfFlow_readSlice(SEXP fileidSEXP, SEXP datasetSEXP, SEXP dataspaceSEXP, SEXP chIndxSEXP, SEXP sampleIndxSEXP, SEXP nEventsSEXP, SEXP data_outSEXP, SEXP is3dSEXP) {
+RcppExport SEXP _ncdfFlow_readSlice(SEXP fileidSEXP, SEXP datasetSEXP, SEXP dataspaceSEXP, SEXP chIndxSEXP, SEXP sampleIndxSEXP, SEXP nEventsSEXP, SEXP data_outSEXP, SEXP is3dSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< hid_t >::type fileid(fileidSEXP);
@@ -119,7 +119,7 @@ END_RCPP
 }
 // readFrame
 Rcpp::S4 readFrame(Rcpp::S4 x, Rcpp::RObject i_obj, Rcpp::RObject j_obj, bool useExpr);
-RcppExport SEXP ncdfFlow_readFrame(SEXP xSEXP, SEXP i_objSEXP, SEXP j_objSEXP, SEXP useExprSEXP) {
+RcppExport SEXP _ncdfFlow_readFrame(SEXP xSEXP, SEXP i_objSEXP, SEXP j_objSEXP, SEXP useExprSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
