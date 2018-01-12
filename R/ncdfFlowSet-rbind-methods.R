@@ -116,7 +116,7 @@ setMethod("rbind2",
                 dim <- 2
     			msgCreate <- try(createFile(ncdfFile, as.integer(ncfs@maxEvents), 
     							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)),
-    							as.integer(dim), as.integer(compress)),silent = TRUE)
+    							as.integer(dim), as.integer(compress),is_libver_earliest = isTRUE(getOption("h5Flow_is_libver_earliest"))),silent = TRUE)
     			if(!msgCreate)stop(msgCreate)
     			
     			

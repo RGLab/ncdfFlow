@@ -9,8 +9,8 @@ toLogical <- function(bytes) {
     .Call('_ncdfFlow_toLogical', PACKAGE = 'ncdfFlow', bytes)
 }
 
-createFile <- function(filename, nEvent, nChannel, nSample, nDim, nCompressionRatio) {
-    .Call('_ncdfFlow_createFile', PACKAGE = 'ncdfFlow', filename, nEvent, nChannel, nSample, nDim, nCompressionRatio)
+createFile <- function(filename, nEvent, nChannel, nSample, nDim, nCompressionRatio, is_libver_earliest = FALSE) {
+    .Call('_ncdfFlow_createFile', PACKAGE = 'ncdfFlow', filename, nEvent, nChannel, nSample, nDim, nCompressionRatio, is_libver_earliest)
 }
 
 open_hdf <- function(filename, flags, fileid, dataset, dataspace, is3d) {

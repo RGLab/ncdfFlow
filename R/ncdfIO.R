@@ -215,7 +215,8 @@ read.ncdfFlowSet <- function(files = NULL
 
 	#create empty cdf file
 	msgCreate <- createFile(ncdfFile, as.integer(maxEvents), 
-					length(chnls_common), as.integer(nFile), dim, as.integer(compress))
+					length(chnls_common), as.integer(nFile), dim, as.integer(compress)
+                ,is_libver_earliest = isTRUE(getOption("h5Flow_is_libver_earliest")))
 	if(!msgCreate)stop()
 #	
 	##remove indicies to keep the slot as empty by default for memory and speed issue
@@ -375,7 +376,8 @@ clone.ncdfFlowSet<-function(ncfs,ncdfFile=NULL,isEmpty=FALSE,isNew=TRUE, dim = 2
 
 		
 		msgCreate <- createFile(ncdfFile, as.integer(ncfs@maxEvents), 
-				as.integer(length(colnames(ncfs))), as.integer(length(ncfs)), dim, as.integer(compress))
+				as.integer(length(colnames(ncfs))), as.integer(length(ncfs))
+            , dim, as.integer(compress),is_libver_earliest = isTRUE(getOption("h5Flow_is_libver_earliest")))
 		if(!msgCreate)stop("make sure the file does not exist already or your have write permission to the folder!")
 #		
 		if(!isEmpty)##write the actual data 
