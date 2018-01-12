@@ -90,7 +90,8 @@ setMethod("ncdfFlowSet",
             
 			#create new ncdf file			
 			msgCreate <- createFile(ncdfFile, as.integer(ncfs@maxEvents), 
-							as.integer(length(colnames(ncfs))), as.integer(length(ncfs)), dim, as.integer(compress))
+							as.integer(length(colnames(ncfs))), as.integer(length(ncfs))
+                        , dim, as.integer(compress),is_libver_earliest = isTRUE(getOption("h5Flow_is_libver_earliest")))
 			if(!msgCreate)stop()
                         initIndices(ncfs)			
 			for(guid in sampleNames(x))

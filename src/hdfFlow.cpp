@@ -38,9 +38,11 @@ herr_t custom_print_cb(hid_t estack, void *client_data)
 }
 
 
-herr_t _createFile2d(const char * fName){
+herr_t _createFile2d(const char * fName, H5F_libver_t libver_lowbound){
 	/* Create a new file using default properties. */
-	hid_t file_id = H5Fcreate(fName, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+	hid_t fapl = H5Pcreate(H5P_FILE_ACCESS);
+	H5Pset_libver_bounds(fapl, libver_lowbound, H5F_LIBVER_LATEST);
+	hid_t file_id = H5Fcreate(fName, H5F_ACC_TRUNC, H5P_DEFAULT, fapl);
 
 	/* Close the file. */
 	herr_t status = H5Fclose(file_id);
@@ -117,7 +119,7 @@ herr_t _createFile3d(const char * fName, unsigned nSample, unsigned nChnl, unsig
 }
 
 // [[Rcpp::export]]
-bool createFile(std::string filename, int nEvent, int nChannel, int nSample, int nDim, int nCompressionRatio)
+bool createFile(std::string filename, int nEvent, int nChannel, int nSample, int nDim, int nCompressionRatio, bool is_libver_earliest = false)
 {
 
 	H5Eset_auto2(H5E_DEFAULT, (H5E_auto2_t)custom_print_cb, NULL);
@@ -125,7 +127,7 @@ bool createFile(std::string filename, int nEvent, int nChannel, int nSample, int
     if(nDim == 3)
 		retval = _createFile3d(filename.c_str(), nSample, nChannel, nEvent, nCompressionRatio);
     else
-    	retval = _createFile2d(filename.c_str());
+    	retval = _createFile2d(filename.c_str(), is_libver_earliest?H5F_LIBVER_EARLIEST:H5F_LIBVER_LATEST);
 
     return retval >= 0;
 

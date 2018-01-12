@@ -30,8 +30,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // createFile
-bool createFile(std::string filename, int nEvent, int nChannel, int nSample, int nDim, int nCompressionRatio);
-RcppExport SEXP _ncdfFlow_createFile(SEXP filenameSEXP, SEXP nEventSEXP, SEXP nChannelSEXP, SEXP nSampleSEXP, SEXP nDimSEXP, SEXP nCompressionRatioSEXP) {
+bool createFile(std::string filename, int nEvent, int nChannel, int nSample, int nDim, int nCompressionRatio, bool is_libver_earliest);
+RcppExport SEXP _ncdfFlow_createFile(SEXP filenameSEXP, SEXP nEventSEXP, SEXP nChannelSEXP, SEXP nSampleSEXP, SEXP nDimSEXP, SEXP nCompressionRatioSEXP, SEXP is_libver_earliestSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -41,7 +41,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type nSample(nSampleSEXP);
     Rcpp::traits::input_parameter< int >::type nDim(nDimSEXP);
     Rcpp::traits::input_parameter< int >::type nCompressionRatio(nCompressionRatioSEXP);
-    rcpp_result_gen = Rcpp::wrap(createFile(filename, nEvent, nChannel, nSample, nDim, nCompressionRatio));
+    Rcpp::traits::input_parameter< bool >::type is_libver_earliest(is_libver_earliestSEXP);
+    rcpp_result_gen = Rcpp::wrap(createFile(filename, nEvent, nChannel, nSample, nDim, nCompressionRatio, is_libver_earliest));
     return rcpp_result_gen;
 END_RCPP
 }
