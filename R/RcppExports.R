@@ -2,38 +2,38 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 toBitVec <- function(indx) {
-    .Call('ncdfFlow_toBitVec', PACKAGE = 'ncdfFlow', indx)
+    .Call('_ncdfFlow_toBitVec', PACKAGE = 'ncdfFlow', indx)
 }
 
 toLogical <- function(bytes) {
-    .Call('ncdfFlow_toLogical', PACKAGE = 'ncdfFlow', bytes)
+    .Call('_ncdfFlow_toLogical', PACKAGE = 'ncdfFlow', bytes)
 }
 
 createFile <- function(filename, nEvent, nChannel, nSample, nDim, nCompressionRatio) {
-    .Call('ncdfFlow_createFile', PACKAGE = 'ncdfFlow', filename, nEvent, nChannel, nSample, nDim, nCompressionRatio)
+    .Call('_ncdfFlow_createFile', PACKAGE = 'ncdfFlow', filename, nEvent, nChannel, nSample, nDim, nCompressionRatio)
 }
 
 open_hdf <- function(filename, flags, fileid, dataset, dataspace, is3d) {
-    invisible(.Call('ncdfFlow_open_hdf', PACKAGE = 'ncdfFlow', filename, flags, fileid, dataset, dataspace, is3d))
+    invisible(.Call('_ncdfFlow_open_hdf', PACKAGE = 'ncdfFlow', filename, flags, fileid, dataset, dataspace, is3d))
 }
 
 writeSlice <- function(filename, data, chIndx, sampleIndx, nRatio) {
-    .Call('ncdfFlow_writeSlice', PACKAGE = 'ncdfFlow', filename, data, chIndx, sampleIndx, nRatio)
+    .Call('_ncdfFlow_writeSlice', PACKAGE = 'ncdfFlow', filename, data, chIndx, sampleIndx, nRatio)
 }
 
 get_event_number <- function(fileid, dataset, dataspace, sampleIndx, is3d) {
-    .Call('ncdfFlow_get_event_number', PACKAGE = 'ncdfFlow', fileid, dataset, dataspace, sampleIndx, is3d)
+    .Call('_ncdfFlow_get_event_number', PACKAGE = 'ncdfFlow', fileid, dataset, dataspace, sampleIndx, is3d)
 }
 
 close_hdf <- function(fileid) {
-    invisible(.Call('ncdfFlow_close_hdf', PACKAGE = 'ncdfFlow', fileid))
+    invisible(.Call('_ncdfFlow_close_hdf', PACKAGE = 'ncdfFlow', fileid))
 }
 
 readSlice <- function(fileid, dataset, dataspace, chIndx, sampleIndx, nEvents, data_out, is3d) {
-    invisible(.Call('ncdfFlow_readSlice', PACKAGE = 'ncdfFlow', fileid, dataset, dataspace, chIndx, sampleIndx, nEvents, data_out, is3d))
+    invisible(.Call('_ncdfFlow_readSlice', PACKAGE = 'ncdfFlow', fileid, dataset, dataspace, chIndx, sampleIndx, nEvents, data_out, is3d))
 }
 
 readFrame <- function(x, i_obj, j_obj, useExpr) {
-    .Call('ncdfFlow_readFrame', PACKAGE = 'ncdfFlow', x, i_obj, j_obj, useExpr)
+    .Call('_ncdfFlow_readFrame', PACKAGE = 'ncdfFlow', x, i_obj, j_obj, useExpr)
 }
 
