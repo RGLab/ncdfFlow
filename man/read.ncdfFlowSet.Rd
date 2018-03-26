@@ -6,8 +6,8 @@
 \title{create ncdfFlowSet from FCS files}
 \usage{
 read.ncdfFlowSet(files = NULL, ncdfFile, flowSetId = flowCore:::guid(),
-  isWriteSlice = TRUE, phenoData, channels = NULL, alter.names = FALSE,
-  dim = 2, compress = 0, mc.cores = NULL, ...)
+  isWriteSlice = TRUE, phenoData, channels = NULL, channel_alias = NULL,
+  alter.names = FALSE, dim = 2, compress = 0, mc.cores = NULL, ...)
 }
 \arguments{
 \item{files}{A character vector giving the source FCS raw file paths.}
@@ -31,7 +31,7 @@ Thus this argument is used to select those common channels that are of interests
 Default value is NULL and the function will try to scan the FCS headers of all files
 and determine the common channels.}
 
-\item{alter.names}{see \link{read.FCS}}
+\item{channel_alias, alter.names}{see \link{read.FCS}}
 
 \item{dim}{\code{integer} the number of dimensions that specifies the physical storage format of hdf5 dataset.
 Default is 2, which stores each FCS data as a seperate 2d dataset. 
