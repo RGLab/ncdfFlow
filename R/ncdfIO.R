@@ -17,7 +17,7 @@
 #'                  Thus this argument is used to select those common channels that are of interests.
 #'                  Default value is NULL and the function will try to scan the FCS headers of all files
 #'                  and determine the common channels.
-#' @param alter.names see \link{read.FCS}                  
+#' @param channel_alias,alter.names see \link{read.FCS}                  
 #' @param dim \code{integer} the number of dimensions that specifies the physical storage format of hdf5 dataset.
 #'                            Default is 2, which stores each FCS data as a seperate 2d dataset. 
 #'                            Normally, user shouldn't need to change this but dim can also be set to 3, which stores all FCS data as one single 3d dataset. 
@@ -54,6 +54,7 @@ read.ncdfFlowSet <- function(files = NULL
 								,isWriteSlice= TRUE
 								,phenoData
 								,channels=NULL
+								, channel_alias = NULL
 								, alter.names = FALSE
                                 ,dim = 2
                                 ,compress = 0
@@ -63,6 +64,8 @@ read.ncdfFlowSet <- function(files = NULL
     dots <- list(...)
     emptyValue <- ifelse("emptyValue" %in% names(dots), dots[["emptyValue"]], TRUE)
     dim <- as.integer(match.arg(as.character(dim), c("2","3")))
+    channel_alias <- flowCore:::check_channel_alias(channel_alias)    
+    
 	#remove nonexisting files
 	fileInd<-file.exists(files)
 	missingFiles<-files[!fileInd]
@@ -93,7 +96,15 @@ read.ncdfFlowSet <- function(files = NULL
     getChnlEvt <- function(curFile){
       txt <- read.FCSheader(curFile, emptyValue = emptyValue)[[1]]
       nChannels <- as.integer(txt[["$PAR"]])
-      channelNames <- unlist(lapply(1:nChannels,function(i)flowCore:::readFCSgetPar(txt,paste("$P",i,"N",sep="")))) 
+      channelNames <- unlist(lapply(1:nChannels,function(i)
+                              {
+                                chnl <- flowCore:::readFCSgetPar(txt,paste("$P",i,"N",sep=""))
+                                alias <- channel_alias[[chnl]]
+                                if(!is.null(alias))
+                                  chnl <- alias
+                                return (chnl)
+                              })
+                             ) 
       channelNames<- unname(channelNames)
       if(alter.names)
         channelNames <- make.names(channelNames)
@@ -164,6 +175,7 @@ read.ncdfFlowSet <- function(files = NULL
 	tmp <- read.FCSheader(files[1], emptyValue = emptyValue)[[1]]
     
     #make a dummy parameters slot for every frames to pass the validity check of flowSet class
+	#Note:This call will generate wrong params when chnls_common is less than original chnls
 	params <- flowCore:::makeFCSparameters(chnls_common,tmp, transformation=F, scale=F,decades=0, realMin=-111)
     
     #determine guids
@@ -236,6 +248,7 @@ read.ncdfFlowSet <- function(files = NULL
           this_fr <- read.FCS(curFile
               ,column.pattern = colPattern
               , alter.names = alter.names
+              , channel_alias = channel_alias
               ,...)
           #we need to reorder columns in order to make them identical across samples
           this_fr[,chnls_common]

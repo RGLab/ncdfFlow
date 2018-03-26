@@ -8,7 +8,7 @@ Description: Provides HDF5 storage based methods and functions for
 Maintainer: Mike Jiang <wjiang2@fhcrc.org>
 Depends:
     R (>= 2.14.0),
-    flowCore(>= 1.37.15),
+    flowCore(>= 1.45.11),
     RcppArmadillo,
     methods,
     BH
