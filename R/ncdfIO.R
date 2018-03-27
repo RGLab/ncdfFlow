@@ -96,16 +96,10 @@ read.ncdfFlowSet <- function(files = NULL
     getChnlEvt <- function(curFile){
       txt <- read.FCSheader(curFile, emptyValue = emptyValue)[[1]]
       nChannels <- as.integer(txt[["$PAR"]])
-      channelNames <- unlist(lapply(1:nChannels,function(i)
-                              {
-                                chnl <- flowCore:::readFCSgetPar(txt,paste("$P",i,"N",sep=""))
-                                alias <- channel_alias[[chnl]]
-                                if(!is.null(alias))
-                                  chnl <- alias
-                                return (chnl)
-                              })
-                             ) 
+      channelNames <- unlist(lapply(1:nChannels,function(i)flowCore:::readFCSgetPar(txt,paste("$P",i,"N",sep=""))))
       channelNames<- unname(channelNames)
+      channelNames <- flowCore:::update_channel_by_alias(channelNames, channel_alias)
+      
       if(alter.names)
         channelNames <- make.names(channelNames)
       if(!is.null(channels))#check if channel names contains the specified one 
@@ -166,9 +160,9 @@ read.ncdfFlowSet <- function(files = NULL
 			{
 				chnls_common<-intersect(chnls_common,chnls_list[[i]])
 			}	
-			message("Only load the following common channels:\n"
-					,paste(chnls_common,collapse="\n")
-			)
+			message("Only load the following common channels:\n",paste(chnls_common,collapse="\n"))
+			channels.all.unique <- unique(unlist(chnls_list))
+			message("Skip the channels that are not found in all samples:\n",paste(channels.all.unique[-match(chnls_common, channels.all.unique)],collapse="\n"))
 		}
 	}
 
