@@ -114,7 +114,7 @@ test_that("read.ncdfFlowSet: channel_alias", {
   fr1 <- GvHD[[1]]
   fr2 <- GvHD[[2]]
   
-  colnames(fr1)[c(3,5)] <- c("FL11-H", "FL33-H")
+  colnames(fr1)[c(3,5)] <-  c("AL1-H", "AL3-H")
   
   ## now write out into  files
   fcs1 <- tempfile()
@@ -123,9 +123,24 @@ test_that("read.ncdfFlowSet: channel_alias", {
   write.FCS(fr2, fcs2)
   
   expect_message(fs <- read.ncdfFlowSet(c(fcs1,fcs2)),regexp = "Only load the following common channels")
-  
-  map <- data.frame(alias = c("FL1", "FL3"), channels = c("FL1-H, FL11-H", "FL3-H, FL33-H"))
+  #strict matching by full name
+  map <- data.frame(alias = c("FL1", "FL3"), channels = c("AL1-H, FL1-H", "FL3-H, AL3-H"))
   suppressMessages(fs <- read.ncdfFlowSet(c(fcs1,fcs2), channel_alias = map))
   expect_equal(colnames(fs)[c(3,5)], c("FL1", "FL3"))
+  
+  #partial matching
+  map <- data.frame(alias = c("FL1", "FL3"), channels = c("AL1, FL1", "FL3, AL3"))
+  suppressMessages(fs <- read.ncdfFlowSet(c(fcs1,fcs2), channel_alias = map))
+  expect_equal(colnames(fs)[c(3,5)], c("FL1", "FL3"))
+  
+  #case insensitive matching
+  map <- data.frame(alias = c("FL1", "FL3"), channels = c("al1, FL1", "fl3, AL3"))
+  suppressMessages(fs <- read.ncdfFlowSet(c(fcs1,fcs2), channel_alias = map))
+  expect_equal(colnames(fs)[c(3,5)], c("FL1", "FL3"))
+  
+  #ambigous partial matching
+  map <- data.frame(alias = c("FL1", "FL3"), channels = c("l1, FL1", "fl3, AL3"))
+  expect_error(fs <- read.ncdfFlowSet(c(fcs1,fcs2), channel_alias = map), "multiple entries")
+  
   
 })

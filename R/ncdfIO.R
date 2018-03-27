@@ -96,16 +96,10 @@ read.ncdfFlowSet <- function(files = NULL
     getChnlEvt <- function(curFile){
       txt <- read.FCSheader(curFile, emptyValue = emptyValue)[[1]]
       nChannels <- as.integer(txt[["$PAR"]])
-      channelNames <- unlist(lapply(1:nChannels,function(i)
-                              {
-                                chnl <- flowCore:::readFCSgetPar(txt,paste("$P",i,"N",sep=""))
-                                alias <- channel_alias[[chnl]]
-                                if(!is.null(alias))
-                                  chnl <- alias
-                                return (chnl)
-                              })
-                             ) 
+      channelNames <- unlist(lapply(1:nChannels,function(i)flowCore:::readFCSgetPar(txt,paste("$P",i,"N",sep=""))))
       channelNames<- unname(channelNames)
+      channelNames <- flowCore:::update_channel_by_alias(channelNames, channel_alias)
+      
       if(alter.names)
         channelNames <- make.names(channelNames)
       if(!is.null(channels))#check if channel names contains the specified one 
