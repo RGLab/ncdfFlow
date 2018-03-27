@@ -166,9 +166,9 @@ read.ncdfFlowSet <- function(files = NULL
 			{
 				chnls_common<-intersect(chnls_common,chnls_list[[i]])
 			}	
-			message("Only load the following common channels:\n"
-					,paste(chnls_common,collapse="\n")
-			)
+			message("Only load the following common channels:\n",paste(chnls_common,collapse="\n"))
+			channels.all.unique <- unique(unlist(chnls_list))
+			message("Skip the channels that are not found in all samples:\n",paste(channels.all.unique[-match(chnls_common, channels.all.unique)],collapse="\n"))
 		}
 	}
 
