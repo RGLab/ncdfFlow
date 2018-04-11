@@ -565,7 +565,14 @@ setReplaceMethod("colnames",
       
       ##updte colnames of each flowFrames
       for(i in sampleNames(x))
+      {
         x@frames[[i]]@parameters@data$name <- value
+        
+        ids <- rownames(x@frames[[i]]@parameters@data)
+        keys <- paste0(ids, "N")
+        keyword(x@frames[[i]])[keys] <- value
+      }
+        
       
       x
     })	
