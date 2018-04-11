@@ -206,12 +206,14 @@ test_that("colnames<-", {
       expect_equal(nc@origColnames, c(newColNames,coln[-c(1:2)]))
       invisible(fsApply(nc, function(fr)expect_equal(colnames(fr), newColNames)))
       is_equal_flowSet(ncfs[sn, coln[1:2]], nc)
+      expect_equivalent(unlist(keyword(nc[[1]])[c("$P1N", "$P2N")]), newColNames)
       
       #change the order of colnames
       nc <- ncfs[sn, coln[2:1]]
       colnames(nc) <- newColNames
       expect_equal(nc@origColnames, c(newColNames[2:1],coln[-c(1:2)]))
       is_equal_flowSet(ncfs[sn, coln[2:1]], nc)
+      expect_equivalent(unlist(keyword(nc[[1]])[c("$P1N", "$P2N")]), rev(newColNames))
     })  
 
 test_that("xyplot ncdfFlowSet", {

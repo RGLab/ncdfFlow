@@ -166,4 +166,6 @@ test_that("markernames", {
   #setter
   markernames(nclist) <- markers
   expect_equivalent(markernames(nclist)[c(1,3)], markers)
+  expect_equivalent(unlist(keyword(nclist[[1]])[c("$P3S", "$P5S")]), markers)
+  
 })
