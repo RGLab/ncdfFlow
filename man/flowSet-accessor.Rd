@@ -61,7 +61,7 @@
 
 \S4method{compensate}{ncdfFlowSet,list}(x, spillover)
 
-\S4method{transform}{ncdfFlowSet}(`_data`, ...)
+\S4method{transform}{ncdfFlowSet}(`_data`, translist, ...)
 
 \S4method{sampleNames}{ncdfFlowSet,ANY}(object) <- value
 
@@ -87,6 +87,8 @@
 \item{spillover}{spillover matrix}
 
 \item{_data}{\code{ncdfFlowSet}}
+
+\item{translist}{a 'transformList' object or a list of 'transformList' objects}
 
 \item{...}{other arguments}
 }

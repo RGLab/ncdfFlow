@@ -461,15 +461,29 @@ setMethod("compensate",
     })
 
 #' @param _data \code{ncdfFlowSet}
+#' @param translist a 'transformList' object or a list of 'transformList' objects
 #' @param ... other arguments
 #' @rdname flowSet-accessor
 #' @export
 setMethod("transform",
     signature=signature(`_data`="ncdfFlowSet"),
-    definition=function(`_data`,...)
+    definition=function(`_data`, translist,...)
     {
-
-      ncfsApply(`_data`,transform,...)
+      if(missing(translist))
+        ncfsApply(`_data`,transform,...)
+      else if(is(translist, "transformList"))
+        ncfsApply(`_data`,transform, translist = translist, ...)
+      else if(is(translist, "list")){
+        sns <- sampleNames(`_data`)
+        if(!setequal(sns, names(translist)))
+          stop("names of 'translist' must be consistent with flow data!")
+        fs <- clone.ncdfFlowSet(`_data`, ...)
+        for(sn in sns)
+          fs[[sn]] <- transform(fs[[sn]], translist[[sn]])
+        fs
+      }else
+        stop("expect the second argument as a 'transformList' object or a list of 'transformList' objects!")
+      
     })
 
 
