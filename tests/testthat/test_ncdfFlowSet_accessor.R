@@ -125,6 +125,21 @@ test_that("[[<-", {
       # trransform(fr, `FL1-H` = lgcl(`FL1-H`), `FL2-H` = lgcl(`FL2-H`))
       # because the latter only works in console mode (global envir)
       translist <- transformList(c("FL1-H", "FL2-H"), lgcl)
+      
+      #list of transformList
+      trans.list <- sapply(sampleNames(nc), function(sn)translist)
+      trans.fs1 <- transform(nc, trans.list)
+      trans_range <- range(trans.fs1[[sn]], "data")
+      expect_equal(trans_range[, c("FL1-H")], c(0.6312576, 4.0774226)) 
+      expect_equal(trans_range[, c("FL2-H")], c(0.6312576, 3.7131872))
+      
+      trans.list[[1]] <- logicleTransform()
+      expect_error(trans.fs1 <- transform(nc, trans.list), "a valid 'transformList'")
+      
+      trans.list[[1]] <- translist
+      names(trans.list)[1] <- "d"
+      expect_error(trans.fs1 <- transform(nc, trans.list), "consistent with flow data")
+      
       fr_trans <- transform(fr, translist)
       
       #update the data
