@@ -533,6 +533,24 @@ setReplaceMethod("sampleNames",
       
       #update origSampleVector slot
       origSampleVector <- object@origSampleVector
+      #check if new value exist in origSampleVector
+      #in case of nc[sn], value is single character, will cerntainly pass
+      #the check at flowSet replacement method sampleNames<- 
+      #but will potentially have conflicts with origSampleVector
+      for(v in value)
+      {
+        ind <- match(v, origSampleVector)
+        isVisible <- (v%in%oldSampleNames)#we want to only deal with invisible samples
+        if(!is.na(ind)&&!isVisible)
+        {
+          #replace the old sample name(which is not visible to the current view thus doesn't matter)
+          while(v%in%origSampleVector)
+             v <- flowCore:::guid(10)
+          origSampleVector[ind] <- v
+          
+        }
+      }
+      # browser()
       origSampleVector[match(oldSampleNames, origSampleVector)] <- value
       object@origSampleVector <- origSampleVector
       
