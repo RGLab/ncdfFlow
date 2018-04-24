@@ -208,7 +208,24 @@ test_that("sampleNames<-", {
       expect_equal(nc@origSampleVector, c(newNames,samples[-c(1:2)]))
       expect_equal(ls(nc@indices), newNames)
       is_equal_flowFrame(ncfs[sn][[1]], nc[[1]])
-    })
+      
+      newNames <- c("s2", "s2")
+      expect_error(sampleNames(nc) <- newNames, "Replacement values are not unique")
+      
+      #replace the single subsetted fs
+      nc <- nc["s2"]
+      sampleNames(nc) <- "dd"
+      expect_equal(sampleNames(nc), "dd")
+      expect_equal(nc@origSampleVector, c("s01","dd",samples[-c(1:2)]))
+      expect_equal(ls(nc@indices), "dd")
+      is_equal_flowFrame(ncfs[sn][[2]], nc[[1]])
+      
+      #replace with the name that is conflicting with values in origSampleVector
+      sampleNames(nc) <- "s01"
+      expect_equal(nc@origSampleVector[-1], c("s01",samples[-c(1:2)]))
+      is_equal_flowFrame(ncfs[sn][[2]], nc[[1]])
+      
+      })
 
 test_that("colnames<-", {
       sn <- samples[1:2]
