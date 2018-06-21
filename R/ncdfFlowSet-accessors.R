@@ -409,7 +409,11 @@ setMethod("ncfsApply",
 			for(n in sampleNames(x))
             {
   	    		fr <- as(x[[n]],"flowFrame")
-  		    	fr <- FUN(if(use.exprs) exprs(fr) else fr,...)
+                fr <- try(
+  		    	  FUN(if(use.exprs) exprs(fr) else fr,...)
+                )
+                if(is(fr, "try-error"))
+                  stop("failed on sample: ", n)
                 fs.clone[[n]]<- fr
             }           
             fs.clone
