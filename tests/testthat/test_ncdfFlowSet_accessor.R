@@ -4,6 +4,13 @@ suppressMessages(ncfs <- ncdfFlowSet(fs))
 samples <- sampleNames(ncfs)
 lgcl <- logicleTransform( w = 0.5, t= 10000, m =4.5)
 
+test_that("keyword", {
+  expect_equal(keyword(ncfs, "$TOT"), keyword(fs, "$TOT"))
+  keyword(fs) <- list("$FILENAME" = NA, newk = "v")
+  keyword(ncfs) <- list("$FILENAME" = NA, newk = "v")
+  kl <- list("$FILENAME" , "newk")
+  expect_equal(keyword(ncfs, kl), keyword(fs, kl))
+  })
 test_that("[[", {
       
       sn <- samples[1]

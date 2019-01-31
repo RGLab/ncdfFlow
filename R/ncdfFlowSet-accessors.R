@@ -608,3 +608,38 @@ setReplaceMethod("colnames",
       
       x
     })	
+
+#' @rdname flowSet-accessor
+#' @param keyword list
+#' @export
+setMethod("keyword",
+          signature=signature(object="ncdfFlowSet",
+                              keyword="list"),
+          definition=function(object, keyword)
+          {
+            keys <-  sapply(sampleNames(object), function(sn) unlist(keyword(object[[sn, use.exprs = FALSE]], keyword)), simplify = FALSE)
+            keys <- do.call(rbind,keys)
+            
+            if(!is.null(dim(keys))){
+              colnames(keys) <- gsub("\\..*$", "", colnames(keys))
+              rownames(keys) <- sampleNames(object)
+            }
+            return(keys)
+          })
+
+#' @export
+#' @rdname flowSet-accessor
+setReplaceMethod("keyword", signature=c("ncdfFlowSet", "list"),
+                 definition=function(object, value){
+                   sns <- sampleNames(object)
+                   for(i in seq_along(value)){
+                     vals <- rep(value[[i]], length(object))
+                     for(j in seq_len(length(object))){
+                       thisVal <- list(vals[[j]])
+                       names(thisVal) <- names(value)[i]
+                       sn <- sns[j]
+                       keyword(object@frames[[sn]]) <- thisVal
+                     }
+                   }
+                   object
+                 })

@@ -25,8 +25,6 @@ or \code{character} that specifiy the order to samples.
 }
 \description{
 It is a list of ncdfFlowSet objects
-
-constuctor for \code{ncdfFlowList}
 }
 \section{Objects from the Class}{
 

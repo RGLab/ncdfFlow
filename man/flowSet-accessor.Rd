@@ -12,7 +12,6 @@
 \alias{phenoData<-,ncdfFlowList,AnnotatedDataFrame-method}
 \alias{pData,ncdfFlowList-method}
 \alias{pData<-,ncdfFlowList,data.frame-method}
-\alias{pData<-,ncdfFlowList,data.frame-method}
 \alias{colnames,ncdfFlowList-method}
 \alias{colnames<-,ncdfFlowList-method}
 \alias{markernames,ncdfFlowList-method}
@@ -26,6 +25,8 @@
 \alias{colnames<-}
 \alias{colnames<-,ncdfFlowSet,ANY-method}
 \alias{colnames<-,ncdfFlowSet-method}
+\alias{keyword,ncdfFlowSet,list-method}
+\alias{keyword<-,ncdfFlowSet,list-method}
 \title{Accessors compatible with those for \code{flowSet}}
 \usage{
 \S4method{filter}{ncdfFlowList,filter}(x, filter, method = "missing",
@@ -66,6 +67,10 @@
 \S4method{sampleNames}{ncdfFlowSet,ANY}(object) <- value
 
 \S4method{colnames}{ncdfFlowSet}(x) <- value
+
+\S4method{keyword}{ncdfFlowSet,list}(object, keyword)
+
+\S4method{keyword}{ncdfFlowSet,list}(object) <- value
 }
 \arguments{
 \item{x}{\code{ncdfFlowSet}}
@@ -91,6 +96,8 @@
 \item{translist}{a 'transformList' object or a list of 'transformList' objects}
 
 \item{...}{other arguments}
+
+\item{keyword}{list}
 }
 \description{
 Accessors compatible with those for \code{flowSet}
