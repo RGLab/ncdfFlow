@@ -135,6 +135,7 @@ setClass("ncdfFlowList"
 #' The index is a named integer vector used for fast indexing
 #' 
 #' @param x \code{list} of objects
+#' @noRd 
 .indexingSample <- function(x){
        
   unlist(lapply(seq_along(x), function(i){

@@ -28,10 +28,6 @@ a logical vector.
 }
 \description{
 These functions are mainly for internal usage and normally not to be used by users.
-
-\code{initIndices} initializes the event indices for the entire ncdfFlowSet with NA
-
-\code{updateIndices} updates the event indices of the target sample in ncdfFlowSet
 }
 \examples{
 data(GvHD)

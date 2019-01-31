@@ -17,8 +17,8 @@
 
 \S4method{Subset}{ncdfFlowList,filter}(x, subset, ...)
 
-\S4method{Subset}{ncdfFlowSet,list}(x, subset, select, validityCheck = TRUE,
-  ...)
+\S4method{Subset}{ncdfFlowSet,list}(x, subset, select,
+  validityCheck = TRUE, ...)
 }
 \arguments{
 \item{x}{\code{ncdfFlowSet} or \code{ncdfFlowList}}

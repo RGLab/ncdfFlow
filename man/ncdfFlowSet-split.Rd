@@ -16,8 +16,8 @@
 
 \S4method{split}{ncdfFlowList,character}(x, f, drop = FALSE, ...)
 
-\S4method{split}{ncdfFlowSet,filter}(x, f, drop = FALSE, population = NULL,
-  prefix = NULL, ...)
+\S4method{split}{ncdfFlowSet,filter}(x, f, drop = FALSE,
+  population = NULL, prefix = NULL, ...)
 
 \S4method{split}{ncdfFlowSet,filterResultList}(x, f, drop = FALSE,
   population = NULL, prefix = NULL, ...)
@@ -25,7 +25,8 @@
 \S4method{split}{ncdfFlowSet,list}(x, f, isNew = FALSE, drop = FALSE,
   population = NULL, prefix = NULL, ...)
 
-\S4method{split}{ncdfFlowSet,factor}(x, f, isNew = FALSE, drop = FALSE, ...)
+\S4method{split}{ncdfFlowSet,factor}(x, f, isNew = FALSE, drop = FALSE,
+  ...)
 
 \S4method{split}{ncdfFlowSet,character}(x, f, drop = FALSE, ...)
 }

@@ -4,8 +4,8 @@
 \alias{clone.ncdfFlowSet}
 \title{Clone a ncdfFlowSet}
 \usage{
-clone.ncdfFlowSet(ncfs, ncdfFile = NULL, isEmpty = FALSE, isNew = TRUE,
-  dim = 2, compress = 0)
+clone.ncdfFlowSet(ncfs, ncdfFile = NULL, isEmpty = FALSE,
+  isNew = TRUE, dim = 2, compress = 0)
 }
 \arguments{
 \item{ncfs}{A \code{\link{ncdfFlowSet}}.}

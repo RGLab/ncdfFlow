@@ -5,8 +5,8 @@
 \alias{rbind2,ncdfFlowList,ANY-method}
 \title{combine multiple ncdfFlowSet objects into one}
 \usage{
-\S4method{rbind2}{ncdfFlowList,ANY}(x, ncdfFile = tempfile(pattern = "ncfs"),
-  dim = 2, compress = 0, samples = NULL)
+\S4method{rbind2}{ncdfFlowList,ANY}(x, ncdfFile = tempfile(pattern =
+  "ncfs"), dim = 2, compress = 0, samples = NULL)
 }
 \arguments{
 \item{x}{\code{ncdfFlowList}}

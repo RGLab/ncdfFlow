@@ -287,6 +287,7 @@ read.ncdfFlowSet <- function(files = NULL
 #' @param metaCharacters \code{character} vector specifying the special characters to escape, default is all the mete characters defined in regexprs
 #' @param x \code{character} vector the original character vector that contains the special characters
 #' @return the modified character vector by padding "\\" before all the special characters 
+#' @noRd 
 .escapeMeta <- function(x, metaCharacters = c("\\", "|", "(", ")", "[", "{", "^", "$", "*", "+", "?", ".")){
   
   #pad the \\ before each meta character
