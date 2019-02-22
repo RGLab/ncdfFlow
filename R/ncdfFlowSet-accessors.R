@@ -615,6 +615,7 @@ setReplaceMethod("colnames",
 
 #' @rdname flowSet-accessor
 #' @param keyword list
+#' @importFrom flowCore keyword
 #' @export
 setMethod("keyword",
           signature=signature(object="ncdfFlowSet",
@@ -632,6 +633,7 @@ setMethod("keyword",
           })
 
 #' @export
+#' @importFrom flowCore keyword<-
 #' @rdname flowSet-accessor
 setReplaceMethod("keyword", signature=c("ncdfFlowSet", "list"),
                  definition=function(object, value){
