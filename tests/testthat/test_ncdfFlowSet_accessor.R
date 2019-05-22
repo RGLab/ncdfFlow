@@ -126,6 +126,13 @@ test_that("[[<-", {
       
       #return the entire flowFrame
       fr <- nc[[sn]]
+      #swap cols of fr
+      origcol <- colnames(fr)
+      colnames(fr)[7:8] <- origcol[8:7]
+      #update nc
+      nc[[sn]] <- fr
+      expect_equal(range(nc[[sn]][,origcol]), range(fr[,origcol]))
+      expect_equal(range(nc[[sn]][,origcol], "data"), range(fr[,origcol], "data"))
       
       #transform the data
       #construct transformList first instead of 
@@ -346,3 +353,4 @@ test_that("clone.ncdfFlowSet", {
   
   unlink(nc2)
 })
+
