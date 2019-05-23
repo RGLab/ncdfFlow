@@ -82,18 +82,7 @@ setMethod("[",
         }
       }
       
-      #update colnames slot for ncdfFlowSet  
-      if(!missing(j)){
-        if(is.character(j))
-          ncfs@colnames <- colnames(x)[match(j, colnames(x))]
-        
-        else
-          ncfs@colnames <- colnames(x)[j]
-        
-        if(any(is.na(colnames(ncfs))))
-          stop("Subset out of bounds")
-      }
-#			
+  		
       return(ncfs)
     })
 

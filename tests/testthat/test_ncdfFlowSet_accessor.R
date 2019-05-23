@@ -130,9 +130,12 @@ test_that("[[<-", {
       origcol <- colnames(fr)
       colnames(fr)[7:8] <- origcol[8:7]
       #update nc
-      nc[[sn]] <- fr
-      expect_equal(range(nc[[sn]][,origcol]), range(fr[,origcol]))
-      expect_equal(range(nc[[sn]][,origcol], "data"), range(fr[,origcol], "data"))
+      expect_error(nc[[sn]] <- fr, "not consistent")
+      #succeed in write after reorder cols
+      nc1 <- nc[,colnames(fr)]
+      nc1[[sn]] <- fr
+      expect_equal(range(nc1[[sn]])[7:8], range(fr)[7:8])
+      expect_equal(range(nc1[[sn]], "data")[7:8], range(fr, "data")[7:8])
       
       #transform the data
       #construct transformList first instead of 
@@ -157,8 +160,8 @@ test_that("[[<-", {
       fr_trans <- transform(fr, translist)
       
       #update the data
-      suppressMessages(nc[[sn]] <- fr_trans)
-      trans_range <- apply(exprs(nc[[sn]]), 2, range)
+      suppressMessages(nc1[[sn]] <- fr_trans)
+      trans_range <- apply(exprs(nc1[[sn]]), 2, range)
       expect_equal(trans_range[, c("FL1-H")], c(0.6312576, 4.0774226)) 
       expect_equal(trans_range[, c("FL2-H")], c(0.6312576, 3.7131872))
       
@@ -177,12 +180,7 @@ test_that("[[<-", {
       #update chanel colnames
       suppressMessages(nc <- ncdfFlowSet(fs[sn]))
       colnames(fr_trans)[3:4] <- c("<FL1-H>", "<FL2-H>")
-      #write data without matching up the colnames
-      suppressMessages(nc[[sn, only.exprs = TRUE]] <- fr_trans)
-      trans_range <- apply(exprs(nc[[sn]]), 2, range)
-      expect_equal(trans_range[, c("FL1-H")], c(0.6312576, 4.0774226)) 
-      expect_equal(trans_range[, c("FL2-H")], c(0.6312576, 3.7131872))
-      #colnames remain unchanged
+       #colnames remain unchanged
       expect_equal(colnames(nc), colnames(ncfs))
       expect_error(nc[[sn]] <- fr_trans, "colnames of the input are not consistent")
       

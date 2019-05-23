@@ -10,7 +10,7 @@
 flowFrame can have less channels than ncdfFlowSet,which is used for partial updating(useful for \code{normalization})}
 \usage{
 \S4method{[[}{ncdfFlowSet,ANY,ANY,flowFrame}(x, i, j = "missing",
-  only.exprs = FALSE, compress = 0, ...) <- value
+  compress = 0, ...) <- value
 }
 \arguments{
 \item{x}{a \code{ncdfFlowSet}}
@@ -18,10 +18,6 @@ flowFrame can have less channels than ncdfFlowSet,which is used for partial upda
 \item{i}{a \code{numeric} or \code{character} used as sample index of \code{ncdfFlowSet}}
 
 \item{j}{not used}
-
-\item{only.exprs}{a \code{logical} Default is FALSE. which will update the parameters and decriptions slot as well as the raw data.
-Sometime it is more efficient ti set it to TRUE skip the overhead of colnames matching and updating
-when user is only concerned about raw data instead of the entire flowFrame.}
 
 \item{compress}{\code{integer} It is only relevant to writing slice to '2d' format because the compression is set during the creation of hdf5 file for '3d' format. see details in \link{read.ncdfFlowset}.}
 
@@ -60,6 +56,6 @@ nc1[[sn]] <- fr_trans[,2:3]
 #chanel colnames
 colnames(fr_trans)[3:4] <- c("<FL1-H>", "<FL2-H>")
 
-#write data without matching up the colnames  
-nc[[sn, only.exprs = TRUE]] <- fr_trans
+#write data without matching up the colnames will fail 
+#nc[[sn]] <- fr_trans
 }

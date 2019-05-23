@@ -42,10 +42,21 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 	Rcpp::Environment frEnv = x.slot("frames");
 	Rcpp::S4 frObj = frEnv.get(sampleName);
 	Rcpp::S4 fr = Rcpp::clone(frObj);
+	Rcpp::S4 pheno = fr.slot("parameters");
+	Rcpp::RObject pd = pheno.slot("data");
+	Rcpp::DataFrame pData = Rcpp::DataFrame(pd.get__());
+	//this implicit construction works for g++ and llvm-g++
+	//but fails on clang++
+//		Rcpp::DataFrame pData =pheno.slot("data");
+
+	Rcpp::CharacterVector pd_rn = pData.attr("row.names");
+	Rcpp::CharacterVector pd_name = pData["name"];
 
 	  //get local channel names
-	  Rcpp::StringVector colnames = x.slot("colnames");
-
+	  Rcpp::StringVector colnames = clone(pd_name);
+    colnames.attr("class") = R_NilValue;
+    // if(colnames.hasAttribute("name"))
+      colnames.attr("names") = R_NilValue;
 	  Rcpp::StringVector ch_selected;
 	 /*
 	  * subset by j if applicable
@@ -107,15 +118,6 @@ Rcpp::S4 readFrame(Rcpp::S4 x
 	 */
 	 if(j_type != NILSXP)
 	 {
-		Rcpp::S4 pheno = fr.slot("parameters");
-		Rcpp::RObject pd = pheno.slot("data");
-		Rcpp::DataFrame pData = Rcpp::DataFrame(pd.get__());
-		//this implicit construction works for g++ and llvm-g++
-		//but fails on clang++
-//		Rcpp::DataFrame pData =pheno.slot("data");
-
-		Rcpp::CharacterVector pd_rn = pData.attr("row.names");
-		Rcpp::CharacterVector pd_name = pData["name"];
 		Rcpp::CharacterVector pd_desc = pData["desc"];
 		Rcpp::NumericVector pd_range = pData["range"];
 		Rcpp::NumericVector pd_minRange = pData["minRange"];
