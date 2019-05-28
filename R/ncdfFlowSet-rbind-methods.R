@@ -95,7 +95,6 @@ setMethod("rbind2",
   			#create ncdf ncdf object 
   			ncfs<-new("ncdfFlowSet"
   					,file = ncdfFile
-  					,colnames = collist[[1]] 
   					,frames = frameEnv
   					,maxEvents=max(unlist(lapply(nclist,function(ncfs)ncfs@maxEvents, level = 1)))
   					,flowSetId = flowCore:::guid()

@@ -37,8 +37,6 @@ setMethod("Subset",
 						
 					}
 			}
-			if(!missing(select))
-				ncfs@colnames<-select
 			ncfs
 		})
 #' @rdname ncdfFlowSet-Subset    
@@ -135,9 +133,6 @@ setMethod("Subset",
 				
 			}
 		}
-		if(!missing(select))
-			ncfs@colnames<-select
-#			phenoData(ncfs) <- phenoData(x)
 		
 		return(ncfs)
 		})

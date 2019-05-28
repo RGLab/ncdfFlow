@@ -58,7 +58,6 @@ NULL
 #' \item{\code{frames}:}{Object of class \code{"environment"}, which replicates the "frame" slot in \code{\link{flowSet}},
 #'                      except that  \code{\link[=exprs,flowFrame-method]{exprs}} matrix is empty and the actual data is stored in cdf file. }
 #' \item{\code{phenoData}:}{see \code{\link[=phenoData,flowSet-method]{phenoData}}}
-#' \item{\code{colnames}:}{see \code{\link[=colnames,flowSet-method]{colnames}}. Here it serves as the current data view which does not reflect the actual number and order of columns stored in cdf file.}
 #' }
 #' 
 #' @section Extends: 

@@ -81,7 +81,7 @@ setMethod("ncdfFlowSet",
 			}
 			
 #			
-			ncfs<-new("ncdfFlowSet", file = ncdfFile, colnames = colnames(x), 
+			ncfs<-new("ncdfFlowSet", file = ncdfFile, 
 					frames =e1 ,maxEvents=as.integer(maxEvents),flowSetId = flowSetId,
 					phenoData= phenoData(x),indices=e2,origSampleVector=sampleNames(x)
 					,origColnames=colnames(x))
@@ -209,9 +209,6 @@ getFileName <- function(ncfs){
 #' @param i a \code{numeric} or \code{character} used as sample index of \code{ncdfFlowSet}
 #' @param j not used
 #' @param value \code{flowFrame}
-#' @param only.exprs a \code{logical} Default is FALSE. which will update the parameters and decriptions slot as well as the raw data.
-#'                                  Sometime it is more efficient ti set it to TRUE skip the overhead of colnames matching and updating
-#'                                  when user is only concerned about raw data instead of the entire flowFrame.   
 #' @param compress \code{integer} It is only relevant to writing slice to '2d' format because the compression is set during the creation of hdf5 file for '3d' format. see details in \link{read.ncdfFlowset}.
 #' @param ... not used
 #' 
@@ -246,11 +243,11 @@ getFileName <- function(ncfs){
 #' #chanel colnames
 #' colnames(fr_trans)[3:4] <- c("<FL1-H>", "<FL2-H>")
 #' 
-#' #write data without matching up the colnames  
-#' nc[[sn, only.exprs = TRUE]] <- fr_trans
+#' #write data without matching up the colnames will fail 
+#' #nc[[sn]] <- fr_trans
 setReplaceMethod("[[",
 		signature=signature(x="ncdfFlowSet",value="flowFrame"),
-		definition=function(x, i, j = "missing", only.exprs = FALSE, compress = 0, ..., value)
+		definition=function(x, i, j = "missing", compress = 0, ..., value)
 {
        
         #check sample index  
@@ -260,26 +257,18 @@ setReplaceMethod("[[",
         sampleName <- if(is.numeric(i)) sampleNames(x)[[i]] else i
        
         #validity check for channels in flowFrame
-        localChNames <-colnames(x)
+        
         frChNames <- colnames(value)
-        if(only.exprs){
-          localChIndx <- 1:length(frChNames)  
-        }else{
-          #when need to update other slots in flowFrame
-          #make sure the channel names are the same as the ones in ncfs
-          if(!setequal(frChNames, localChNames))
-            stop("Can't update the entire flowFrame because colnames of the input are not consistent with ncdfFlowSet!"
-                , "\n To only update raw data,set only.exprs = TRUE"
-            )
-          localChIndx <- match(frChNames,localChNames)
-#          if(any(is.na(localChIndx)))
-#            stop("Not all colnames of the input are present in ncdfFlowSet!", sampleName)          
-        }
+      #when need to update other slots in flowFrame
+      #make sure the channel names are the same as the ones in ncfs
+      	if(!all(frChNames == colnames(x)))
+        	stop("Can't update the flowFrame because colnames of the input are not consistent with ncdfFlowSet!")
+        
         
         #####################################
         #prepare the data matrix to write
         #####################################
-        ncfs <- x[,localChIndx]
+        ncfs <- x
         #Since we don't update the indices, we have to make sure to update the correct subset
         ind <- getIndices(ncfs,sampleName)
               
@@ -332,18 +321,13 @@ setReplaceMethod("[[",
         sampleInd <- which(ncfs@origSampleVector==sampleName)
         
         #get original channel ind  
-        origChNames <-x@origColnames ##
-        if(only.exprs){
-          chIndx <- match(colnames(ncfs),origChNames)
-        }else{
-          chIndx <- match(frChNames,origChNames)
-          if(any(is.na(chIndx)))
-          {
-            stop("Colnames of the input are not consistent with ncdfFlowSet! "
-                ,sampleName)    
-          }
+	 	chIndx <- match(frChNames,ncfs@origColnames)
+	  	if(any(is.na(chIndx)))
+	  	{
+	   	 stop("Colnames of the input are not consistent with ncdfFlowSet! "
+	        ,sampleName)    
+	  	}
           
-        }
         #write to disk
         msgWrite <- writeSlice(ncfs@file, newData, as.integer(chIndx), as.integer(sampleInd), as.integer(compress))
         
@@ -356,10 +340,9 @@ setReplaceMethod("[[",
         
         ##update all other slots of flowFrame
         ##This is valid only when value has the same colnames as x
-        if(!only.exprs){
-          x@frames[[sampleName]]@description<-description(value)
-          x@frames[[sampleName]]@parameters<-parameters(value)
-        }
+        x@frames[[sampleName]]@description<-description(value)
+        x@frames[[sampleName]]@parameters<-parameters(value)
+        
 		
 		return(x)
 })
@@ -595,8 +578,7 @@ setReplaceMethod("colnames",
         stop("length of new colnames doesn't match with the old one",call.=FALSE)
       
       #get the index of the colnames in the original colnames vector
-      colIndex <- match(x@colnames, x@origColnames)
-      x@colnames <- value#update colnames slot
+      colIndex <- match(colnames(x), x@origColnames)
       x@origColnames[colIndex]<-value#update the original colnames baed on the inex
       
       ##updte colnames of each flowFrames

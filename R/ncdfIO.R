@@ -208,7 +208,6 @@ read.ncdfFlowSet <- function(files = NULL
 	#create ncdf ncdf object 
 	ncfs<-new("ncdfFlowSet"
 				,frames = e1
-				, colnames = chnls_common 
 				,flowSetId = flowSetId
 				, file = ncdfFile
 				,maxEvents=maxEvents
