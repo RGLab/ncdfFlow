@@ -34,6 +34,11 @@ test_that("read.ncdfFlowSet", {
   nc1 <- read.ncdfFlowSet(tmp, emptyValue = FALSE)
   expect_equal(exprs(fr), exprs(nc1[[1]]), tolerance = 3e-08, check.attributes = F)
   unlink(nc1)
+  
+  #test channels argument
+  chnls <- colnames(fr)[c(1,3,5)]
+  suppressMessages(nc1  <- read.ncdfFlowSet(files=files,channels = chnls))
+  is_equal_flowFrame(nc1[[1]], fr[, chnls], description = FALSE)
 })
 
 
