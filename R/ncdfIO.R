@@ -164,7 +164,8 @@ read.ncdfFlowSet <- function(files = NULL
 			channels.all.unique <- unique(unlist(chnls_list))
 			message("Skip the channels that are not found in all samples:\n",paste(channels.all.unique[-match(chnls_common, channels.all.unique)],collapse="\n"))
 		}
-	}
+	}else
+	  chnls_common <- channels
 
 	tmp <- read.FCSheader(files[1], emptyValue = emptyValue)[[1]]
     
