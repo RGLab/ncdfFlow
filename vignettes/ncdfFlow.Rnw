@@ -267,7 +267,7 @@ nc2 <- Subset(nc1, fr)
 summary(nc2[[1]])
 rm(nc2)
 
-
+library(flowStats)
 morphGate <- norm2Filter("FSC-H", "SSC-H", filterId = "MorphologyGate",scale = 2)
 smaller <- Subset(nc1[c(1,3)], morphGate,c("FSC-H", "SSC-H"))
 smaller[[1]]

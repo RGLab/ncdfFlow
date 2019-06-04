@@ -36,6 +36,7 @@ sn <- sampleNames(nc)[1]
 nrow(nc[[sn]])
 getIndices(nc, sn) #initial index is NA 
 #subset with filter
+library(flowStats)
 morphGate <- norm2Filter("FSC-H", "SSC-H", filterId = "MorphologyGate",scale = 2)
 nc1 <- Subset(nc, morphGate)
 ind <- getIndices(nc1, sn)
