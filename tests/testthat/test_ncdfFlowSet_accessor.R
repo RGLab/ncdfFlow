@@ -1,4 +1,7 @@
 context("ncdfFlowSet accessors")
+library(flowStats)
+library(flowViz)
+morphGate <- norm2Filter("FSC-H", "SSC-H", filterId = "MorphologyGate",scale = 2)
 fs <- GvHD[pData(GvHD)$Patient %in% 6:7][1:4]
 suppressMessages(ncfs <- ncdfFlowSet(fs))
 samples <- sampleNames(ncfs)
@@ -280,9 +283,9 @@ test_that("xyplot ncdfFlowSet", {
       ncObj[["panel.args.common"]][["type"]] <- NULL
       ncObj[["call"]] <- NULL
       fsObj[["call"]] <- NULL
-       
+      
       expect_equivalent(fsObj, ncObj)
-    })  
+    })
 
 test_that("densityplot ncdfFlowSet", {
       sn <- samples[1:2]
@@ -292,7 +295,7 @@ test_that("densityplot ncdfFlowSet", {
       
       expect_is(ncObj[["panel.args.common"]][["frames"]], "ncdfFlowSet")
       expect_is(fsObj[["panel.args.common"]][["frames"]], "environment")
-      
+
       expect_equal(deparse(ncObj[["call"]]), paste0("flowViz:::", deparse(fsObj[["call"]])))
       
       ncObj[["panel.args.common"]][["frames"]] <- NULL
@@ -301,7 +304,7 @@ test_that("densityplot ncdfFlowSet", {
       fsObj[["call"]] <- NULL
       
       expect_equivalent(fsObj, ncObj)
-    })  
+    })
 
 test_that("split", {
       
