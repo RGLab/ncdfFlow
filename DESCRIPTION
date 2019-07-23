@@ -15,7 +15,7 @@ Depends:
 Imports:
     Biobase,BiocGenerics,flowCore,zlibbioc
 Suggests:
-    testthat,parallel,flowStats,flowViz
+    testthat,parallel,flowStats
 License: Artistic-2.0
 biocViews: ImmunoOncology, FlowCytometry
 Packaged: 2011-04-04 18:33:38 UTC; Jiang
