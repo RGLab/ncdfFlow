@@ -296,7 +296,7 @@ test_that("densityplot ncdfFlowSet", {
       expect_is(ncObj[["panel.args.common"]][["frames"]], "ncdfFlowSet")
       expect_is(fsObj[["panel.args.common"]][["frames"]], "environment")
 
-      expect_equal(deparse(ncObj[["call"]]), paste0("flowViz:::", deparse(fsObj[["call"]])))
+      expect_equal(deparse(ncObj[["call"]]), deparse(fsObj[["call"]]))
       
       ncObj[["panel.args.common"]][["frames"]] <- NULL
       fsObj[["panel.args.common"]][["frames"]] <- NULL
