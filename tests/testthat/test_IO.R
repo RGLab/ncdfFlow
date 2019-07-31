@@ -1,4 +1,22 @@
 context("IO test")
+
+test_that("multi data segment", {
+  dataPath <- "~/rglab/workspace/flowCore/misc/"
+  filename  <- file.path(dataPath, "multi-datasegment.fcs")
+  skip_if_not(file.exists(filename))
+  expect_warning(fr <- read.ncdfFlowSet(filename)[[1]], "39 additional data")
+  expect_is(fr, "flowFrame")
+  expect_equal(nrow(fr), 1244)
+  
+  fr <- read.ncdfFlowSet(filename, dataset = 1)[[1]]
+  expect_equal(nrow(fr), 1244)
+  expect_equal(colnames(fr)[10], "FL2-PL")
+  
+  fr <- read.ncdfFlowSet(filename, dataset = 10)[[1]]
+  expect_equal(nrow(fr), 955)
+  expect_equal(colnames(fr)[10], "testPL")
+})
+
 test_that("read.ncdfFlowSet", {
   
   path <- system.file("extdata","compdata","data",package="flowCore")
