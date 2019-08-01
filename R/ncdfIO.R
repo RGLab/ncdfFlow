@@ -169,6 +169,8 @@ read.ncdfFlowSet <- function(files = NULL
 		}
 	}else
 	  chnls_common <- channels
+  #set dataset argument if it is absent to avoid redundant warning messages  
+  dots[["dataset"]] <- ifelse("dataset" %in% names(dots), dots[["dataset"]], 1)
     
   thisCall <- quote(read.FCSheader(files[1]))
   thisCall <- as.call(c(as.list(thisCall),dots))
@@ -244,11 +246,14 @@ read.ncdfFlowSet <- function(files = NULL
         my.read.FCS <- function(i)
         {
           curFile<-files[i]
-          this_fr <- read.FCS(curFile
-              ,column.pattern = colPattern
-              , alter.names = alter.names
-              , channel_alias = channel_alias
-              ,...)
+          thisCall <- quote(read.FCS(curFile
+                                     ,column.pattern = colPattern
+                                     , alter.names = alter.names
+                                     , channel_alias = channel_alias
+                                     )
+                            )
+          thisCall <- as.call(c(as.list(thisCall),dots))
+          this_fr <- eval(thisCall)
           #we need to reorder columns in order to make them identical across samples
           this_fr[,chnls_common]
         }
