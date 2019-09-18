@@ -18,11 +18,14 @@
 
 \item{use.exprs}{\code{logical} see \code{\link{fsApply}}}
 
-\item{ncdfFile}{\code{logical} wether to create a new hdf file or simply overwrite the existing file.}
+\item{ncdfFile}{A character scalar giving the output file name. By
+default, It is NULL and the function will generate a random
+file name, potentially adding the \code{.cdf} suffix unless a file
+extension is already present.}
 }
 \description{
 It is equivalent to \code{\link{fsApply}}. But the latter could cause memory issue 
-when \code{FUN} returns a \code{flowFrame}. \code{ncdfApply} writes to a new cdf file instead of memory. 
+when \code{FUN} returns a \code{flowFrame}. \code{ncfsApply} writes to a new cdf file instead of memory. 
 Thus it will return a ncdfFlowSet object.
 }
 \details{
