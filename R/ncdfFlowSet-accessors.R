@@ -353,7 +353,7 @@ setReplaceMethod("[[",
 #' apply method for ncdfFlowSet (for internal use)
 #' 
 #' It is equivalent to \code{\link{fsApply}}. But the latter could cause memory issue 
-#' when \code{FUN} returns a \code{flowFrame}. \code{ncdfApply} writes to a new cdf file instead of memory. 
+#' when \code{FUN} returns a \code{flowFrame}. \code{ncfsApply} writes to a new cdf file instead of memory. 
 #' Thus it will return a ncdfFlowSet object.
 #' 
 #' When the function given by argument "FUN" does not return the entire flowFrame object with the same 
@@ -362,7 +362,10 @@ setReplaceMethod("[[",
 #' @param FUN \code{function} to apply
 #' @param ... other arguments to pass to \code{FUN}
 #' @param use.exprs \code{logical} see \code{\link{fsApply}}
-#' @param ncdfFile \code{logical} wether to create a new hdf file or simply overwrite the existing file.
+#' @param ncdfFile A character scalar giving the output file name. By
+#'                  default, It is NULL and the function will generate a random
+#'                  file name, potentially adding the \code{.cdf} suffix unless a file
+#'                  extension is already present.
 #' @export 
 #' @aliases ncfsApply
 #' @examples 

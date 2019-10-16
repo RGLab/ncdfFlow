@@ -62,7 +62,7 @@ read.ncdfFlowSet <- function(files = NULL
 								,...) #dots to be passed to read.FCS
 {
     dots <- list(...)
-    emptyValue <- ifelse("emptyValue" %in% names(dots), dots[["emptyValue"]], TRUE)
+    dots[["emptyValue"]] <- ifelse("emptyValue" %in% names(dots), dots[["emptyValue"]], TRUE)
     dim <- as.integer(match.arg(as.character(dim), c("2","3")))
     channel_alias <- flowCore:::check_channel_alias(channel_alias)    
     
@@ -94,7 +94,10 @@ read.ncdfFlowSet <- function(files = NULL
     fileIds <- seq_len(nFile)
     
     getChnlEvt <- function(curFile){
-      txt <- read.FCSheader(curFile, emptyValue = emptyValue)[[1]]
+      
+      thisCall <- quote(read.FCSheader(curFile))
+      thisCall <- as.call(c(as.list(thisCall),dots))
+      txt <- eval(thisCall)[[1]]
       nChannels <- as.integer(txt[["$PAR"]])
       channelNames <- unlist(lapply(1:nChannels,function(i)flowCore:::readFCSgetPar(txt,paste("$P",i,"N",sep=""))))
       channelNames<- unname(channelNames)
@@ -166,8 +169,12 @@ read.ncdfFlowSet <- function(files = NULL
 		}
 	}else
 	  chnls_common <- channels
-
-	tmp <- read.FCSheader(files[1], emptyValue = emptyValue)[[1]]
+  #set dataset argument if it is absent to avoid redundant warning messages  
+  dots[["dataset"]] <- ifelse("dataset" %in% names(dots), dots[["dataset"]], 1)
+    
+  thisCall <- quote(read.FCSheader(files[1]))
+  thisCall <- as.call(c(as.list(thisCall),dots))
+  tmp <- eval(thisCall)[[1]]
     
     #make a dummy parameters slot for every frames to pass the validity check of flowSet class
 	#Note:This call will generate wrong params when chnls_common is less than original chnls
@@ -239,11 +246,14 @@ read.ncdfFlowSet <- function(files = NULL
         my.read.FCS <- function(i)
         {
           curFile<-files[i]
-          this_fr <- read.FCS(curFile
-              ,column.pattern = colPattern
-              , alter.names = alter.names
-              , channel_alias = channel_alias
-              ,...)
+          thisCall <- quote(read.FCS(curFile
+                                     ,column.pattern = colPattern
+                                     , alter.names = alter.names
+                                     , channel_alias = channel_alias
+                                     )
+                            )
+          thisCall <- as.call(c(as.list(thisCall),dots))
+          this_fr <- eval(thisCall)
           #we need to reorder columns in order to make them identical across samples
           this_fr[,chnls_common]
         }
