@@ -1,4 +1,5 @@
-RHDF5_LIBS= $(shell "$(R_HOME)/bin/Rscript" --vanilla --slave -e 'Rhdf5lib::pkgconfig("PKG_C_LIBS")')
+RHDF5_LIBS= $(shell echo 'Rhdf5lib::pkgconfig("PKG_C_LIBS")'|\
+    "${R_HOME}/bin/R" --vanilla --slave) 
 PKG_LIBS=$(RHDF5_LIBS)
 
 USERDIR = ${R_PACKAGE_DIR}/lib${R_ARCH}
