@@ -65,7 +65,7 @@ setMethod("ncdfFlowSet",
             
             for(guid in sampleNames(x))
             {
-              assign(guid, new("flowFrame",exprs=matrix(numeric(0),nrow=0,ncol=0),parameters(x[[guid]]),description(x[[guid]])), env=e1)
+              assign(guid, new("flowFrame",exprs=matrix(numeric(0),nrow=0,ncol=0),parameters(x[[guid]]),keyword(x[[guid]])), env=e1)
               if(dim == 3)
               {    maxEvents<-max(maxEvents,nrow(exprs(x[[guid]])))				
               }  
@@ -341,7 +341,7 @@ setReplaceMethod("[[",
         
         ##update all other slots of flowFrame
         ##This is valid only when value has the same colnames as x
-        x@frames[[sampleName]]@description<-description(value)
+        x@frames[[sampleName]]@description<-keyword(value)
         x@frames[[sampleName]]@parameters<-parameters(value)
         
 		
