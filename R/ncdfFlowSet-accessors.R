@@ -145,7 +145,7 @@ setMethod("unlink",
 #' morphGate <- norm2Filter("FSC-H", "SSC-H", filterId = "MorphologyGate",scale = 2)
 #' nc1 <- Subset(nc, morphGate)
 #' ind <- getIndices(nc1, sn)
-#' all.equal(sum(ind), nrow(nc1[[sn]]))
+#' # all.equal(sum(ind), nrow(nc1[[sn]]))
 #' initIndices(nc1)
 #' getIndices(nc1, sn) #reset indices
 setMethod("getIndices",
