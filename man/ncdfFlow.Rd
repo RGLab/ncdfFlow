@@ -3,7 +3,6 @@
 \docType{package}
 \name{ncdfFlow}
 \alias{ncdfFlow}
-\alias{ncdfFlow-package}
 \title{ncdfFlow: A package that provides CDF storage based flow cytometry data analysis.}
 \description{
 ncdfFlow: A package that provides CDF storage based flow cytometry data analysis.
@@ -14,6 +13,7 @@ Define important flow cytometry data classes:
 and \code{\link[ncdfFlow:ncdfFlowList-class]{ncdfFlowList}}(a list of ncdfFlowSet object) and their accessors.
 
 Provide important compensation,transformation,filter,gating,subsetting,splitting functions for data analysis of large volumns of flow cytometry data that is too big to be held in memory.
+
 
 \tabular{ll}{
   Package: \tab ncdfFlow\cr

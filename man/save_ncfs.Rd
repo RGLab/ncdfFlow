@@ -5,8 +5,12 @@
 \alias{load_ncfs}
 \title{save/load a ncdfFlowSet object to/from disk.}
 \usage{
-save_ncfs(ncfs, path, overwrite = FALSE, cdf = c("copy", "move",
-  "link", "skip", "symlink"))
+save_ncfs(
+  ncfs,
+  path,
+  overwrite = FALSE,
+  cdf = c("copy", "move", "link", "skip", "symlink")
+)
 
 load_ncfs(path)
 }
