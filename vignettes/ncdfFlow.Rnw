@@ -270,10 +270,15 @@ The \Rfunction{Subset} and \Rfunction{split} methods for \Rclass{ncdfFlowSet}:
 <<Subsetting, echo=TRUE, results='markup'>>=
 nc2 <- Subset(nc1,rectGate)
 summary(nc2[[1]])
-nc2 <- Subset(nc1, fr)
-summary(nc2[[1]])
-rm(nc2)
+@
 
+<<Subsetting2, echo=FALSE, eval=FALSE>>=
+nc2 <- Subset(nc1, fr)
+summary(nc2[[1]])###this will cause crashing error see #50
+rm(nc2)
+@
+
+<<Subsetting3, echo=TRUE, results='markup'>>=
 library(flowStats)
 morphGate <- norm2Filter("FSC-H", "SSC-H", filterId = "MorphologyGate",scale = 2)
 smaller <- Subset(nc1[c(1,3)], morphGate,c("FSC-H", "SSC-H"))
@@ -302,8 +307,8 @@ ncList[[1]][[1]]
 Note that the \Robject{ncdfFlowSet} objects contained in \Robject{ncdfFlowList} by default share the 
 same ncdf file as the original \Robject{ncdfFlowSet}. In order to keep its own data copy, try to set argument \Robject{isNew} to "TRUE"
 in \Robject{split} method. 
-<<split2, echo=TRUE>>=
-ncList_new<-split(nc1,fr,isNew=TRUE)
+<<split2, echo=FALSE, eval=FALSE>>=
+ncList_new<-split(nc1,fr,isNew=TRUE)###this will cause crashing error see #50
 @
 
 

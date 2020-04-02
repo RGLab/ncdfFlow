@@ -5,10 +5,20 @@
 \alias{read.ncdfFlowset}
 \title{create ncdfFlowSet from FCS files}
 \usage{
-read.ncdfFlowSet(files = NULL, ncdfFile, flowSetId = flowCore:::guid(),
-  isWriteSlice = TRUE, phenoData, channels = NULL,
-  channel_alias = NULL, alter.names = FALSE, dim = 2, compress = 0,
-  mc.cores = NULL, ...)
+read.ncdfFlowSet(
+  files = NULL,
+  ncdfFile,
+  flowSetId = flowCore:::guid(),
+  isWriteSlice = TRUE,
+  phenoData,
+  channels = NULL,
+  channel_alias = NULL,
+  alter.names = FALSE,
+  dim = 2,
+  compress = 0,
+  mc.cores = NULL,
+  ...
+)
 }
 \arguments{
 \item{files}{A character vector giving the source FCS raw file paths.}

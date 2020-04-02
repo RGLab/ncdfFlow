@@ -20,4 +20,4 @@ License: Artistic-2.0
 biocViews: ImmunoOncology, FlowCytometry
 Packaged: 2011-04-04 18:33:38 UTC; Jiang
 LinkingTo: Rcpp,RcppArmadillo,BH, Rhdf5lib
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0

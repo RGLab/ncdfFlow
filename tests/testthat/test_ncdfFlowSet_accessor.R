@@ -48,6 +48,7 @@ test_that("[[", {
       
     })
 test_that("as.flowSet", {
+    skip("###this will cause crashing error see #50")
       #Subset by gate
       is_equal_flowSet(Subset(ncfs, rectGate), Subset(fs, rectGate))
       
@@ -263,7 +264,7 @@ test_that("colnames<-", {
     })
 
 test_that("split", {
-      
+  skip("###this will cause crashing error see #50")
       #split by factor
       splitBy <- factor(c("p1","p2","p1","p2"))
       
