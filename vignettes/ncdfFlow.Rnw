@@ -35,7 +35,14 @@
 \author{Mike Jiang,Greg Finak,N. Gopalakrishnan}
 
 \begin{document}
-\SweaveOpts{concordance=TRUE}
+
+<<include=FALSE>>=
+library(knitr)
+opts_chunk$set(
+concordance=TRUE
+)
+@
+
 \maketitle
 
 \begin{abstract}
@@ -65,7 +72,7 @@ Thus the change of data structure is almost transparent to the users of flowCore
 \noindent \textbf{keywords} Flow cytometry, high throughput,netCDF, flowSet,ncdfFlowSet
 \end{abstract}
 
-<<loadPackage, echo=false,results=hide>>=
+<<loadPackage, echo=FALSE,results='hide'>>=
 library(ncdfFlow)
 @
 
@@ -88,7 +95,7 @@ Thus \Robject{ncdfFlowSet} reduces the memory requirements and meanwhile ensures
 
 We provide a function to read FCS files into a \Rclass{ncdfFlowSet} object:
 
-<<ncdfFlowSet, echo=true, results=verbatim>>=
+<<ncdfFlowSet, echo=TRUE, results='markup'>>=
 path<-system.file("extdata","compdata","data",package="flowCore")
 files<-list.files(path,full.names=TRUE)[1:3]
 nc1 <- read.ncdfFlowSet(files=files)
@@ -96,7 +103,7 @@ nc1
 @
 
 As we see,the contructor function is very similar to the \Rclass{flowSet} execpt that it requires a filename for the ncdf file. 
-<<flowSet, echo=true, results=hide>>=
+<<flowSet, echo=TRUE, results='hide'>>=
 fs1  <- read.flowSet(files=files)
 @
 
@@ -104,14 +111,14 @@ fs1  <- read.flowSet(files=files)
 Note that an ncdf file that stores the actual data is generated and saved on disk once a \Robject{ncdfFlowSet} is created. 
 Users need to explicitely call the \Rfunction{unlink} method to remove the file before delete the object from memory by \Rfunction{rm}. 
 
-<<ncdfFlowSet, echo=true, results=verbatim>>=
+<<ncdfFlowSet, echo=TRUE, results='markup'>>=
 unlink(nc1)
 rm(nc1)
 @
 
 Users can also create an empty ncdfFlowSet first and add data slices later by assigning argument isWriteSlice as FALSE.
 
-<<ncdfFlowSet, echo=true,results=verbatim>>=
+<<ncdfFlowSet, echo=TRUE,results='markup'>>=
 nc1  <- read.ncdfFlowSet(files=files, isWriteSlice= FALSE)
 nc1[[1]]
 @
@@ -119,7 +126,7 @@ nc1[[1]]
 As we see here,before writing the actual flowFrame by \Rfunction{[[<-}, 
 the flowFrame object returned by \Rfunction{[[} has 0 events.
 
-<<ncdfFlowSet, echo=true,results=verbatim>>=
+<<ncdfFlowSet, echo=TRUE,results='markup'>>=
 targetSampleName<-sampleNames(fs1)[1]
 nc1[[targetSampleName]] <- fs1[[1]]
 nc1[[1]]
@@ -131,14 +138,14 @@ Because the sample name is the identifier used to index the data matrix.
 
 Sometime it is helpful to copy the structure from an existing ncdfFlow object and then add the data slice to the empty ncdfFlow cloned by
  \Rfunction{clone.ncdfFlowSet}.
-<<ncdfFlowSet, echo=true,results=hide>>=
+<<ncdfFlowSet, echo=TRUE,results='hide'>>=
 nc2 <- clone.ncdfFlowSet(nc1, isEmpty = TRUE)
 nc2[[1]]
 nc2[[sampleNames(fs1)[1]]] <- fs1[[1]]
 nc2[[1]]
 @
 
-<<ncdfFlowSet, echo=FALSE,results=hide>>=
+<<ncdfFlowSet, echo=FALSE,results='hide'>>=
 unlink(nc2)
 rm(nc2)
 
@@ -147,14 +154,14 @@ rm(nc1)
 @
 
 We also provide the coerce function to convert the flowSet to a ncdfFlowSet.
-<<ncdfFlowSet, echo=true,results=verbatim>>=
+<<ncdfFlowSet, echo=TRUE,results='markup'>>=
 data(GvHD)
 GvHD <- GvHD[pData(GvHD)$Patient %in% 6:7][1:4]
 nc1<-ncdfFlowSet(GvHD)
 @
 
 Or coerce a ncdfFlowSet to flowSet
-<<ncdfFlowSet, echo=true,results=verbatim>>=
+<<ncdfFlowSet, echo=TRUE,results='markup'>>=
 fs1<-as.flowSet(nc1,top=2)
 @
 
@@ -170,7 +177,7 @@ by \Rclass{ncdfFlowSet} to have a preview of the data.The arugment "top" can be 
 Like \Rclass{flowSet},\Rclass{ncdfFlowSet} has an associated \Rclass{AnnotatedDataFrame} that provides metadata of experiments. 
 This data frame is accessed and modified via the same methods of \Rpackage{flowCore}. :
 
-<<metaData, echo=true, results=hide>>=
+<<metaData, echo=TRUE, results='hide'>>=
 phenoData(nc1)
 pData(nc1)
 varLabels(nc1)
@@ -192,7 +199,7 @@ Note that using the \Rfunction{[} extraction operator returns a new \Rclass{ncdf
 file. SO the original ncdf file serves as a data repository and the \Robject{ncdfFlowSet} works as view of the 
 data in this sense.
 
-<<extraction, echo=true,results=verbatim>>=
+<<extraction, echo=TRUE,results='markup'>>=
 
 nm<-sampleNames(nc1)[1]
 expr1<-paste("nc1$'",nm,"'",sep="")
@@ -205,7 +212,7 @@ summary(nc2)
 @
 
 \Rclass{flowSet}-specific iterator \Rfunction{fsApply} can also be applied to Robject{ncdfFlowSet}:
-<<fsApply, echo=true,results=hide>>=
+<<fsApply, echo=TRUE,results='hide'>>=
 fsApply(nc1,range)
 fsApply(nc1, each_col, median)
 @
@@ -218,7 +225,7 @@ Note that the return value of the function applied in \Rfunction{ncfsApply} must
 
 \Rfunction{transform} amd \Rfunction{compensate} for \Robject{ncdfFlowSet} work the same as \Robject{flowSet}.
  
-<<Transformation and compensation, echo=true,results=hide>>=
+<<Transformation and compensation, echo=TRUE,results='hide'>>=
 cfile <- system.file("extdata","compdata","compmatrix", package="flowCore")
 comp.mat <- read.table(cfile, header=TRUE, skip=2, check.names = FALSE)
 comp <- compensation(comp.mat)
@@ -243,7 +250,7 @@ Note that compensation/transformation return the \Robject{ncdfFlowSet} objects t
 the new cdf file containing the compensated/transformed data.
 
 \Rfunction{filter} for \Robject{flowSet} also works for \Robject{ncdfFlowSet}:
-<<Gating, echo=true,results=hide>>=
+<<Gating, echo=TRUE,results='hide'>>=
 rectGate <- rectangleGate(filterId="nonDebris","FSC-H"=c(200,Inf))
 fr <- filter(nc1,rectGate)
 summary(fr)
@@ -260,7 +267,7 @@ summary(fr3[[3]])
 
 The \Rfunction{Subset} and \Rfunction{split} methods for \Rclass{ncdfFlowSet}:
 
-<<Subsetting, echo=true, results=verbatim>>=
+<<Subsetting, echo=TRUE, results='markup'>>=
 nc2 <- Subset(nc1,rectGate)
 summary(nc2[[1]])
 nc2 <- Subset(nc1, fr)
@@ -280,7 +287,7 @@ since it points to the same ncdf file that is also used by the original \Robject
 
 
 \Rfunction{split} returns a \Robject{ncdfFlowList} object which is a container of multiple \Robject{ncdfFlowSet} objects.  
-<<split, echo=true>>=
+<<split, echo=TRUE>>=
 
 ##splitting by a gate
 qGate <- quadGate(filterId="qg", "FSC-H"=200, "SSC-H"=400)
@@ -295,7 +302,7 @@ ncList[[1]][[1]]
 Note that the \Robject{ncdfFlowSet} objects contained in \Robject{ncdfFlowList} by default share the 
 same ncdf file as the original \Robject{ncdfFlowSet}. In order to keep its own data copy, try to set argument \Robject{isNew} to "TRUE"
 in \Robject{split} method. 
-<<split, echo=true>>=
+<<split, echo=TRUE>>=
 ncList_new<-split(nc1,fr,isNew=TRUE)
 @
 
