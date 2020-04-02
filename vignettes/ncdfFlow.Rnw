@@ -4,6 +4,7 @@
 %\VignetteIndexEntry{Basic Functions for Flow Cytometry Data}
 %\VignetteDepends{flowCore}
 %\VignetteKeywords{ncdf,flowCore}
+%\VignetteEngine{knitr::knitr}
 %\VignettePackage{ncdfFlow}
 \documentclass[11pt]{article}
 
