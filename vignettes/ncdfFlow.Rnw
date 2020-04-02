@@ -95,7 +95,7 @@ Thus \Robject{ncdfFlowSet} reduces the memory requirements and meanwhile ensures
 
 We provide a function to read FCS files into a \Rclass{ncdfFlowSet} object:
 
-<<ncdfFlowSet, echo=TRUE, results='markup'>>=
+<<read.ncdfFlowSet, echo=TRUE, results='markup'>>=
 path<-system.file("extdata","compdata","data",package="flowCore")
 files<-list.files(path,full.names=TRUE)[1:3]
 nc1 <- read.ncdfFlowSet(files=files)
@@ -111,14 +111,14 @@ fs1  <- read.flowSet(files=files)
 Note that an ncdf file that stores the actual data is generated and saved on disk once a \Robject{ncdfFlowSet} is created. 
 Users need to explicitely call the \Rfunction{unlink} method to remove the file before delete the object from memory by \Rfunction{rm}. 
 
-<<ncdfFlowSet, echo=TRUE, results='markup'>>=
+<<unlink, echo=TRUE, results='markup'>>=
 unlink(nc1)
 rm(nc1)
 @
 
 Users can also create an empty ncdfFlowSet first and add data slices later by assigning argument isWriteSlice as FALSE.
 
-<<ncdfFlowSet, echo=TRUE,results='markup'>>=
+<<isWriteSlice, echo=TRUE,results='markup'>>=
 nc1  <- read.ncdfFlowSet(files=files, isWriteSlice= FALSE)
 nc1[[1]]
 @
@@ -126,7 +126,7 @@ nc1[[1]]
 As we see here,before writing the actual flowFrame by \Rfunction{[[<-}, 
 the flowFrame object returned by \Rfunction{[[} has 0 events.
 
-<<ncdfFlowSet, echo=TRUE,results='markup'>>=
+<<replacement, echo=TRUE,results='markup'>>=
 targetSampleName<-sampleNames(fs1)[1]
 nc1[[targetSampleName]] <- fs1[[1]]
 nc1[[1]]
@@ -138,14 +138,14 @@ Because the sample name is the identifier used to index the data matrix.
 
 Sometime it is helpful to copy the structure from an existing ncdfFlow object and then add the data slice to the empty ncdfFlow cloned by
  \Rfunction{clone.ncdfFlowSet}.
-<<ncdfFlowSet, echo=TRUE,results='hide'>>=
+<<isEmpty, echo=TRUE,results='hide'>>=
 nc2 <- clone.ncdfFlowSet(nc1, isEmpty = TRUE)
 nc2[[1]]
 nc2[[sampleNames(fs1)[1]]] <- fs1[[1]]
 nc2[[1]]
 @
 
-<<ncdfFlowSet, echo=FALSE,results='hide'>>=
+<<cleanup, echo=FALSE,results='hide'>>=
 unlink(nc2)
 rm(nc2)
 
@@ -154,14 +154,14 @@ rm(nc1)
 @
 
 We also provide the coerce function to convert the flowSet to a ncdfFlowSet.
-<<ncdfFlowSet, echo=TRUE,results='markup'>>=
+<<fstoncdfFlowSet, echo=TRUE,results='markup'>>=
 data(GvHD)
 GvHD <- GvHD[pData(GvHD)$Patient %in% 6:7][1:4]
 nc1<-ncdfFlowSet(GvHD)
 @
 
 Or coerce a ncdfFlowSet to flowSet
-<<ncdfFlowSet, echo=TRUE,results='markup'>>=
+<<ncdfFlowSettofs, echo=TRUE,results='markup'>>=
 fs1<-as.flowSet(nc1,top=2)
 @
 
@@ -302,7 +302,7 @@ ncList[[1]][[1]]
 Note that the \Robject{ncdfFlowSet} objects contained in \Robject{ncdfFlowList} by default share the 
 same ncdf file as the original \Robject{ncdfFlowSet}. In order to keep its own data copy, try to set argument \Robject{isNew} to "TRUE"
 in \Robject{split} method. 
-<<split, echo=TRUE>>=
+<<split2, echo=TRUE>>=
 ncList_new<-split(nc1,fr,isNew=TRUE)
 @
 
