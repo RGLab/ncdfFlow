@@ -5,7 +5,7 @@ Version: 2.33.2
 Author: Mike Jiang,Greg Finak,N. Gopalakrishnan
 Description: Provides HDF5 storage based methods and functions for
     manipulation of flow cytometry data.
-Maintainer: Mike Jiang <wjiang2@fhcrc.org>
+Maintainer: Mike Jiang <wjiang2@fhcrc.org>, Jake Wagner <jpwagner@fhcrc.org>
 Depends:
     R (>= 2.14.0),
     flowCore(>= 1.51.7),
