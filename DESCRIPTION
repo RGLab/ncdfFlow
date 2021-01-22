@@ -16,7 +16,7 @@ Imports:
     Biobase,BiocGenerics,flowCore,zlibbioc
 Suggests:
     testthat,parallel,flowStats,knitr
-License: Artistic-2.0
+License: file LICENSE
 biocViews: ImmunoOncology, FlowCytometry
 Packaged: 2011-04-04 18:33:38 UTC; Jiang
 LinkingTo: Rcpp,RcppArmadillo,BH, Rhdf5lib
