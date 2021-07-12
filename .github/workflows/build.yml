@@ -95,6 +95,7 @@ jobs:
       - name: Install dependencies
         run: |
           remotes::install_deps(dependencies = TRUE)
+          remotes::install_bioc("flowStats")
           remotes::install_cran(c("rcmdcheck", "devtools"))
 #          remotes::install_github("RGLab/cytoinstaller")
  #         cytoinstaller::cyto_install_deps(dependencies = TRUE)
