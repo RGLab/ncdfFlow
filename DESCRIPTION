@@ -5,7 +5,7 @@ Version: 2.39.0
 Author: Mike Jiang,Greg Finak,N. Gopalakrishnan
 Description: Provides HDF5 storage based methods and functions for
     manipulation of flow cytometry data.
-Maintainer: Mike Jiang <wjiang2@fhcrc.org>, Jake Wagner <jpwagner@fhcrc.org>
+Maintainer: Mike Jiang <mike@ozette.ai>, Jake Wagner <jpwagner@fhcrc.org>
 Depends:
     R (>= 2.14.0),
     flowCore(>= 1.51.7),
@@ -16,7 +16,7 @@ Imports:
     Biobase,BiocGenerics,flowCore,zlibbioc
 Suggests:
     testthat,parallel,flowStats,knitr
-License: Artistic-2.0
+License: file LICENSE
 biocViews: ImmunoOncology, FlowCytometry
 Packaged: 2011-04-04 18:33:38 UTC; Jiang
 LinkingTo: Rcpp,RcppArmadillo,BH, Rhdf5lib

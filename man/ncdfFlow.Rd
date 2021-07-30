@@ -25,9 +25,9 @@ Provide important compensation,transformation,filter,gating,subsetting,splitting
  }
 }
 \author{
-Mike Jiang \email{wjiang2@fhcrc.org},
-Greg Finak \email{gfinak@fhcrc.org}
+Mike Jiang \email{mike@ozette.ai},
+Greg Finak \email{greg@ozette.ai}
 
-Maintainer: Mike Jiang \email{wjiang2@fhcrc.org}
+Maintainer: Mike Jiang \email{mike@ozette.ai}
 }
 \keyword{package}
