@@ -12,7 +12,7 @@ Depends:
     methods,
     BH
 Imports:
-    Biobase,BiocGenerics,flowCore,zlibbioc
+    Biobase,BiocGenerics,flowCore
 Suggests:
     testthat,parallel,flowStats,knitr
 License: AGPL-3.0-only 
