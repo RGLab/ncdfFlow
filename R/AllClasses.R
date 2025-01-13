@@ -27,8 +27,6 @@
 #' @keywords package
 NULL
 
-#' @import zlibbioc 
-NULL
 
 #' @useDynLib "ncdfFlow",.registration = TRUE
 
